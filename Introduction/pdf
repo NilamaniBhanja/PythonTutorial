@@ -1,26 +1,38 @@
-public static byte[] MergePdf(List<byte[]> pdfFiles)
+public static byte[] MergePdf(List<byte[]> pdfs)
 {
-    using (var outputStream = new MemoryStream())
-    {
-        using (var document = new iTextSharp.text.Document())
-        {
-            using (var copy = new iTextSharp.text.pdf.PdfCopy(document, outputStream))
-            {
-                document.Open();
+    var documents = new List<PdfSharp.Pdf.PdfDocument>();
 
-                foreach (var pdf in pdfFiles)
-                {
-                    using (var reader = new iTextSharp.text.pdf.PdfReader(pdf))
-                    {
-                        for (int i = 1; i <= reader.NumberOfPages; i++)
-                        {
-                            var page = copy.GetImportedPage(reader, i);
-                            copy.AddPage(page);
-                        }
-                    }
-                }
+    foreach (var pdf in pdfs)
+    {
+        using (var stream = new MemoryStream(pdf))
+        {
+            try
+            {
+                var doc = PdfSharp.Pdf.IO.PdfReader.Open(stream, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+                documents.Add(doc);
+            }
+            catch (PdfSharp.Pdf.IO.PdfReaderException ex)
+            {
+                // Log and handle unsupported iref PDFs
+                throw new NotSupportedException("The PDF format is not supported. Try converting to PDF 1.4.", ex);
             }
         }
-        return outputStream.ToArray();
+    }
+
+    using (var outPdf = new PdfSharp.Pdf.PdfDocument())
+    {
+        foreach (var doc in documents)
+        {
+            foreach (var page in doc.Pages)
+            {
+                outPdf.AddPage(page);
+            }
+        }
+
+        using (var stream = new MemoryStream())
+        {
+            outPdf.Save(stream, false);
+            return stream.ToArray();
+        }
     }
 }
