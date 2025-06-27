@@ -1,0 +1,26 @@
+public static byte[] MergePdf(List<byte[]> pdfFiles)
+{
+    using (var outputStream = new MemoryStream())
+    {
+        using (var document = new iTextSharp.text.Document())
+        {
+            using (var copy = new iTextSharp.text.pdf.PdfCopy(document, outputStream))
+            {
+                document.Open();
+
+                foreach (var pdf in pdfFiles)
+                {
+                    using (var reader = new iTextSharp.text.pdf.PdfReader(pdf))
+                    {
+                        for (int i = 1; i <= reader.NumberOfPages; i++)
+                        {
+                            var page = copy.GetImportedPage(reader, i);
+                            copy.AddPage(page);
+                        }
+                    }
+                }
+            }
+        }
+        return outputStream.ToArray();
+    }
+}
