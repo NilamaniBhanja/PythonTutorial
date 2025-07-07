@@ -1,0 +1,42 @@
+dotnet ef migrations add InitialLogEntry  --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+dotnet ef database update --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+dotnet ef migrations remove --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+dotnet ef migrations add InitialCreate \
+  --project ./InfoSyntax.Infrastructure \
+  --startup-project ./InfoSyntax.API
+  
+  
+
+
+
+dotnet ef migrations add PostMetaEdit  --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+
+dotnet ef migrations remove --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+dotnet ef migrations add InitialCreate \
+  --project ./InfoSyntax.Infrastructure \
+  --startup-project ./InfoSyntax.API
+  
+  dotnet ef database update --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+
+dotnet ef migrations remove InitialAddPost --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+dotnet ef migrations add AutoIncreaseIDPost  --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+
+dotnet ef migrations has-pending-model-changes  --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+
+
+
+dotnet ef migrations list --project src/InfoSyntax.Infrastructure --startup-project src/InfoSyntax.API
+
+dotnet ef migrations list --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
+
+
+dotnet ef database drop --force --project .\InfoSyntax.Infrastructure\InfoSyntax.Infrastructure.csproj --startup-project .\InfoSyntax.API\InfoSyntax.API.csproj
