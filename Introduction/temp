@@ -53,6 +53,34 @@ public class DateOnlyJsonConverter : JsonConverter<DateOnly>
     }
 }
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());     // dd/MM/yyyy
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter()); // dd/MM/yyyy
+        options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter()); // hh:mm
+    });
+
+
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Globalization;
+
+public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
+{
+    private const string Format = "HH:mm"; // 24-hour format. Use "hh:mm tt" for 12-hour with AM/PM.
+
+    public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return TimeOnly.ParseExact(reader.GetString()!, Format, CultureInfo.InvariantCulture);
+    }
+
+    public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString(Format));
+    }
+}
 
 
 
