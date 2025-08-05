@@ -89,5 +89,198 @@ WHERE TABLE_NAME = 'LogEntry' AND COLUMN_NAME = 'Exception';
    at HomeConnect.Infrastructure.Repositories.GenericRepository`1.<HomeConnect-Core-Interfaces-IRepository<T>-AddAsync>d__5.MoveNext() in \\amznfsxtvq2brbs.lgi.libertyinsurance.in\share\TPService\Nilamani\HomeConnect\Development\29July2025\intl-apac-in-gha-tps-homeconnect-api\HomeConnect.Infrastructure\Repositories\GenericRepository.cs:line 58
 
 
+\
+
+
+
+using InfoSyntax.Core.Entities;
+using InfoSyntax.Core.Interfaces;
+using InfoSyntax.Core.Pagination;
+using InfoSyntax.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+namespace InfoSyntax.Infrastructure.Repositories
+{
+    public class GenericRepository<T>(AppDbContext context) : IRepository<T> where T : class
+    {
+        private readonly AppDbContext _context = context;
+        private readonly DbSet<T> _dbSet = context.Set<T>();
+
+        public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? Filter=null)
+        {
+            IQueryable<T> query = _dbSet;
+            if (Filter != null)
+            {
+                query = query.Where(Filter);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<PaginatedResult<T>> PaginateAsync(PaginationRequest<T> request)
+        {
+            IQueryable<T> query = _dbSet;
+
+            // Apply includes
+            foreach (var includeProperty in request.IncludeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            // Apply filter
+            if (request.Filter != null)
+            {
+                query = query.Where(request.Filter);
+            }
+
+            // Apply ordering
+            if (request.OrderBy != null)
+            {
+                query = request.OrderBy(query);
+            }
+
+            // Get total count before pagination
+            var totalItems = await query.CountAsync();
+
+            // Apply pagination
+            var items = await query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return new PaginatedResult<T>(items, totalItems, request.Page, request.PageSize);
+        }
+
+        async Task<T?> IRepository<T>.GetByIdAsync<TKey>(TKey id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        async Task<T?> IRepository<T>.FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "")
+        {
+            IQueryable<T> query = _dbSet;
+
+            // Apply includes
+            foreach (var includeProperty in IncludeProperties.Split(
+                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            // Apply filter
+            if (Filter != null)
+            {
+                query = query.Where(Filter);
+            }
+            // Get total count before pagination
+            var totalItems = await query.CountAsync();
+
+            return await query
+                .FirstOrDefaultAsync();
+        }
+
+        async Task IRepository<T>.AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
+        }
+
+        async Task IRepository<T>.AddRangeAsync(List<T> entity)
+        {
+            await _dbSet.AddRangeAsync(entity);
+            await _context.SaveChangesAsync();
+        }
+        async Task IRepository<T>.UpdateAsync(T entity)
+        {
+            _dbSet.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
+        }
+
+        async Task IRepository<T>.DeleteAsync(T entity)
+        {
+            if (_context.Entry(entity).State == EntityState.Detached)
+            {
+                _dbSet.Attach(entity);
+            }
+            _dbSet.Remove(entity);
+            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
+        }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
+        }
+
+
+        public async Task RemoveCollectionItemsAsync<TItem>(
+    T entity,
+    Func<T, ICollection<TItem>> collectionSelector,
+    Func<TItem, bool> predicate
+) where TItem : class
+        {
+            var collection = collectionSelector(entity);
+            if (collection == null) return;
+
+            if (collection is List<TItem> list)
+            {
+                list.RemoveAll(item => predicate(item));
+            }
+            else
+            {
+                var itemsToRemove = collection.Where(predicate).ToList();
+                foreach (var item in itemsToRemove)
+                {
+                    collection.Remove(item);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+using InfoSyntax.Core.Pagination;
+using System.Linq.Expressions;
+
+namespace InfoSyntax.Core.Interfaces
+{
+    public interface IRepository<T> where T : class
+    {
+        Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? Filter=null);
+        Task<PaginatedResult<T>> PaginateAsync(PaginationRequest<T> request);
+        Task<T?> GetByIdAsync<TKey>(TKey id);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "");
+        Task AddAsync(T entity);
+        Task AddRangeAsync(List<T> entity);
+        Task UpdateAsync(T entity);
+        Task DeleteAsync(T entity);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task RemoveCollectionItemsAsync<TItem>(
+    T entity,
+    Func<T, ICollection<TItem>> collectionSelector,
+    Func<TItem, bool> predicate
+) where TItem : class;
+    }
+}
 
 
