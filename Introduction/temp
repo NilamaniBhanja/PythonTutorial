@@ -129,4 +129,7 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
            throw new Exception("DAta issue");
        }
    }
+
+
+Error creating query string: An error was generated for warning 'Microsoft.EntityFrameworkCore.Query.InvalidIncludePathError': Unable to find navigation 'UserBranchMapping' specified in string based include path 'UserBranchMapping'. This exception can be suppressed or logged by passing event ID 'CoreEventId.InvalidIncludePathError' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'..
   
