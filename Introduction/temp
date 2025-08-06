@@ -98,3 +98,35 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
     // Other model configurations...
 }
 
+
+
+   async Task<T?> ITPSRepository<T>.FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "")
+   {
+       try
+       {
+           IQueryable<T> query = _dbSet;
+
+           // Apply includes
+           foreach (var includeProperty in IncludeProperties.Split(
+               new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+           {
+               query = query.Include(includeProperty);
+           }
+
+           // Apply filter
+           if (Filter != null)
+           {
+               query = query.Where(Filter);
+           }
+           // Get total count before pagination
+           var totalItems = await query.CountAsync();
+
+           return await query
+               .FirstOrDefaultAsync();
+       }
+       catch (Exception ex)
+       {
+           throw new Exception("DAta issue");
+       }
+   }
+  
