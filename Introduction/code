@@ -111,11 +111,128 @@ public class UserService
     }
 }
 
+using Microsoft.EntityFrameworkCore;
+
+public class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
+
+    // DbSets for your tables
+    public virtual DbSet<tblUserExt> tblUserExts { get; set; } = null!;
+    public virtual DbSet<UserBranchMapping> UserBranchMappings { get; set; } = null!;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Fluent API for one-to-one relationship on UserID
+        modelBuilder.Entity<tblUserExt>()
+            .HasOne(u => u.UserBranchMapping)
+            .WithOne(b => b.tblUserExt)
+            .HasForeignKey<UserBranchMapping>(b => b.UserID)
+            .HasPrincipalKey<tblUserExt>(u => u.UserID)
+            .OnDelete(DeleteBehavior.Restrict); // Or whatever suits your data logic
+
+        // Optional: Unique constraint for UserID if not already in DB
+        modelBuilder.Entity<UserBranchMapping>()
+            .HasIndex(b => b.UserID)
+            .IsUnique();
+    }
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 
 
 
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public partial class tblUserExt
+{
+    [Key]
+    public long UserExtID { get; set; }
+
+    public Guid? RoleID { get; set; }
+
+    public Guid UserID { get; set; }
+
+    public string? RoleName { get; set; }
+
+    public string? UserName { get; set; }
+
+    [Required]
+    public string IMDCode { get; set; } = string.Empty;
+
+    public bool? IsActive { get; set; }
+
+    public bool? IsBlocked { get; set; }
+
+    public string? FirstName { get; set; }
+
+    public string? LastName { get; set; }
+
+    public bool? IsSubID { get; set; }
+
+    public bool? HasParent { get; set; }
+
+    public bool? HasCumulative { get; set; }
+
+    public bool CanCreateUser { get; set; }
+
+    public decimal? VerticalId { get; set; }
+
+    public bool? CancellationRights { get; set; }
+
+    public bool? ForgotPasswordStatus { get; set; }
+
+    public decimal? GroupId { get; set; }
+
+    public bool? IsAgentBlocked { get; set; }
+
+    public bool? isTPPartner { get; set; }
+
+    public bool? isAdvancePaymentAllowed { get; set; }
+
+    public bool? IsDocumentAccessed { get; set; }
+
+    public bool? IsParentinAVO { get; set; }
+
+    public string? ParentIMDCodeinAVO { get; set; }
+
+    public string? AppUserType { get; set; }
+
+    // Navigation property for one-to-one relationship
+    public virtual UserBranchMapping? UserBranchMapping { get; set; }
+}
+
+
+
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public partial class UserBranchMapping
+{
+    [Key]
+    public decimal ID { get; set; }
+
+    public Guid UserID { get; set; }
+
+    public decimal BranchID { get; set; }
+
+    // Optional navigation to MASBranch if needed
+    // public virtual MASBranch MASBranch { get; set; }
+
+    // Navigation property for one-to-one relationship
+    public virtual tblUserExt? tblUserExt { get; set; }
+}
 
 
 
