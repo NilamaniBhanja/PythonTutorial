@@ -76,3 +76,25 @@ public class MASBranch
 }
 
 
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<TblUserExt>(entity =>
+    {
+        entity.HasKey(e => e.UserExtId);
+
+        entity.HasOne(e => e.UserBranchMapping)
+              .WithOne(e => e.User)
+              .HasForeignKey<UserBranchMapping>(e => e.UserId)
+              .HasPrincipalKey<TblUserExt>(e => e.UserId)
+              .OnDelete(DeleteBehavior.ClientSetNull); // Optional: Choose behavior
+    });
+
+    modelBuilder.Entity<UserBranchMapping>(entity =>
+    {
+        entity.HasKey(e => e.Id);
+    });
+
+    // Other model configurations...
+}
+
