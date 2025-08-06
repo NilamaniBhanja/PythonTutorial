@@ -1,286 +1,78 @@
-private string GetFullExceptionDetails(Exception ex)
+using System.ComponentModel.DataAnnotations;
+
+namespace HomeConnect.Domain.TPSEntities;
+
+public class tblUserExt
 {
-    var sb = new StringBuilder();
+    [Key]
+    public long UserExtID { get; set; }
+    public Guid? RoleID { get; set; }
+    public Guid UserID { get; set; }
+    public string? RoleName { get; set; }
+    public string? UserName { get; set; }
+    public string IMDCode { get; set; }
+    public bool? IsActive { get; set; }
+    public bool? IsBlocked { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public bool? IsSubID { get; set; }
+    public bool? HasParent { get; set; }
+    public bool? HasCumulative { get; set; }
+    public bool CanCreateUser { get; set; }
+    public decimal? VerticalId { get; set; }
+    public bool? CancellationRights { get; set; }
+    public bool? ForgotPasswordStatus { get; set; }
+    public decimal? GroupId { get; set; }
+    public bool? IsAgentBlocked { get; set; }
+    public bool? isTPPartner { get; set; }
+    public bool? isAdvancePaymentAllowed { get; set; }
+    public bool? IsDocumentAccessed { get; set; }
+    public bool? IsParentinAVO { get; set; }
+    public string? ParentIMDCodeinAVO { get; set; }
+    public string?  AppUserType { get; set; }
+    public virtual UserBranchMapping UserBranchMappings { get; set; }
 
-    while (ex != null)
-    {
-        sb.AppendLine($"Message: {ex.Message}");
-        sb.AppendLine($"Source: {ex.Source}");
-        sb.AppendLine($"StackTrace: {ex.StackTrace}");
-        ex = ex.InnerException;
-        if (ex != null)
-        {
-            sb.AppendLine("---- Inner Exception ----");
-        }
-    }
-
-    return sb.ToString();
 }
 
 
 
-private async Task LogAsync(string level, string message, string category,
-                              object? data = null, Exception? ex = null, string? referenceType = null, int? referenceId=null)
-{
-    var logEntry = new LogEntry
-    {
-        ReferenceId = referenceId,
-        ReferenceType = referenceType,
-        Level = level,
-        Message = message,
-        Category = category,
-        Data = data != null ? JsonSerializer.Serialize(data) : null,
-        Exception = ex != null ? GetFullExceptionDetails(ex) : null,
-        TimeStamp = DateTime.UtcNow  // Add timestamp if not already in entity
-    };
+namespace HomeConnect.Domain.TPSEntities;
 
-    await _logRepository.AddAsync(logEntry);
+public class UserBranchMapping
+{
+    public decimal ID { get; set; }
+    public System.Guid UserID { get; set; }
+    //public virtual tblUserExt tblUserExts { get; set; }
+    public decimal BranchID { get; set; }
+    //public virtual MASBranch MASBranch { get; set; }
 }
 
 
 
+namespace HomeConnect.Domain.TPSEntities;
 
-try
+public class MASBranch
 {
-    // some logic
-}
-catch (Exception ex)
-{
-    await _logger.LogError("Customer entry failed!", "Services.PolicyService", data: customerDto, ex: ex);
-    throw;
-}
+    public decimal ID { get; set; }
+    public string Name { get; set; }
+    public string OfficeType { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string AddressLine3 { get; set; }
+    public string Locality { get; set; }
+    public Nullable<decimal> PinCode { get; set; }
+    public string ISDCode { get; set; }
+    public string STDCode { get; set; }
+    public string Telephone { get; set; }
+    public string CityName { get; set; }
+    public string StateName { get; set; }
+    public string BranchCode { get; set; }
+    public string RegionCode { get; set; }
+    public string RegionName { get; set; }
+    public string ZoneCode { get; set; }
+    public string ZoneName { get; set; }
+    //public ICollection<UserBranchMapping> UserBranchMappings { get; set; }
 
-
-protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    base.OnModelCreating(modelBuilder);
-
-    modelBuilder.Entity<LogEntry>(entity =>
-    {
-        entity.Property(e => e.Exception)
-              .HasColumnType("nvarchar(max)");
-
-        entity.Property(e => e.Data)
-              .HasColumnType("nvarchar(max)");
-    });
-}
-
-
-
-SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'LogEntry' AND COLUMN_NAME = 'Exception';
-
-
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.<ConsumeResultSetAsync>d__4.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.AffectedCountModificationCommandBatch.<ConsumeAsync>d__2.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.<ExecuteAsync>d__50.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.<ExecuteAsync>d__50.MoveNext()
-   at Microsoft.EntityFrameworkCore.SqlServer.Update.Internal.SqlServerModificationCommandBatch.<ExecuteAsync>d__15.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-   at Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-   at Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.<SaveChangesAsync>d__8.MoveNext()
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__111.MoveNext()
-   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__115.MoveNext()
-   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.<ExecuteAsync>d__7`2.MoveNext()
-   at Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
-   at Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
-   at HomeConnect.Infrastructure.Repositories.GenericRepository`1.<HomeConnect-Core-Interfaces-IRepository<T>-AddAsync>d__5.MoveNext() in \\amznfsxtvq2brbs.lgi.libertyinsurance.in\share\TPService\Nilamani\HomeConnect\Development\29July2025\intl-apac-in-gha-tps-homeconnect-api\HomeConnect.Infrastructure\Repositories\GenericRepository.cs:line 58
-
-
-\
-
-
-
-using InfoSyntax.Core.Entities;
-using InfoSyntax.Core.Interfaces;
-using InfoSyntax.Core.Pagination;
-using InfoSyntax.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-
-namespace InfoSyntax.Infrastructure.Repositories
-{
-    public class GenericRepository<T>(AppDbContext context) : IRepository<T> where T : class
-    {
-        private readonly AppDbContext _context = context;
-        private readonly DbSet<T> _dbSet = context.Set<T>();
-
-        public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? Filter=null)
-        {
-            IQueryable<T> query = _dbSet;
-            if (Filter != null)
-            {
-                query = query.Where(Filter);
-            }
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<PaginatedResult<T>> PaginateAsync(PaginationRequest<T> request)
-        {
-            IQueryable<T> query = _dbSet;
-
-            // Apply includes
-            foreach (var includeProperty in request.IncludeProperties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            // Apply filter
-            if (request.Filter != null)
-            {
-                query = query.Where(request.Filter);
-            }
-
-            // Apply ordering
-            if (request.OrderBy != null)
-            {
-                query = request.OrderBy(query);
-            }
-
-            // Get total count before pagination
-            var totalItems = await query.CountAsync();
-
-            // Apply pagination
-            var items = await query
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-
-            return new PaginatedResult<T>(items, totalItems, request.Page, request.PageSize);
-        }
-
-        async Task<T?> IRepository<T>.GetByIdAsync<TKey>(TKey id)
-        {
-            return await _dbSet.FindAsync(id);
-        }
-
-        async Task<T?> IRepository<T>.FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "")
-        {
-            IQueryable<T> query = _dbSet;
-
-            // Apply includes
-            foreach (var includeProperty in IncludeProperties.Split(
-                new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                query = query.Include(includeProperty);
-            }
-
-            // Apply filter
-            if (Filter != null)
-            {
-                query = query.Where(Filter);
-            }
-            // Get total count before pagination
-            var totalItems = await query.CountAsync();
-
-            return await query
-                .FirstOrDefaultAsync();
-        }
-
-        async Task IRepository<T>.AddAsync(T entity)
-        {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-            await Task.CompletedTask;
-        }
-
-        async Task IRepository<T>.AddRangeAsync(List<T> entity)
-        {
-            await _dbSet.AddRangeAsync(entity);
-            await _context.SaveChangesAsync();
-        }
-        async Task IRepository<T>.UpdateAsync(T entity)
-        {
-            _dbSet.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            await Task.CompletedTask;
-        }
-
-        async Task IRepository<T>.DeleteAsync(T entity)
-        {
-            if (_context.Entry(entity).State == EntityState.Detached)
-            {
-                _dbSet.Attach(entity);
-            }
-            _dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
-            await Task.CompletedTask;
-        }
-
-        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
-        {
-            return await _dbSet.AnyAsync(predicate);
-        }
-
-
-        public async Task RemoveCollectionItemsAsync<TItem>(
-    T entity,
-    Func<T, ICollection<TItem>> collectionSelector,
-    Func<TItem, bool> predicate
-) where TItem : class
-        {
-            var collection = collectionSelector(entity);
-            if (collection == null) return;
-
-            if (collection is List<TItem> list)
-            {
-                list.RemoveAll(item => predicate(item));
-            }
-            else
-            {
-                var itemsToRemove = collection.Where(predicate).ToList();
-                foreach (var item in itemsToRemove)
-                {
-                    collection.Remove(item);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-using InfoSyntax.Core.Pagination;
-using System.Linq.Expressions;
-
-namespace InfoSyntax.Core.Interfaces
-{
-    public interface IRepository<T> where T : class
-    {
-        Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>>? Filter=null);
-        Task<PaginatedResult<T>> PaginateAsync(PaginationRequest<T> request);
-        Task<T?> GetByIdAsync<TKey>(TKey id);
-        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "");
-        Task AddAsync(T entity);
-        Task AddRangeAsync(List<T> entity);
-        Task UpdateAsync(T entity);
-        Task DeleteAsync(T entity);
-        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
-        Task RemoveCollectionItemsAsync<TItem>(
-    T entity,
-    Func<T, ICollection<TItem>> collectionSelector,
-    Func<TItem, bool> predicate
-) where TItem : class;
-    }
 }
 
 
