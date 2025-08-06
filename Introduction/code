@@ -1,0 +1,122 @@
+using System.Linq.Expressions;
+
+public interface IGenericRepository<T> where T : class
+{
+    Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null, string includeProperties = "");
+    Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string includeProperties = "");
+    Task AddAsync(T entity);
+    void Update(T entity);
+    void Delete(T entity);
+    Task SaveAsync();
+}
+
+
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+public class GenericRepository<T> : IGenericRepository<T> where T : class
+{
+    private readonly DbContext _context;
+    protected readonly DbSet<T> _dbSet;
+
+    public GenericRepository(DbContext context)
+    {
+        _context = context;
+        _dbSet = context.Set<T>();
+    }
+
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>>? filter = null, string includeProperties = "")
+    {
+        IQueryable<T> query = _dbSet;
+
+        if (!string.IsNullOrWhiteSpace(includeProperties))
+        {
+            foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProp.Trim());
+            }
+        }
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string includeProperties = "")
+    {
+        IQueryable<T> query = _dbSet;
+
+        if (!string.IsNullOrWhiteSpace(includeProperties))
+        {
+            foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProp.Trim());
+            }
+        }
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task AddAsync(T entity)
+    {
+        await _dbSet.AddAsync(entity);
+    }
+
+    public void Update(T entity)
+    {
+        _dbSet.Attach(entity);
+        _context.Entry(entity).State = EntityState.Modified;
+    }
+
+    public void Delete(T entity)
+    {
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _dbSet.Attach(entity);
+        }
+        _dbSet.Remove(entity);
+    }
+
+    public async Task SaveAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+}
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+public class UserService
+{
+    private readonly IGenericRepository<tblUserExt> _userRepository;
+
+    public UserService(IGenericRepository<tblUserExt> userRepository)
+    {
+        _userRepository = userRepository;
+    }
+
+    public async Task<tblUserExt?> GetUserWithBranch(Guid userId)
+    {
+        return await _userRepository.FirstOrDefaultAsync(
+            u => u.UserID == userId,
+            "UserBranchMapping"
+        );
+    }
+}
+
+
+
+
+
+
+
+
+
+
