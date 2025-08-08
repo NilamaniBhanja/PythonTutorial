@@ -1,0 +1,190 @@
+Below is a generic approach to generate XML dynamically in .NET Core 9 using System.Xml.Linq. This solution handles nested structures, attributes, and collections while maintaining the structure from your sample XML:
+
+csharp
+using System.Collections.Generic;
+using System.Xml.Linq;
+
+public class XmlGenerator
+{
+    public XDocument GenerateXml(RootData rootData)
+    {
+        return new XDocument(
+            new XDeclaration("1.0", "utf-8", null),
+            CreateRootElement(rootData)
+        );
+    }
+
+    private XElement CreateRootElement(RootData data)
+    {
+        return new XElement("Root",
+            new XAttribute("Code", data.Code),
+            new XAttribute("Name", data.Name),
+            CreateProposalDetails(data.ProposalDetails)
+        );
+    }
+
+    private XElement CreateProposalDetails(ProposalDetails details)
+    {
+        return new XElement("ProposalDetails",
+            CreateRiskDetails(details.RiskDetails),
+            CreateGeneralProposalInfo(details.GeneralInfo)
+            // Add other sections similarly
+        );
+    }
+
+    private XElement CreateRiskDetails(RiskDetails risk)
+    {
+        return new XElement("RiskDetails",
+            new XElement("Block",
+                CreateProperties(risk.Properties),
+                CreateOtherDetailsGrid(risk.OtherDetailsGrid),
+                CreateRiskCoverGrid(risk.RiskCoverDetailsGrid)
+            )
+        );
+    }
+
+    // Generic method for simple properties
+    private IEnumerable<XElement> CreateProperties(List<XmlProperty> properties)
+    {
+        foreach (var prop in properties)
+        {
+            yield return new XElement(prop.Name,
+                new XAttribute("Type", prop.DataType),
+                new XAttribute("Value", prop.Value)
+            );
+        }
+    }
+
+    // Handle grid structures
+    private XElement CreateOtherDetailsGrid(OtherDetailsGrid grid)
+    {
+        return new XElement("OtherDetailsGrid",
+            grid.Items.Select(item => new XElement(item.Name,
+                new XAttribute("Value", item.Value),
+                new XElement(item.GroupName,
+                    new XAttribute("Type", "GroupData"),
+                    item.Properties.Select(p => new XElement(p.Name,
+                        new XAttribute("Value", p.Value),
+                        new XAttribute("Type", p.DataType)
+                    )
+                )
+            ))
+        );
+    }
+
+    // Similar pattern for RiskCoverDetailsGrid
+    private XElement CreateRiskCoverGrid(RiskCoverDetailsGrid grid)
+    {
+        return new XElement("RiskCoverDetailsGrid",
+            grid.RiskGroups.Select(group => new XElement("RiskGroup",
+                new XAttribute("Name", group.Name),
+                new XAttribute("Value", group.Value),
+                new XAttribute("Type", "GroupData"),
+                group.Covers.Select(cover => new XElement("CoverSIComponant",
+                    new XAttribute("Name", cover.Name),
+                    new XAttribute("Value", cover.Value),
+                    cover.Properties.Select(p => new XElement(p.Name,
+                        new XAttribute("Type", p.DataType),
+                        new XAttribute("Value", p.Value)
+                    )
+                ))
+            ))
+        );
+    }
+
+    // Add similar methods for ClauseDetails, WarrantyDetails, etc.
+}
+
+// Supporting classes
+public class RootData
+{
+    public string Code { get; set; }
+    public string Name { get; set; }
+    public ProposalDetails ProposalDetails { get; set; }
+}
+
+public class XmlProperty
+{
+    public string Name { get; set; }
+    public string DataType { get; set; }
+    public string Value { get; set; }
+}
+
+public class GroupItem
+{
+    public string Name { get; set; }
+    public string Value { get; set; }
+    public string GroupName { get; set; }
+    public List<XmlProperty> Properties { get; set; }
+}
+
+// Additional classes would mirror your XML structure
+Key Features:
+
+Dynamic Element Creation: Uses LINQ to XML for fluent XML generation
+
+Type Handling: Automatically handles data types via attributes
+
+Nested Structures: Recursively processes complex objects
+
+Collection Support: Handles lists and groups
+
+Attribute Management: Maintains attribute-based value storage
+
+Usage Example:
+
+csharp
+var data = new RootData
+{
+    Code = "2965",
+    Name = "HomeComprehensivePackage",
+    ProposalDetails = new ProposalDetails
+    {
+        RiskDetails = new RiskDetails
+        {
+            Properties = new List<XmlProperty>
+            {
+                new XmlProperty 
+                {
+                    Name = "PropRisks_AdmittedNonAdmittedLocation",
+                    DataType = "String",
+                    Value = ""
+                },
+                // Add other properties
+            },
+            OtherDetailsGrid = new OtherDetailsGrid
+            {
+                Items = new List<GroupItem>
+                {
+                    new GroupItem
+                    {
+                        Name = "BPSooksmaFireSectionSI",
+                        Value = "GRP1057",
+                        GroupName = "BPSooksmaFireSectionSI",
+                        Properties = new List<XmlProperty>
+                        {
+                            new XmlProperty { Name = "ItemType", DataType = "String", Value = "Additional Structure" },
+                            // Other properties
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+var generator = new XmlGenerator();
+XDocument xml = generator.GenerateXml(data);
+xml.Save("output.xml");
+Handling Special Cases:
+
+Dynamic Element Names: Use new XElement(property.Name, ...) for elements with variable names
+
+Mixed Content: Add XText nodes alongside elements when needed
+
+Namespaces: Add XNamespace if required
+
+Large Files: Use XmlWriter for streaming with LINQ to XML
+
+This approach maintains the original XML structure while allowing dynamic value population. The key is creating a class hierarchy that mirrors your XML schema and using recursive methods to traverse the object graph.
+
