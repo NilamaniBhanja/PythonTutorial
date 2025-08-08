@@ -1,312 +1,607 @@
-public class Root
-{
-    [XmlAttribute("Code")]
-    public string Code { get; set; }
-
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-
-    public ProposalDetails ProposalDetails { get; set; }
-}
-
-public class ProposalDetails
-{
-    public RiskDetails RiskDetails { get; set; }
-    public GeneralProposalInformation GeneralProposalInformation { get; set; }
-    public List<ClauseDetails> ClauseDetails { get; set; } = new List<ClauseDetails>();
-    public List<WarrantyDetails> WarrantyDetails { get; set; } = new List<WarrantyDetails>();
-    public List<ConditionDetails> ConditionDetails { get; set; } = new List<ConditionDetails>();
-    public List<ExclusionDetails> ExclusionDetails { get; set; } = new List<ExclusionDetails>();
-    public OtherMappingFields OtherMappingFields { get; set; }
-}
-
-public class RiskDetails
-{
-    public Block Block { get; set; }
-}
-
-public class Block
-{
-    public List<PropertyRisk> PropRisks { get; set; } = new List<PropertyRisk>();
-    public OtherDetailsGrid OtherDetailsGrid { get; set; }
-    public RiskCoverDetailsGrid RiskCoverDetailsGrid { get; set; }
-}
-
-public class PropertyRisk
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
-
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-}
-
-public class OtherDetailsGrid
-{
-    public List<GroupData> Items { get; set; } = new List<GroupData>();
-}
-
-public class RiskCoverDetailsGrid
-{
-    public List<RiskGroup> RiskGroups { get; set; } = new List<RiskGroup>();
-}
-
-public class RiskGroup
-{
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
-
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<CoverSIComponent> CoverSIComponents { get; set; } = new List<CoverSIComponent>();
-}
-
-public class CoverSIComponent
-{
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
-
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<PropertyCoverDetail> PropCoverDetails { get; set; } = new List<PropertyCoverDetail>();
-}
-
-public class PropertyCoverDetail : PropertyRisk { }
-
-public class GroupData
-{
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
-
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<GroupItem> Items { get; set; } = new List<GroupItem>();
-}
-
-public class GroupItem : PropertyRisk { }
-
 public class GeneralProposalInformation
 {
-    public List<PropertyRisk> Items { get; set; } = new List<PropertyRisk>();
-}
-
-public class ClauseDetails
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<PropertyClauseDetail> PropClauseDetails { get; set; } = new List<PropertyClauseDetail>();
-}
-
-public class PropertyClauseDetail : PropertyRisk { }
-
-public class WarrantyDetails
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<PropertyWarrantyDetail> PropWarrantyDetails { get; set; } = new List<PropertyWarrantyDetail>();
-}
-
-public class PropertyWarrantyDetail : PropertyRisk { }
-
-public class ConditionDetails
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<PropertyConditionDetail> PropConditionDetails { get; set; } = new List<PropertyConditionDetail>();
-}
-
-public class PropertyConditionDetail : PropertyRisk { }
-
-public class ExclusionDetails
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    public List<PropertyExclusionDetail> PropExclusionDetails { get; set; } = new List<PropertyExclusionDetail>();
-}
-
-public class PropertyExclusionDetail : PropertyRisk { }
-
-public class OtherMappingFields
-{
-    public List<MappingField> Items { get; set; } = new List<MappingField>();
-}
-
-public class MappingField
-{
-    [XmlAttribute("Type")]
-    public string Type { get; set; }
-
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
+    public Boolean ErrorTrackingNeeded { get; set; }
+    public String ProductType { get; set; }
+    public String PropBranchDetails_IMDBranchCode { get; set; }
+    public String PropBranchDetails_IMDBranchName { get; set; }
+    public Double PropClauseDetails_DepartmentCode_Mandatary { get; set; }
 }
 
 
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
+using System.Xml.Linq;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-using System.Xml.Serialization;
-using System.Xml;
-using System.IO;
+namespace TPReport.GPT;
 
 public class XmlGenerator
 {
-    public static string GenerateXml(Root rootModel)
+    public void CreateHomeComprehensivePackageXml(string filePath)
     {
-        var serializer = new XmlSerializer(typeof(Root));
-        var settings = new XmlWriterSettings
-        {
-            Indent = true,
-            OmitXmlDeclaration = false
-        };
+        // Create the root element with attributes
+        XElement root = new XElement("Root",
+            new XAttribute("Code", "2965"),
+            new XAttribute("Name", "HomeComprehensivePackage"));
 
-        using (var stringWriter = new StringWriter())
-        using (var xmlWriter = XmlWriter.Create(stringWriter, settings))
-        {
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("", ""); // Remove namespace declarations
-            
-            serializer.Serialize(xmlWriter, rootModel, namespaces);
-            return stringWriter.ToString();
-        }
+        // Create ProposalDetails section
+        XElement proposalDetails = new XElement("ProposalDetails");
+
+        // Add RiskDetails section
+        proposalDetails.Add(CreateRiskDetails());
+
+        // Add GeneralProposalInformation section
+        proposalDetails.Add(CreateGeneralProposalInformation());
+
+        // Add ClauseDetails section
+        proposalDetails.Add(CreateClauseDetails());
+
+        // Add WarrantyDetails section
+        proposalDetails.Add(CreateWarrantyDetails());
+
+        // Add ConditionDetails section
+        proposalDetails.Add(CreateConditionDetails());
+
+        // Add ExclusionDetails section
+        proposalDetails.Add(CreateExclusionDetails());
+
+        // Add OtherMappingFields section
+        proposalDetails.Add(CreateOtherMappingFields());
+
+        // Add ProposalDetails to root
+        root.Add(proposalDetails);
+
+        // Create the XML document
+        XDocument doc = new XDocument(
+            new XDeclaration("1.0", "utf-8", null),
+            root);
+
+        // Save the document
+        doc.Save(filePath);
     }
 
-    public static Root CreateSampleModel()
+    private XElement CreateRiskDetails()
     {
-        return new Root
+        XElement riskDetails = new XElement("RiskDetails");
+        XElement block = new XElement("Block");
+
+        // Add property risk elements
+        block.Add(new XElement("PropRisks_AdmittedNonAdmittedLocation",
+            new XAttribute("Type", "String"),
+            new XAttribute("Value", "")));
+
+        block.Add(new XElement("PropRisks_AreaLocality",
+            new XAttribute("Type", "String"),
+            new XAttribute("Value", "ABINASH CHAOWDHURY LANE")));
+
+        block.Add(new XElement("PropRisks_Country1",
+            new XAttribute("Type", "String"),
+            new XAttribute("Value", "India")));
+
+        block.Add(new XElement("PropRisks_EarthquakeZone",
+            new XAttribute("Type", "String"),
+            new XAttribute("Value", "II")));
+
+        block.Add(new XElement("PropRisks_IsFloaterApplicable",
+            new XAttribute("Type", "String"),
+            new XAttribute("Value", "No")));
+
+        block.Add(new XElement("PropRisks_IsMasterPolicytobePrinted",
+            new XAttribute("Type", "Boolean"),
+            new XAttribute("Value", "False")));
+
+        // Add OtherDetailsGrid
+        XElement otherDetailsGrid = new XElement("OtherDetailsGrid");
+
+        // Add BPSooksmaFireSectionSI
+        XElement bpSooksmaFireSectionSI = new XElement("BPSooksmaFireSectionSI",
+            new XAttribute("Name", "BPSooksmaFireSectionSI"),
+            new XAttribute("Value", "GRP1057"),
+            new XElement("BPSooksmaFireSectionSI",
+                new XAttribute("Type", "GroupData"),
+                new XElement("ItemType",
+                    new XAttribute("Name", "ItemType"),
+                    new XAttribute("Value", "Additional Structure"),
+                    new XAttribute("Type", "String")),
+                new XElement("Description",
+                    new XAttribute("Name", "Description"),
+                    new XAttribute("Value", "fgndhndf"),
+                    new XAttribute("Type", "String")),
+                new XElement("SumInsured",
+                    new XAttribute("Name", "SumInsured"),
+                    new XAttribute("Value", "10000"),
+                    new XAttribute("Type", "Double"))));
+
+        otherDetailsGrid.Add(bpSooksmaFireSectionSI);
+
+        // Add SectionIAddonNonTerrorismCover
+        XElement sectionIAddonNonTerrorismCover = new XElement("SectionIAddonNonTerrorismCover",
+            new XAttribute("Name", "Section I Addon Non Terrorism Cover"),
+            new XAttribute("Value", "GRP536"),
+            new XElement("SectionIAddonNonTerrorismCover",
+                new XAttribute("Type", "GroupData"),
+                new XElement("CoverGroups",
+                    new XAttribute("Name", "Cover Groups"),
+                    new XAttribute("Value", "Earthquake"),
+                    new XAttribute("Type", "String")),
+                new XElement("Description",
+                    new XAttribute("Name", "Description"),
+                    new XAttribute("Value", "fdfdvsvf"),
+                    new XAttribute("Type", "String")),
+                new XElement("SumInsured",
+                    new XAttribute("Name", "Sum Insured"),
+                    new XAttribute("Value", "5000"),
+                    new XAttribute("Type", "Double")),
+                new XElement("Rate",
+                    new XAttribute("Name", "Rate"),
+                    new XAttribute("Value", "0"),
+                    new XAttribute("Type", "Double")),
+                new XElement("Premium",
+                    new XAttribute("Name", "Premium"),
+                    new XAttribute("Value", "0"),
+                    new XAttribute("Type", "Double"))));
+
+        otherDetailsGrid.Add(sectionIAddonNonTerrorismCover);
+
+        // Add PropRiskCol
+        XElement propRiskCol = new XElement("PropRiskCol",
+            new XAttribute("Name", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Value", "0"),
+            new XElement("PropRiskCol",
+                new XAttribute("Type", "GroupData"),
+                new XElement("IsOptionalCover",
+                    new XAttribute("Type", "Boolean"),
+                    new XAttribute("Value", "False"),
+                    new XAttribute("Name", "IsOptionalCover")),
+                new XElement("PropRisks_DifferentialSI",
+                    new XAttribute("Type", "Double"),
+                    new XAttribute("Value", "10000"),
+                    new XAttribute("Name", "PropRisks_DifferentialSI")),
+                new XElement("PropRisks_DummyPremium",
+                    new XAttribute("Type", "Double"),
+                    new XAttribute("Value", "0"),
+                    new XAttribute("Name", "PropRisks_DummyPremium")),
+                new XElement("PropRisks_DummyRate",
+                    new XAttribute("Type", "Double"),
+                    new XAttribute("Value", "0"),
+                    new XAttribute("Name", "PropRisks_DummyRate"))));
+
+        otherDetailsGrid.Add(propRiskCol);
+        block.Add(otherDetailsGrid);
+
+        // Add RiskCoverDetailsGrid
+        XElement riskCoverDetailsGrid = new XElement("RiskCoverDetailsGrid");
+        XElement riskGroup = new XElement("RiskGroup",
+            new XAttribute("Name", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Value", "Risk Wise Cover Details"),
+            new XAttribute("Type", "GroupData"),
+            new XElement("CoverSIComponant",
+                new XAttribute("Name", "Section I Bharat Griha Raksha Material Damage"),
+                new XAttribute("Value", "10000"),
+                new XElement("PropCoverDetails_Applicable",
+                    new XAttribute("Name", "PropCoverDetails_Applicable"),
+                    new XAttribute("Type", "Boolean"),
+                    new XAttribute("Value", "True")),
+                new XElement("PropCoverDetails_CoverGroups",
+                    new XAttribute("Name", "PropCoverDetails_CoverGroups"),
+                    new XAttribute("Type", "String"),
+                    new XAttribute("Value", "Section I Bharat Griha Raksha Material Damage")),
+                new XElement("PropCoverDetails_DifferentialSI",
+                    new XAttribute("Name", "PropCoverDetails_DifferentialSI"),
+                    new XAttribute("Type", "Double"),
+                    new XAttribute("Value", "10000"))));
+
+        riskCoverDetailsGrid.Add(riskGroup);
+        block.Add(riskCoverDetailsGrid);
+
+        riskDetails.Add(block);
+        return riskDetails;
+    }
+
+    private XElement CreateGeneralProposalInformation()
+    {
+        var model = new GeneralProposalInformation
         {
-            Code = "2965",
-            Name = "HomeComprehensivePackage",
-            ProposalDetails = new ProposalDetails
-            {
-                RiskDetails = new RiskDetails
-                {
-                    Block = new Block
-                    {
-                        PropRisks = new List<PropertyRisk>
-                        {
-                            new PropertyRisk { Name = "PropRisks_AdmittedNonAdmittedLocation", Type = "String", Value = "" },
-                            new PropertyRisk { Name = "PropRisks_AreaLocality", Type = "String", Value = "ABINASH CHAOWDHURY LANE" },
-                            // Add other property risks as needed
-                        },
-                        OtherDetailsGrid = new OtherDetailsGrid
-                        {
-                            Items = new List<GroupData>
-                            {
-                                new GroupData
-                                {
-                                    Name = "BPSooksmaFireSectionSI",
-                                    Value = "GRP1057",
-                                    Type = "GroupData",
-                                    Items = new List<GroupItem>
-                                    {
-                                        new GroupItem { Name = "ItemType", Type = "String", Value = "Additional Structure" },
-                                        new GroupItem { Name = "Description", Type = "String", Value = "fgndhndf" },
-                                        new GroupItem { Name = "SumInsured", Type = "Double", Value = "10000" }
-                                    }
-                                },
-                                // Add other group data items as needed
-                            }
-                        },
-                        RiskCoverDetailsGrid = new RiskCoverDetailsGrid
-                        {
-                            RiskGroups = new List<RiskGroup>
-                            {
-                                new RiskGroup
-                                {
-                                    Name = "Bharat Griha Raksha Material Damage",
-                                    Value = "Risk Wise Cover Details",
-                                    Type = "GroupData",
-                                    CoverSIComponents = new List<CoverSIComponent>
-                                    {
-                                        new CoverSIComponent
-                                        {
-                                            Name = "Section I Bharat Griha Raksha Material Damage",
-                                            Value = "10000",
-                                            PropCoverDetails = new List<PropertyCoverDetail>
-                                            {
-                                                new PropertyCoverDetail { Name = "PropCoverDetails_Applicable", Type = "Boolean", Value = "True" },
-                                                // Add other cover details as needed
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                GeneralProposalInformation = new GeneralProposalInformation
-                {
-                    Items = new List<PropertyRisk>
-                    {
-                        new PropertyRisk { Name = "ErrorTrackingNeeded", Type = "Boolean", Value = "False" },
-                        // Add other general info items as needed
-                    }
-                },
-                ClauseDetails = new List<ClauseDetails>
-                {
-                    new ClauseDetails
-                    {
-                        Type = "GroupData",
-                        PropClauseDetails = new List<PropertyClauseDetail>
-                        {
-                            new PropertyClauseDetail { Name = "PropClauseDetails_ClauseCode_Mandatary", Type = "Double", Value = "48230" },
-                            // Add other clause details as needed
-                        }
-                    }
-                },
-                // Initialize other sections similarly
-                OtherMappingFields = new OtherMappingFields
-                {
-                    Items = new List<MappingField>
-                    {
-                        new MappingField { Type = "Bharat Griha Raksha Material Damage", Name = "Section I Bharat Griha Raksha Material Damage", Value = "10000" },
-                        // Add other mapping fields as needed
-                    }
-                }
-            }
+            ErrorTrackingNeeded = true,
+            ProductType = "MB",
+            PropBranchDetails_IMDBranchCode = "BR123",
+            PropBranchDetails_IMDBranchName = "Nilamani Branch",
+            PropClauseDetails_DepartmentCode_Mandatary = 29.0
         };
+
+        SupportClass supportClass = new SupportClass();
+        XElement xml = supportClass.CreateGeneralProposalInformation(model);
+
+        //XElement generalProposalInformation = new XElement("GeneralProposalInformation");
+
+        //generalProposalInformation.Add(new XElement("ErrorTrackingNeeded",
+        //    new XAttribute("Type", "Boolean"),
+        //    new XAttribute("Value", "False")));
+
+        //generalProposalInformation.Add(new XElement("ProductType",
+        //    new XAttribute("Type", "String"),
+        //    new XAttribute("Value", "MB")));
+
+        //generalProposalInformation.Add(new XElement("PropBranchDetails_IMDBranchCode",
+        //    new XAttribute("Type", "String"),
+        //    new XAttribute("Value", "")));
+
+        //generalProposalInformation.Add(new XElement("PropBranchDetails_IMDBranchName",
+        //    new XAttribute("Type", "String"),
+        //    new XAttribute("Value", "")));
+
+        //generalProposalInformation.Add(new XElement("PropClauseDetails_DepartmentCode_Mandatary",
+        //    new XAttribute("Type", "Double"),
+        //    new XAttribute("Value", "29")));
+
+        //generalProposalInformation.Add(new XElement("PropWarranty_SectionCode",
+        //    new XAttribute("Type", "String"),
+        //    new XAttribute("Value", "")));
+
+        return xml;
+    }
+
+    private XElement CreateClauseDetails()
+    {
+        XElement clauseDetails = new XElement("ClauseDetails");
+
+        // Clause 1
+        clauseDetails.Add(new XElement("ClauseDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropClauseDetails_ClauseCode_Mandatary",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "51129")),
+            new XElement("PropClauseDetails_ClauseNumber_Mandatary",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "6")),
+            new XElement("PropClauseDetails_ClauseShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I: Accidental Damage Cover")),
+            new XElement("PropClauseDetails_ClauseType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropClauseDetails_Default_Mandatary",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        // Clause 2
+        clauseDetails.Add(new XElement("ClauseDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropClauseDetails_ClauseCode_Mandatary",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "51124")),
+            new XElement("PropClauseDetails_ClauseNumber_Mandatary",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "1")),
+            new XElement("PropClauseDetails_ClauseShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I: Agreed Value Basis for Valuable Content")),
+            new XElement("PropClauseDetails_ClauseType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropClauseDetails_Default_Mandatary",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        // Clause 3
+        clauseDetails.Add(new XElement("ClauseDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropClauseDetails_ClauseCode_Mandatary",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "51139")),
+            new XElement("PropClauseDetails_ClauseNumber_Mandatary",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "17")),
+            new XElement("PropClauseDetails_ClauseShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section II:THEFT COVER UNACCOMPANIED BY HOUSEBREAKING")),
+            new XElement("PropClauseDetails_ClauseType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropClauseDetails_Default_Mandatary",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropClauseDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        return clauseDetails;
+    }
+
+    private XElement CreateWarrantyDetails()
+    {
+        XElement warrantyDetails = new XElement("WarrantyDetails");
+
+        // Warranty 1
+        warrantyDetails.Add(new XElement("WarrantyDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropWarranty_Default_Val",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_WarrantyCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "45415")),
+            new XElement("PropWarranty_WarrantyNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "287")),
+            new XElement("PropWarranty_WarrantyShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I: Insurable interest under the policy will be either the legal owner of the property or person/ entity having insurable interest by law.")),
+            new XElement("PropWarranty_WarrantyType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True"))));
+
+        // Warranty 2
+        warrantyDetails.Add(new XElement("WarrantyDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropWarranty_Default_Val",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropWarranty_WarrantyCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "45425")),
+            new XElement("PropWarranty_WarrantyNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "156")),
+            new XElement("PropWarranty_WarrantyShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section II:B")),
+            new XElement("PropWarranty_WarrantyType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True"))));
+
+        return warrantyDetails;
+    }
+
+    private XElement CreateConditionDetails()
+    {
+        XElement conditionDetails = new XElement("ConditionDetails");
+
+        // Condition 1
+        conditionDetails.Add(new XElement("ConditionDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropConditionDetails_ConditionCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "29517")),
+            new XElement("PropConditionDetails_ConditionNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "1")),
+            new XElement("PropConditionDetails_ConditionShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Common Condition")),
+            new XElement("PropConditionDetails_ConditionType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropConditionDetails_Default",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropConditionDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropConditionDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        // Condition 2
+        conditionDetails.Add(new XElement("ConditionDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropConditionDetails_ConditionCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "45418")),
+            new XElement("PropConditionDetails_ConditionNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "4")),
+            new XElement("PropConditionDetails_ConditionShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I:C")),
+            new XElement("PropConditionDetails_ConditionType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropConditionDetails_Default",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropConditionDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropConditionDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        return conditionDetails;
+    }
+
+    private XElement CreateExclusionDetails()
+    {
+        XElement exclusionDetails = new XElement("ExclusionDetails");
+
+        // Exclusion 1
+        exclusionDetails.Add(new XElement("ExclusionDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropExclusionDetails_Default",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropExclusionDetails_ExclusionCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "45416")),
+            new XElement("PropExclusionDetails_ExclusionNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "20")),
+            new XElement("PropExclusionDetails_ExclusionShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I:A")),
+            new XElement("PropExclusionDetails_ExclusionType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropExclusionDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropExclusionDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        // Exclusion 2
+        exclusionDetails.Add(new XElement("ExclusionDetails",
+            new XAttribute("Type", "GroupData"),
+            new XElement("PropExclusionDetails_Default",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropExclusionDetails_ExclusionCode",
+                new XAttribute("Type", "Double"),
+                new XAttribute("Value", "45417")),
+            new XElement("PropExclusionDetails_ExclusionNumber",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "21")),
+            new XElement("PropExclusionDetails_ExclusionShortDescription",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Section I:B")),
+            new XElement("PropExclusionDetails_ExclusionType",
+                new XAttribute("Type", "String"),
+                new XAttribute("Value", "Optional True")),
+            new XElement("PropExclusionDetails_IsDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False")),
+            new XElement("PropExclusionDetails_IsOldDataDeleted",
+                new XAttribute("Type", "Boolean"),
+                new XAttribute("Value", "False"))));
+
+        return exclusionDetails;
+    }
+
+    private XElement CreateOtherMappingFields()
+    {
+        XElement otherMappingFields = new XElement("OtherMappingFields");
+
+        otherMappingFields.Add(new XElement("SectionIBharatGrihaRakshaMaterialDamage",
+            new XAttribute("Type", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Name", "Section I Bharat Griha Raksha Material Damage"),
+            new XAttribute("Value", "10000")));
+
+        otherMappingFields.Add(new XElement("SectionITerrorismCover",
+            new XAttribute("Type", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Name", "Section I Terrorism Cover"),
+            new XAttribute("Value", "10000")));
+
+        otherMappingFields.Add(new XElement("SectionIAddonNonTerrorismCover",
+            new XAttribute("Type", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Name", "Section I Addon Non Terrorism Cover"),
+            new XAttribute("Value", "5000")));
+
+        return otherMappingFields;
     }
 }
 
 
+//GPT
+//public static class XmlGenerator
+//{
+//    public static XElement BuildXml(XmlElementNode node)
+//    {
+//        var element = new XElement(node.ElementName);
+
+//        foreach (var attr in node.Attributes)
+//        {
+//            if (!string.IsNullOrEmpty(attr.Name) && !string.IsNullOrEmpty(attr.Value))
+//                element.SetAttributeValue(attr.Name, attr.Value);
+
+//            if (!string.IsNullOrEmpty(attr.Type))
+//                element.SetAttributeValue("Type", attr.Type);
+//        }
+
+//        foreach (var child in node.Children)
+//            element.Add(BuildXml(child));
+
+//        return element;
+//    }
+
+//    public static XDocument BuildRootXml(RootXmlModel rootModel)
+//    {
+//        var rootElement = new XElement("Root",
+//            new XAttribute("Code", rootModel.Code),
+//            new XAttribute("Name", rootModel.Name)
+//        );
+
+//        foreach (var child in rootModel.Children)
+//            rootElement.Add(BuildXml(child));
+
+//        return new XDocument(new XDeclaration("1.0", "utf-8", null), rootElement);
+//    }
+//}
+
+
+//public static class XmlGenerator
+//{
+//    public static XElement BuildXml(XmlElementNode node)
+//    {
+//        var element = new XElement(node.ElementName);
+
+//        // Add attributes
+//        foreach (var attr in node.Attributes)
+//        {
+//            if (!string.IsNullOrEmpty(attr.Name) && !string.IsNullOrEmpty(attr.Value))
+//            {
+//                element.SetAttributeValue(attr.Name, attr.Value);
+//            }
+//            if (!string.IsNullOrEmpty(attr.Type))
+//            {
+//                element.SetAttributeValue("Type", attr.Type);
+//            }
+//        }
+
+//        // Add children
+//        foreach (var child in node.Children)
+//        {
+//            element.Add(BuildXml(child));
+//        }
+
+//        return element;
+//    }
+
+//    public static XDocument BuildRootXml(RootXmlModel rootModel)
+//    {
+//        var rootElement = new XElement("Root",
+//            new XAttribute("Code", rootModel.Code),
+//            new XAttribute("Name", rootModel.Name)
+//        );
+
+//        foreach (var child in rootModel.Children)
+//        {
+//            rootElement.Add(BuildXml(child));
+//        }
+
+//        return new XDocument(new XDeclaration("1.0", "utf-8", null), rootElement);
+//    }
+//}
 
 
 
@@ -321,67 +616,87 @@ public class XmlGenerator
 
 
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using TPReport.Report;
 
+namespace TPReport.GPT;
 
-
-
-// Create a populated model (either manually or using the CreateSampleModel method)
-var rootModel = XmlGenerator.CreateSampleModel();
-
-// Generate the XML string
-string xml = XmlGenerator.GenerateXml(rootModel);
-
-// Save to file if needed
-File.WriteAllText("output.xml", xml);
-
-
-
-
-
-
-
-
-
-
-
-public class RootBuilder
+public class SupportClass
 {
-    private Root _root = new Root();
-
-    public RootBuilder WithBasicInfo(string code, string name)
+    public XElement CreateGeneralProposalInformation(object model, string objectName= "GeneralProposalInformation")
     {
-        _root.Code = code;
-        _root.Name = name;
-        return this;
+        XElement XMLInfo = new XElement(objectName);
+        PropertyInfo[] properties = null;
+
+        switch (objectName)
+        {
+            case "GeneralProposalInformation":
+                properties = typeof(GeneralProposalInformation).GetProperties();
+                break;
+        }
+
+        foreach (PropertyInfo property in properties)
+        {
+            object value = property.GetValue(model);
+            string stringValue = value?.ToString() ?? "";
+            string typeName = GetTypeName(property.PropertyType);
+
+            // Special handling for boolean values
+            if (property.PropertyType == typeof(bool))
+            {
+                stringValue = value?.ToString().ToLower() ?? "false";
+            }
+
+            XMLInfo.Add(new XElement(property.Name,
+                new XAttribute("Type", typeName),
+                new XAttribute("Value", stringValue)));
+        }
+
+        return XMLInfo;
     }
 
-    public RootBuilder WithRiskDetail(string areaLocality, string country)
+    private string GetTypeName(Type type)
     {
-        _root.ProposalDetails ??= new ProposalDetails();
-        _root.ProposalDetails.RiskDetails ??= new RiskDetails();
-        _root.ProposalDetails.RiskDetails.Block ??= new Block();
-        
-        _root.ProposalDetails.RiskDetails.Block.PropRisks.Add(
-            new PropertyRisk { Name = "PropRisks_AreaLocality", Type = "String", Value = areaLocality });
-        
-        _root.ProposalDetails.RiskDetails.Block.PropRisks.Add(
-            new PropertyRisk { Name = "PropRisks_Country1", Type = "String", Value = country });
-        
-        return this;
-    }
+        if (type == typeof(bool)) return "Boolean";
+        if (type == typeof(string)) return "String";
+        if (type == typeof(double)) return "Double";
+        if (type == typeof(int)) return "Int32";
+        if (type == typeof(decimal)) return "Decimal";
+        if (type == typeof(DateTime)) return "DateTime";
 
-    // Add more builder methods for other sections
-    
-    public Root Build()
-    {
-        return _root;
+        // Handle nullable types
+        if (Nullable.GetUnderlyingType(type) != null)
+        {
+            return GetTypeName(Nullable.GetUnderlyingType(type));
+        }
+
+        return type.Name;
     }
 }
 
-// Usage:
-var root = new RootBuilder()
-    .WithBasicInfo("2965", "HomeComprehensivePackage")
-    .WithRiskDetail("NEW AREA", "India")
-    .Build();
 
 
+public class Program
+{
+    public static void Main()
+    {
+
+        //var jsonString = File.ReadAllText("D:\\Project\\TP\\input.json");
+
+        //// Deserialize JSON to your C# model (RootXmlModel)
+        //var root = JsonConvert.DeserializeObject<RootXmlModel>(jsonString);
+
+        //var xmlDoc = XmlGenerator.BuildRootXml(root);
+
+        XmlGenerator generator = new XmlGenerator();
+        generator.CreateHomeComprehensivePackageXml("output.xml");
+
+        //Console.WriteLine(xmlDoc);
+    }
+}
