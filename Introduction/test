@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Xml.Serialization;
-
-[XmlRoot("Root")]
 public class Root
 {
     [XmlAttribute("Code")]
@@ -10,211 +6,382 @@ public class Root
     [XmlAttribute("Name")]
     public string Name { get; set; }
 
-    [XmlElement("ProposalDetails")]
     public ProposalDetails ProposalDetails { get; set; }
 }
 
 public class ProposalDetails
 {
-    [XmlElement("RiskDetails")]
     public RiskDetails RiskDetails { get; set; }
-
-    [XmlElement("GeneralProposalInformation")]
     public GeneralProposalInformation GeneralProposalInformation { get; set; }
-
-    [XmlArray("ClauseDetails")]
-    [XmlArrayItem("ClauseDetails")]
-    public List<ClauseDetail> ClauseDetails { get; set; }
-
-    [XmlArray("WarrantyDetails")]
-    [XmlArrayItem("WarrantyDetails")]
-    public List<WarrantyDetail> WarrantyDetails { get; set; }
+    public List<ClauseDetails> ClauseDetails { get; set; } = new List<ClauseDetails>();
+    public List<WarrantyDetails> WarrantyDetails { get; set; } = new List<WarrantyDetails>();
+    public List<ConditionDetails> ConditionDetails { get; set; } = new List<ConditionDetails>();
+    public List<ExclusionDetails> ExclusionDetails { get; set; } = new List<ExclusionDetails>();
+    public OtherMappingFields OtherMappingFields { get; set; }
 }
 
 public class RiskDetails
 {
-    [XmlElement("Block")]
     public Block Block { get; set; }
 }
 
 public class Block
 {
-    // Simple properties
-    [XmlElement("PropRisks_AdmittedNonAdmittedLocation")]
-    public XmlProperty PropRisks_AdmittedNonAdmittedLocation { get; set; }
-    
-    [XmlElement("PropRisks_AreaLocality")]
-    public XmlProperty PropRisks_AreaLocality { get; set; }
-    
-    [XmlElement("PropRisks_Country1")]
-    public XmlProperty PropRisks_Country1 { get; set; }
-    
-    // Additional properties would be added here following the same pattern
-    // Only showing a few for brevity
-    
-    [XmlElement("OtherDetailsGrid")]
+    public List<PropertyRisk> PropRisks { get; set; } = new List<PropertyRisk>();
     public OtherDetailsGrid OtherDetailsGrid { get; set; }
-    
-    [XmlElement("RiskCoverDetailsGrid")]
     public RiskCoverDetailsGrid RiskCoverDetailsGrid { get; set; }
 }
 
-public class XmlProperty
+public class PropertyRisk
 {
     [XmlAttribute("Type")]
     public string Type { get; set; }
 
     [XmlAttribute("Value")]
     public string Value { get; set; }
+
+    [XmlAttribute("Name")]
+    public string Name { get; set; }
 }
 
 public class OtherDetailsGrid
 {
-    [XmlElement("BPSooksmaFireSectionSI")]
-    public GroupItem<BPSooksmaFireSectionSI> BPSooksmaFireSectionSI { get; set; }
-    
-    [XmlElement("SectionIAddonNonTerrorismCover")]
-    public GroupItem<SectionIAddonNonTerrorismCover> SectionIAddonNonTerrorismCover { get; set; }
-    
-    [XmlElement("PropRiskCol")]
-    public GroupItem<PropRiskCol> PropRiskCol { get; set; }
-}
-
-public class GroupItem<T>
-{
-    [XmlAttribute("Name")]
-    public string Name { get; set; }
-    
-    [XmlAttribute("Value")]
-    public string Value { get; set; }
-    
-    [XmlElement(ElementName = "Value")]
-    public T Data { get; set; }
-}
-
-public class BPSooksmaFireSectionSI
-{
-    [XmlElement("ItemType")]
-    public XmlProperty ItemType { get; set; }
-    
-    [XmlElement("Description")]
-    public XmlProperty Description { get; set; }
-    
-    [XmlElement("SumInsured")]
-    public XmlProperty SumInsured { get; set; }
-}
-
-public class SectionIAddonNonTerrorismCover
-{
-    [XmlElement("CoverGroups")]
-    public XmlProperty CoverGroups { get; set; }
-    
-    [XmlElement("Description")]
-    public XmlProperty Description { get; set; }
-    
-    [XmlElement("SumInsured")]
-    public XmlProperty SumInsured { get; set; }
-    
-    [XmlElement("Rate")]
-    public XmlProperty Rate { get; set; }
-    
-    [XmlElement("Premium")]
-    public XmlProperty Premium { get; set; }
-}
-
-public class PropRiskCol
-{
-    [XmlElement("IsOptionalCover")]
-    public XmlProperty IsOptionalCover { get; set; }
-    
-    [XmlElement("PropRisks_DifferentialSI")]
-    public XmlProperty PropRisks_DifferentialSI { get; set; }
-    
-    // Additional properties would follow the same pattern
+    public List<GroupData> Items { get; set; } = new List<GroupData>();
 }
 
 public class RiskCoverDetailsGrid
 {
-    [XmlElement("RiskGroup")]
-    public RiskGroup RiskGroup { get; set; }
+    public List<RiskGroup> RiskGroups { get; set; } = new List<RiskGroup>();
 }
 
 public class RiskGroup
 {
     [XmlAttribute("Name")]
     public string Name { get; set; }
-    
+
     [XmlAttribute("Value")]
     public string Value { get; set; }
-    
+
     [XmlAttribute("Type")]
     public string Type { get; set; }
-    
-    [XmlElement("CoverSIComponant")]
-    public List<CoverSIComponant> CoverSIComponants { get; set; }
+
+    public List<CoverSIComponent> CoverSIComponents { get; set; } = new List<CoverSIComponent>();
 }
 
-public class CoverSIComponant
+public class CoverSIComponent
 {
     [XmlAttribute("Name")]
     public string Name { get; set; }
-    
+
     [XmlAttribute("Value")]
     public string Value { get; set; }
-    
-    [XmlElement("PropCoverDetails_Applicable")]
-    public XmlProperty Applicable { get; set; }
-    
-    [XmlElement("PropCoverDetails_CoverGroups")]
-    public XmlProperty CoverGroups { get; set; }
-    
-    // Additional properties would follow the same pattern
+
+    [XmlAttribute("Type")]
+    public string Type { get; set; }
+
+    public List<PropertyCoverDetail> PropCoverDetails { get; set; } = new List<PropertyCoverDetail>();
 }
+
+public class PropertyCoverDetail : PropertyRisk { }
+
+public class GroupData
+{
+    [XmlAttribute("Name")]
+    public string Name { get; set; }
+
+    [XmlAttribute("Value")]
+    public string Value { get; set; }
+
+    [XmlAttribute("Type")]
+    public string Type { get; set; }
+
+    public List<GroupItem> Items { get; set; } = new List<GroupItem>();
+}
+
+public class GroupItem : PropertyRisk { }
 
 public class GeneralProposalInformation
 {
-    [XmlElement("ErrorTrackingNeeded")]
-    public XmlProperty ErrorTrackingNeeded { get; set; }
-    
-    [XmlElement("ProductType")]
-    public XmlProperty ProductType { get; set; }
-    
-    [XmlElement("PropBranchDetails_IMDBranchCode")]
-    public XmlProperty PropBranchDetails_IMDBranchCode { get; set; }
-    
-    // Additional properties would follow the same pattern
+    public List<PropertyRisk> Items { get; set; } = new List<PropertyRisk>();
 }
 
-public class ClauseDetail
+public class ClauseDetails
 {
     [XmlAttribute("Type")]
     public string Type { get; set; }
-    
-    [XmlElement("PropClauseDetails_ClauseCode_Mandatary")]
-    public XmlProperty ClauseCode { get; set; }
-    
-    [XmlElement("PropClauseDetails_ClauseNumber_Mandatary")]
-    public XmlProperty ClauseNumber { get; set; }
-    
-    [XmlElement("PropClauseDetails_ClauseShortDescription")]
-    public XmlProperty ClauseShortDescription { get; set; }
-    
-    // Additional properties would follow the same pattern
+
+    public List<PropertyClauseDetail> PropClauseDetails { get; set; } = new List<PropertyClauseDetail>();
 }
 
-public class WarrantyDetail
+public class PropertyClauseDetail : PropertyRisk { }
+
+public class WarrantyDetails
 {
     [XmlAttribute("Type")]
     public string Type { get; set; }
-    
-    [XmlElement("PropWarranty_Default_Val")]
-    public XmlProperty DefaultVal { get; set; }
-    
-    [XmlElement("PropWarranty_IsDataDeleted")]
-    public XmlProperty IsDataDeleted { get; set; }
-    
-    [XmlElement("PropWarranty_WarrantyCode")]
-    public XmlProperty WarrantyCode { get; set; }
-    
-    // Additional properties would follow the same pattern
+
+    public List<PropertyWarrantyDetail> PropWarrantyDetails { get; set; } = new List<PropertyWarrantyDetail>();
 }
+
+public class PropertyWarrantyDetail : PropertyRisk { }
+
+public class ConditionDetails
+{
+    [XmlAttribute("Type")]
+    public string Type { get; set; }
+
+    public List<PropertyConditionDetail> PropConditionDetails { get; set; } = new List<PropertyConditionDetail>();
+}
+
+public class PropertyConditionDetail : PropertyRisk { }
+
+public class ExclusionDetails
+{
+    [XmlAttribute("Type")]
+    public string Type { get; set; }
+
+    public List<PropertyExclusionDetail> PropExclusionDetails { get; set; } = new List<PropertyExclusionDetail>();
+}
+
+public class PropertyExclusionDetail : PropertyRisk { }
+
+public class OtherMappingFields
+{
+    public List<MappingField> Items { get; set; } = new List<MappingField>();
+}
+
+public class MappingField
+{
+    [XmlAttribute("Type")]
+    public string Type { get; set; }
+
+    [XmlAttribute("Name")]
+    public string Name { get; set; }
+
+    [XmlAttribute("Value")]
+    public string Value { get; set; }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+using System.Xml.Serialization;
+using System.Xml;
+using System.IO;
+
+public class XmlGenerator
+{
+    public static string GenerateXml(Root rootModel)
+    {
+        var serializer = new XmlSerializer(typeof(Root));
+        var settings = new XmlWriterSettings
+        {
+            Indent = true,
+            OmitXmlDeclaration = false
+        };
+
+        using (var stringWriter = new StringWriter())
+        using (var xmlWriter = XmlWriter.Create(stringWriter, settings))
+        {
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add("", ""); // Remove namespace declarations
+            
+            serializer.Serialize(xmlWriter, rootModel, namespaces);
+            return stringWriter.ToString();
+        }
+    }
+
+    public static Root CreateSampleModel()
+    {
+        return new Root
+        {
+            Code = "2965",
+            Name = "HomeComprehensivePackage",
+            ProposalDetails = new ProposalDetails
+            {
+                RiskDetails = new RiskDetails
+                {
+                    Block = new Block
+                    {
+                        PropRisks = new List<PropertyRisk>
+                        {
+                            new PropertyRisk { Name = "PropRisks_AdmittedNonAdmittedLocation", Type = "String", Value = "" },
+                            new PropertyRisk { Name = "PropRisks_AreaLocality", Type = "String", Value = "ABINASH CHAOWDHURY LANE" },
+                            // Add other property risks as needed
+                        },
+                        OtherDetailsGrid = new OtherDetailsGrid
+                        {
+                            Items = new List<GroupData>
+                            {
+                                new GroupData
+                                {
+                                    Name = "BPSooksmaFireSectionSI",
+                                    Value = "GRP1057",
+                                    Type = "GroupData",
+                                    Items = new List<GroupItem>
+                                    {
+                                        new GroupItem { Name = "ItemType", Type = "String", Value = "Additional Structure" },
+                                        new GroupItem { Name = "Description", Type = "String", Value = "fgndhndf" },
+                                        new GroupItem { Name = "SumInsured", Type = "Double", Value = "10000" }
+                                    }
+                                },
+                                // Add other group data items as needed
+                            }
+                        },
+                        RiskCoverDetailsGrid = new RiskCoverDetailsGrid
+                        {
+                            RiskGroups = new List<RiskGroup>
+                            {
+                                new RiskGroup
+                                {
+                                    Name = "Bharat Griha Raksha Material Damage",
+                                    Value = "Risk Wise Cover Details",
+                                    Type = "GroupData",
+                                    CoverSIComponents = new List<CoverSIComponent>
+                                    {
+                                        new CoverSIComponent
+                                        {
+                                            Name = "Section I Bharat Griha Raksha Material Damage",
+                                            Value = "10000",
+                                            PropCoverDetails = new List<PropertyCoverDetail>
+                                            {
+                                                new PropertyCoverDetail { Name = "PropCoverDetails_Applicable", Type = "Boolean", Value = "True" },
+                                                // Add other cover details as needed
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                GeneralProposalInformation = new GeneralProposalInformation
+                {
+                    Items = new List<PropertyRisk>
+                    {
+                        new PropertyRisk { Name = "ErrorTrackingNeeded", Type = "Boolean", Value = "False" },
+                        // Add other general info items as needed
+                    }
+                },
+                ClauseDetails = new List<ClauseDetails>
+                {
+                    new ClauseDetails
+                    {
+                        Type = "GroupData",
+                        PropClauseDetails = new List<PropertyClauseDetail>
+                        {
+                            new PropertyClauseDetail { Name = "PropClauseDetails_ClauseCode_Mandatary", Type = "Double", Value = "48230" },
+                            // Add other clause details as needed
+                        }
+                    }
+                },
+                // Initialize other sections similarly
+                OtherMappingFields = new OtherMappingFields
+                {
+                    Items = new List<MappingField>
+                    {
+                        new MappingField { Type = "Bharat Griha Raksha Material Damage", Name = "Section I Bharat Griha Raksha Material Damage", Value = "10000" },
+                        // Add other mapping fields as needed
+                    }
+                }
+            }
+        };
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create a populated model (either manually or using the CreateSampleModel method)
+var rootModel = XmlGenerator.CreateSampleModel();
+
+// Generate the XML string
+string xml = XmlGenerator.GenerateXml(rootModel);
+
+// Save to file if needed
+File.WriteAllText("output.xml", xml);
+
+
+
+
+
+
+
+
+
+
+
+public class RootBuilder
+{
+    private Root _root = new Root();
+
+    public RootBuilder WithBasicInfo(string code, string name)
+    {
+        _root.Code = code;
+        _root.Name = name;
+        return this;
+    }
+
+    public RootBuilder WithRiskDetail(string areaLocality, string country)
+    {
+        _root.ProposalDetails ??= new ProposalDetails();
+        _root.ProposalDetails.RiskDetails ??= new RiskDetails();
+        _root.ProposalDetails.RiskDetails.Block ??= new Block();
+        
+        _root.ProposalDetails.RiskDetails.Block.PropRisks.Add(
+            new PropertyRisk { Name = "PropRisks_AreaLocality", Type = "String", Value = areaLocality });
+        
+        _root.ProposalDetails.RiskDetails.Block.PropRisks.Add(
+            new PropertyRisk { Name = "PropRisks_Country1", Type = "String", Value = country });
+        
+        return this;
+    }
+
+    // Add more builder methods for other sections
+    
+    public Root Build()
+    {
+        return _root;
+    }
+}
+
+// Usage:
+var root = new RootBuilder()
+    .WithBasicInfo("2965", "HomeComprehensivePackage")
+    .WithRiskDetail("NEW AREA", "India")
+    .Build();
+
+
