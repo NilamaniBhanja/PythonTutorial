@@ -1,0 +1,1208 @@
+using System.Xml.Linq;
+using HomeConnect.Domain.Entities.Transaction;
+using HomeConnect.Domain.GCModels;
+
+namespace HomeConnect.GCintegration;
+
+public class HCXMLIntegration
+{
+    private readonly XmlGenerator _xmlGenerator;
+    private readonly XMLObjectConverter _xMLObjectConverter;
+    public HCXMLIntegration() {
+        _xmlGenerator = new XmlGenerator();
+        _xMLObjectConverter = new XMLObjectConverter();
+    }
+
+    public XElement CreateHomeComprehensivePackageXml()
+    {
+        ProposalDetails proposal = _xMLObjectConverter.genProposalDetails();
+
+
+
+        // Create the root element with attributes
+        XElement root = new XElement("Root",
+            new XAttribute("Code", "2965"),
+            new XAttribute("Name", "HomeComprehensivePackage"));
+
+        // Create ProposalDetails section
+        XElement proposalDetails = new XElement("ProposalDetails");
+
+        // Add RiskDetails section
+        proposalDetails.Add(CreateRiskDetails(proposal.RiskDetails));
+
+        // Add GeneralProposalInformation section
+        proposalDetails.Add(CreateGeneralProposalInformation(proposal.generalProposalInformation));
+
+        //// Add ClauseDetails section
+        //proposalDetails.Add(CreateClauseDetails());
+
+        //// Add WarrantyDetails section
+        //proposalDetails.Add(CreateWarrantyDetails());
+
+        //// Add ConditionDetails section
+        //proposalDetails.Add(CreateConditionDetails());
+
+        //// Add ExclusionDetails section
+        //proposalDetails.Add(CreateExclusionDetails());
+
+        //// Add OtherMappingFields section
+        //proposalDetails.Add(CreateOtherMappingFields());
+
+        // Add ProposalDetails to root
+        root.Add(proposalDetails);
+
+        //// Create the XML document
+        //XDocument doc = new XDocument(
+        //    new XDeclaration("1.0", "utf-8", null),
+        //    root);
+
+        // Save the document
+        //doc.Save(filePath);
+        return root;
+    }
+    private XElement CreateRiskDetails(RiskDetails riskDetail)
+    {
+        XElement riskDetails = new XElement("RiskDetails");
+        XElement block = new XElement("Block");
+
+        block.Add(CreateRiskDetail(riskDetail));
+
+
+        // Add OtherDetailsGrid
+        XElement otherDetailsGrid = new XElement("OtherDetailsGrid");
+
+        // Add BPSooksmaFireSectionSI
+        XElement bpSooksmaFireSectionSI = new XElement("BPSooksmaFireSectionSI",
+            new XAttribute("Name", "BPSooksmaFireSectionSI"),
+            new XAttribute("Value", "GRP1057"),
+            new XElement("BPSooksmaFireSectionSI",
+                new XAttribute("Type", "GroupData"),
+               CreateBPSooksmaFireSectionSI()
+                ));
+
+        otherDetailsGrid.Add(bpSooksmaFireSectionSI);
+
+        // Add SectionIAddonNonTerrorismCover
+        XElement sectionIAddonNonTerrorismCover = new XElement("SectionIAddonNonTerrorismCover",
+            new XAttribute("Name", "Section I Addon Non Terrorism Cover"),
+            new XAttribute("Value", "GRP536"),
+            new XElement("SectionIAddonNonTerrorismCover",
+                new XAttribute("Type", "GroupData"),
+                CreateSectionIAddonNonTerrorismCover()
+               ));
+
+        otherDetailsGrid.Add(sectionIAddonNonTerrorismCover);
+
+        // Add PropRiskCol
+        XElement propRiskCol = new XElement("PropRiskCol",
+            new XAttribute("Name", "Bharat Griha Raksha Material Damage"),
+            new XAttribute("Value", "0"),
+            new XElement("PropRiskCol",
+                new XAttribute("Type", "GroupData"),
+                CreatePropRiskCol()
+                ));
+
+        otherDetailsGrid.Add(propRiskCol);
+        block.Add(otherDetailsGrid);
+
+
+
+        // Add RiskCoverDetailsGrid
+        XElement riskCoverDetailsGrid = new XElement("RiskCoverDetailsGrid");
+       
+
+        riskCoverDetailsGrid.Add(riskGroup);
+        block.Add(riskCoverDetailsGrid);
+
+        riskDetails.Add(block);
+
+        var innerRiskDetails = riskDetails.Descendants("Block")
+            .Elements("RiskDetails")
+            .FirstOrDefault();
+        if(innerRiskDetails != null)
+        {
+            //var block = innerRiskDetails.Parent;
+            innerRiskDetails.ReplaceWith(innerRiskDetails.Elements());
+        }
+
+        return riskDetails;
+    }
+
+
+    private XElement CreateGeneralProposalInformation(GeneralProposalInformation model)
+    {       
+        XElement xml = _xmlGenerator.GenerateXml(model);
+        return xml;
+    }
+    private XElement CreateRiskDetail(RiskDetails model)
+    {
+        XElement xml = _xmlGenerator.GenerateXml(model);
+        return xml;
+    }
+    private XElement CreateBPSooksmaFireSectionSI()
+    {
+        var result = _xMLObjectConverter.genBPSooksmaFireSectionSI();
+        XElement xml = _xmlGenerator.GenerateXml(result, true);
+        return xml;
+    }
+    private XElement CreateSectionIAddonNonTerrorismCover()
+    {
+        var result = _xMLObjectConverter.genSectionIAddonNonTerrorismCover();
+        XElement xml = _xmlGenerator.GenerateXml(result, true);
+        return xml;
+    }
+    private XElement CreatePropRiskCol()
+    {
+        var result = _xMLObjectConverter.genPropRiskCol();
+        XElement xml = _xmlGenerator.GenerateXml(result,true);
+        return xml;
+    }
+    private XElement CreateCoverSIComponant(CoverSIComponant model)
+    {
+        XElement xml = _xmlGenerator.GenerateXml(model, true);
+        return xml;
+    }
+    private XElement CreateRiskGroup(RiskGroup model)
+    {
+        XElement riskGroup = new XElement("RiskGroup",
+           new XAttribute("Name", "Bharat Griha Raksha Material Damage"),
+           new XAttribute("Value", "Risk Wise Cover Details"),
+           new XAttribute("Type", "GroupData"),
+           new XElement("CoverSIComponant",
+               new XAttribute("Name", "Section I Bharat Griha Raksha Material Damage"),
+               new XAttribute("Value", "10000"),
+               new XElement("PropCoverDetails_Applicable",
+                   new XAttribute("Name", "PropCoverDetails_Applicable"),
+                   new XAttribute("Type", "Boolean"),
+                   new XAttribute("Value", "True")),
+               new XElement("PropCoverDetails_CoverGroups",
+                   new XAttribute("Name", "PropCoverDetails_CoverGroups"),
+                   new XAttribute("Type", "String"),
+                   new XAttribute("Value", "Section I Bharat Griha Raksha Material Damage")),
+               new XElement("PropCoverDetails_DifferentialSI",
+                   new XAttribute("Name", "PropCoverDetails_DifferentialSI"),
+                   new XAttribute("Type", "Double"),
+                   new XAttribute("Value", "10000"))));
+
+
+        XElement xml = _xmlGenerator.GenerateXml(model, true);
+        return xml;
+    }
+
+    
+}
+
+
+using System.Reflection;
+using System.Xml.Linq;
+using HomeConnect.Domain.GCModels;
+
+namespace HomeConnect.GCintegration;
+
+public class XmlGenerator
+{
+    public XElement GenerateXml(object model, bool isNameRequire=false)
+    {
+      //  XElement XMLInfo = new XElement(objectName);
+        //PropertyInfo[] properties = null;
+        Type modelType = model.GetType();
+        XElement XMLInfo = new XElement(modelType.Name);
+
+        //PropertyInfo[] properties = typeof(modelType).GetProperties();
+
+        //switch (objectName)
+        //{
+        //    case "GeneralProposalInformation":
+        //        properties = typeof(GeneralProposalInformation).GetProperties();
+        //        break;
+        //    case "RiskDetails":
+        //        properties = typeof(RiskDetails).GetProperties();
+        //        break;
+        //    case "BPSooksmaFireSectionSI":
+        //        properties = typeof(BPSooksmaFireSectionSI).GetProperties();
+        //        break;
+        //    case "SectionIAddonNonTerrorismCover":
+        //        properties = typeof(SectionIAddonNonTerrorismCover).GetProperties();
+        //        break;
+        //}
+
+
+        foreach (PropertyInfo property in modelType.GetProperties())
+        {
+            object value = property.GetValue(model);
+            string stringValue = value?.ToString() ?? "";
+            string typeName = GetTypeName(property.PropertyType);
+
+            // Special handling for boolean values
+            if (property.PropertyType == typeof(bool))
+            {
+                stringValue = value?.ToString().ToLower() ?? "false";
+            }
+            if (isNameRequire)
+            {
+                XMLInfo.Add(new XElement(property.Name,
+               new XAttribute("Type", typeName),
+               new XAttribute("Value", stringValue),
+               new XAttribute("Name", property.Name)));
+            }
+            else
+            {
+                XMLInfo.Add(new XElement(property.Name,
+               new XAttribute("Type", typeName),
+               new XAttribute("Value", stringValue)));
+            }
+        }
+
+        return XMLInfo;
+    }
+
+    private string GetTypeName(Type type)
+    {
+        if (type == typeof(bool)) return "Boolean";
+        if (type == typeof(string)) return "String";
+        if (type == typeof(double)) return "Double";
+        if (type == typeof(int)) return "Int32";
+        if (type == typeof(decimal)) return "Decimal";
+        if (type == typeof(DateTime)) return "DateTime";
+
+        // Handle nullable types
+        if (Nullable.GetUnderlyingType(type) != null)
+        {
+            return GetTypeName(Nullable.GetUnderlyingType(type));
+        }
+
+        return type.Name;
+    }
+
+}
+
+
+
+
+
+
+
+using System.Xml.Serialization;
+
+namespace HomeConnect.Domain.GCModels;
+
+public class XMLBlockModel
+{
+}
+
+
+public class Root
+{
+    [XmlAttribute("Code")]
+    public string Code { get; set; }
+
+    [XmlAttribute("Name")]
+    public string Name { get; set; }
+
+    public ProposalDetails ProposalDetails { get; set; }
+}
+
+public class ProposalDetails
+{
+    public RiskDetails RiskDetails { get; set; }
+    public GeneralProposalInformation generalProposalInformation { get; set; }
+    //public List<ClauseDetails> ClauseDetails { get; set; } = new List<ClauseDetails>();
+    //public List<WarrantyDetails> WarrantyDetails { get; set; } = new List<WarrantyDetails>();
+    //public List<ConditionDetails> ConditionDetails { get; set; } = new List<ConditionDetails>();
+    //public List<ExclusionDetails> ExclusionDetails { get; set; } = new List<ExclusionDetails>();
+    //public OtherMappingFields OtherMappingFields { get; set; }
+}
+
+public class GeneralProposalInformation
+{
+    public bool ErrorTrackingNeeded { get; set; }
+    public string ProductType { get; set; }
+    public string PropBranchDetails_IMDBranchCode { get; set; }
+    public string PropBranchDetails_IMDBranchName { get; set; }
+    public double PropCalculation_BLOCKPREMIUM { get; set; }
+    public bool PropCalculation_CalculateRate { get; set; }
+    public bool PropCalculation_Validate { get; set; }
+    public bool PropCalculation_ValidateData { get; set; }
+    public string PropClauseDetails_Component51 { get; set; }
+    public double PropClauseDetails_DepartmentCode_Mandatary { get; set; }
+    public double PropClauseDetails_ProductCode_Mandatary { get; set; }
+    public string PropClauseDetails_SectionCode { get; set; }
+    public bool PropCoinsuranceDetails_AddRow { get; set; }
+    public string PropCoinsuranceDetails_CoinsuranceType { get; set; }
+    public bool PropCoinsuranceDetails_Commissiontobepaidbytheleader { get; set; }
+    public string PropCoinsuranceDetails_PolicyNooftheleader { get; set; }
+    public string PropCoinsuranceDetails_ReferenceNumber { get; set; }
+    public bool PropCoinsuranceDetails_SERVTAXCOMMRCVRLEADER { get; set; }
+    public bool PropCoinsuranceDetails_Servicetaxtobepaidbytheleader { get; set; }
+    public string PropCoinsuranceDetails_Validate { get; set; }
+    public string PropConditionDetails_ConditionDescription { get; set; }
+    public double PropConditionDetails_DepartmentCode { get; set; }
+    public double PropConditionDetails_ProductCode { get; set; }
+    public string PropConditionDetails_SectionCode { get; set; }
+    public string PropConditionDetails_SpecialConditionDescription { get; set; }
+    public string PropCoverNoteDetails_CoverNoteBookNo { get; set; }
+    public string PropCoverNoteDetails_CoverNoteLeafNo { get; set; }
+    public string PropCoverNoteDetails_IssuedOnDt { get; set; }
+    public string PropCoverNoteDetails_IsuedonTime { get; set; }
+    public double PropCoverNoteDetails_LeafNo { get; set; }
+    public string PropCoverNoteDetails_RecievedOn { get; set; }
+    public bool PropCoverNoteDetails_Validate { get; set; }
+    public string PropCustomerDtls_CustomerID_Mandatary { get; set; }
+    public string PropCustomerDtls_CustomerName { get; set; }
+    public string PropCustomerDtls_CustomerType { get; set; }
+    public string PropCustomerDtls_PayeeCustomerID { get; set; }
+    public string PropCustomerDtls_PayeeCustomerName { get; set; }
+    public string PropCustomerReferenceInfo_OldPolicyNumber { get; set; }
+    public string PropCustomerReferenceInfo_PolicyConversionDate { get; set; }
+    public string PropDistributionChannel_BranchDetails { get; set; }
+    public string PropDistributionChannel_BusineeChannelBrunch { get; set; }
+    public string PropDistributionChannel_BusineeChanneltype { get; set; }
+    public string PropDistributionChannel_BusinessServicingChannelType { get; set; }
+    public string PropDistributionChannel_BusinessSource_Mandatary { get; set; }
+    public string PropDistributionChannel_BusinessSourcetype { get; set; }
+    public double PropDistributionChannel_Commision { get; set; }
+    public string PropDistributionChannel_EndorsementDtls { get; set; }
+    public string PropDistributionChannel_FolderFilePath { get; set; }
+    public string PropDistributionChannel_IntermediaryDetails { get; set; }
+    public string PropDistributionChannel_MODetails { get; set; }
+    public string PropDistributionChannel_OperationMode { get; set; }
+    public string PropDistributionChannel_SPDetails { get; set; }
+    public string PropDistributionChannel_SerIntermediaryDetails { get; set; }
+    public double PropDistributionChannel_ServiceProvider { get; set; }
+    public double PropDistributionChannel_SpecialDiscount { get; set; }
+    public string PropDistributionChannel_TERRORISMCOMMISSION { get; set; }
+    public bool PropDistributionChannel_Validate { get; set; }
+    public string PropDistributionChannel_VerticalDtls { get; set; }
+    public string PropEndorsementDtls_CancellationDueToDataEntry { get; set; }
+    public string PropEndorsementDtls_CancellationOption { get; set; }
+    public string PropEndorsementDtls_ClaimNo { get; set; }
+    public string PropEndorsementDtls_ClientRequestDate { get; set; }
+    public string PropEndorsementDtls_CoverType { get; set; }
+    public string PropEndorsementDtls_Description { get; set; }
+    public double PropEndorsementDtls_EndorsementTypeCode { get; set; }
+    public string PropEndorsementDtls_INSCoName { get; set; }
+    public string PropEndorsementDtls_INSCoOffCodeAdd { get; set; }
+    public string PropEndorsementDtls_PolicyFrom { get; set; }
+    public string PropEndorsementDtls_PolicyIssueDate { get; set; }
+    public string PropEndorsementDtls_PolicyNo { get; set; }
+    public string PropEndorsementDtls_PolicyTo { get; set; }
+    public string PropEndorsementDtls_ReasonForCancellation { get; set; }
+    public string PropEndorsementDtls_TypeofEndorsement { get; set; }
+    public string PropEndorsementEffectiveDate_EffectiveDate { get; set; }
+    public string PropEndorsementEffectiveDate_EffectiveTime { get; set; }
+    public double PropExclusionDetails_DepartmentCode { get; set; }
+    public double PropExclusionDetails_ProductCode { get; set; }
+    public string PropExclusionDetails_SectionCode { get; set; }
+    public double PropFinalizeDetails_IndemnityPeriod { get; set; }
+    public double PropFinalizeDetails_IndemnityPeriodLoR { get; set; }
+    public string PropFinalizeDetails_MSMEFlag { get; set; }
+    public string PropFinalizeDetails_ManualQuotationNumber { get; set; }
+    public double PropFinalizeDetails_OtherN1 { get; set; }
+    public string PropFinalizeDetails_OtherN2 { get; set; }
+    public string PropFinalizeDetails_OtherText1 { get; set; }
+    public string PropFinalizeDetails_OtherText2 { get; set; }
+    public double PropFinalizeDetails_SecIIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecIIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecITerrComm { get; set; }
+    public double PropFinalizeDetails_SecIVNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecIVTerrComm { get; set; }
+    public double PropFinalizeDetails_SecIXNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecIXTerrComm { get; set; }
+    public double PropFinalizeDetails_SecVIIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecVIIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecVIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecVIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecVINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecVITerrComm { get; set; }
+    public double PropFinalizeDetails_SecVNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecVTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIITerrComm { get; set; }
+    public double PropFinalizeDetails_SecXINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXITerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIVNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXIVTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXVINonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXVITerrComm { get; set; }
+    public double PropFinalizeDetails_SecXVNonTerrComm { get; set; }
+    public double PropFinalizeDetails_SecXVTerrComm { get; set; }
+    public string PropFinalizeDetails_TextBox1 { get; set; }
+    public string PropFinalizeDetails_TextBox2 { get; set; }
+    public string PropFinalizeDetails_TextBox3 { get; set; }
+    public string PropFinalizeDetails_TextBox4 { get; set; }
+    public bool PropFinancierDetails_AddRow { get; set; }
+    public bool PropFinancierDetails_FinancierCodeGenerator { get; set; }
+    public bool PropFinancierDetails_Validate { get; set; }
+    public bool PropGeneralNodes_CustomFetch { get; set; }
+    public string PropGeneralProposalGroup_CoverNoteDetails { get; set; }
+    public string PropGeneralProposalGroup_DistributionChannel { get; set; }
+    public string PropGeneralProposalGroup_GeneralProposalInformation { get; set; }
+    public string PropGeneralProposalInformation_ActiveFlag { get; set; }
+    public string PropGeneralProposalInformation_ApplicationNumber { get; set; }
+    public double PropGeneralProposalInformation_BankID { get; set; }
+    public string PropGeneralProposalInformation_BranchOfficeCode { get; set; }
+    public string PropGeneralProposalInformation_BusinessSourceInfo { get; set; }
+    public string PropGeneralProposalInformation_BusinessType_Mandatary { get; set; }
+    public string PropGeneralProposalInformation_CertificateNumber { get; set; }
+    public string PropGeneralProposalInformation_ChannelNumber { get; set; }
+    public string PropGeneralProposalInformation_CoverNotePlace { get; set; }
+    public string PropGeneralProposalInformation_CovernoteGenType { get; set; }
+    public string PropGeneralProposalInformation_CustomerDtls { get; set; }
+    public string PropGeneralProposalInformation_CustomerReferenceInfo { get; set; }
+    public string PropGeneralProposalInformation_DayDiff { get; set; }
+    public string PropGeneralProposalInformation_DealId { get; set; }
+    public double PropGeneralProposalInformation_DepartmentCode { get; set; }
+    public string PropGeneralProposalInformation_DepartmentName { get; set; }
+    public string PropGeneralProposalInformation_DisplayOfficeCode { get; set; }
+    public string PropGeneralProposalInformation_DisplayStatus { get; set; }
+    public string PropGeneralProposalInformation_EmployeeName { get; set; }
+    public string PropGeneralProposalInformation_EndorsementDescription { get; set; }
+    public string PropGeneralProposalInformation_EndorsementEffectiveDate { get; set; }
+    public double PropGeneralProposalInformation_EndorsementNo { get; set; }
+    public string PropGeneralProposalInformation_EndorsementRequestType { get; set; }
+    public string PropGeneralProposalInformation_EndorsementRequestTypeCode { get; set; }
+    public double PropGeneralProposalInformation_EndorsementSi { get; set; }
+    public string PropGeneralProposalInformation_EndorsementType { get; set; }
+    public string PropGeneralProposalInformation_EndorsementWording { get; set; }
+    public string PropGeneralProposalInformation_FrontingCompany { get; set; }
+    public string PropGeneralProposalInformation_IndustryCode { get; set; }
+    public string PropGeneralProposalInformation_InwardNo { get; set; }
+    public bool PropGeneralProposalInformation_IsNCBApplicable { get; set; }
+    public string PropGeneralProposalInformation_IsSPCalcByDayDiffReqd { get; set; }
+    public string PropGeneralProposalInformation_LeadNo { get; set; }
+    public string PropGeneralProposalInformation_ManualCovernoteNo { get; set; }
+    public string PropGeneralProposalInformation_MasterPolicy { get; set; }
+    public string PropGeneralProposalInformation_MasterPolicyVersion { get; set; }
+    public string PropGeneralProposalInformation_MethodOfCalculation { get; set; }
+    public double PropGeneralProposalInformation_NCBpercentage { get; set; }
+    public bool PropGeneralProposalInformation_NextB { get; set; }
+    public bool PropGeneralProposalInformation_NoPrevInsuranceFlag { get; set; }
+    public string PropGeneralProposalInformation_NonLiablePeriod { get; set; }
+    public double PropGeneralProposalInformation_NumCovernoteNo { get; set; }
+    public string PropGeneralProposalInformation_OfficeCode { get; set; }
+    public string PropGeneralProposalInformation_OfficeName { get; set; }
+    public string PropGeneralProposalInformation_OldCovernoteNo { get; set; }
+    public string PropGeneralProposalInformation_OptionForCalculation { get; set; }
+    public string PropGeneralProposalInformation_PolicyCurrency { get; set; }
+    public string PropGeneralProposalInformation_PolicyEffectivedate { get; set; }
+    public double PropGeneralProposalInformation_PolicyNo { get; set; }
+    public string PropGeneralProposalInformation_PolicyNumberChar { get; set; }
+    public string PropGeneralProposalInformation_PolicySchedule_Mandatary { get; set; }
+    public string PropGeneralProposalInformation_PolicyTerm { get; set; }
+    public string PropGeneralProposalInformation_Product1513 { get; set; }
+    public double PropGeneralProposalInformation_ProductCode { get; set; }
+    public string PropGeneralProposalInformation_ProductName { get; set; }
+    public string PropGeneralProposalInformation_ProposalDate_Mandatary { get; set; }
+    public string PropGeneralProposalInformation_ProposalFormNumber { get; set; }
+    public string PropGeneralProposalInformation_ProvisionalBooking { get; set; }
+    public string PropGeneralProposalInformation_ProvisionalBookingReason { get; set; }
+    public string PropGeneralProposalInformation_QuickId { get; set; }
+    public string PropGeneralProposalInformation_QuoteNumber { get; set; }
+    public string PropGeneralProposalInformation_ReInsuranceInward { get; set; }
+    public string PropGeneralProposalInformation_ReSharePer { get; set; }
+    public string PropGeneralProposalInformation_ReferenceNoDate { get; set; }
+    public string PropGeneralProposalInformation_ReferralCode { get; set; }
+    public string PropGeneralProposalInformation_RelationshipType { get; set; }
+    public string PropGeneralProposalInformation_Remarks { get; set; }
+    public string PropGeneralProposalInformation_RetainCancellationPremium { get; set; }
+    public string PropGeneralProposalInformation_SalesTax { get; set; }
+    public string PropGeneralProposalInformation_Sector_Mandatary { get; set; }
+    public string PropGeneralProposalInformation_SerDealId { get; set; }
+    public string PropGeneralProposalInformation_ServiceTaxExemptionCategory_Mandatary { get; set; }
+    public double PropGeneralProposalInformation_TotalSi { get; set; }
+    public string PropGeneralProposalInformation_TypeOfBusiness { get; set; }
+    public string PropGeneralProposalInformation_TypeOfCalculation { get; set; }
+    public string PropGeneralProposalInformation_TypeOfIndustry { get; set; }
+    public string PropGeneralProposalInformation_TypeOfPolicy { get; set; }
+    public string PropGeneralProposalInformation_TypeofCancellation { get; set; }
+    public string PropGeneralProposalInformation_UWLocation { get; set; }
+    public string PropGeneralProposalInformation_UWLocationCode { get; set; }
+    public string PropGeneralProposalInformation_ValidationFlag { get; set; }
+    public string PropGeneralProposalInformation_VehicleLaidUpFrom { get; set; }
+    public string PropGeneralProposalInformation_VehicleLaidUpTo { get; set; }
+    public string PropGeneralProposalInformation_covernoteissuedate { get; set; }
+    public string PropGeneralProposalInformation_covernoteissuetime { get; set; }
+    public string PropGeneralProposalInformation_disprntoffcd { get; set; }
+    public bool PropGeneralProposalInformation_iscovernoteused { get; set; }
+    public string PropGeneralProposal_GeneralProposalGroup { get; set; }
+    public string PropGeneralProposal_IsCustomWorkflowCondition { get; set; }
+    public double PropHigherExcessDiscount_HE_Disc_RateType_In { get; set; }
+    public string PropIntermediaryDetails_IntermediaryCode { get; set; }
+    public string PropIntermediaryDetails_IntermediaryName { get; set; }
+    public string PropIntermediaryDetails_IntermediaryType { get; set; }
+    public string PropMODetails_PrimaryMOCode { get; set; }
+    public string PropMODetails_PrimaryMOName { get; set; }
+    public string PropMODetails_SecondaryMOCode { get; set; }
+    public string PropMODetails_SecondaryMOName { get; set; }
+    public string PropMODetails_TertiaryMOCode { get; set; }
+    public string PropMODetails_TertiaryMOName { get; set; }
+    public string PropMiscellaneousOtherNodes_AfterFetch { get; set; }
+    public string PropMiscellaneousOtherNodes_CancelationDetail { get; set; }
+    public string PropMiscellaneousOtherNodes_EndorsementDtls { get; set; }
+    public string PropMiscellaneousOtherNodes_FinalizeDetails { get; set; }
+    public string PropMiscellaneousOtherNodes_GeneralNodes { get; set; }
+    public string PropMiscellaneousOtherNodes_MultiCurrency { get; set; }
+    public string PropMiscellaneousOtherNodes_validate_aftercalc { get; set; }
+    public string PropMiscellaneousOtherNodes_validate_beforecalc { get; set; }
+    public double PropMultiCurrency_Rate { get; set; }
+    public string PropNonLiablePeriod_NonLiableEndTime { get; set; }
+    public string PropNonLiablePeriod_NonLiableFromDate { get; set; }
+    public string PropNonLiablePeriod_NonLiableStartTime { get; set; }
+    public string PropNonLiablePeriod_NonLiableToDate { get; set; }
+    public bool PropParameters_AddClause { get; set; }
+    public bool PropParameters_AddCondition { get; set; }
+    public bool PropParameters_AddExclusion { get; set; }
+    public bool PropParameters_AddWarranty { get; set; }
+    public bool PropParameters_AfterFetch { get; set; }
+    public bool PropParameters_ClauseApplicable { get; set; }
+    public bool PropParameters_CoInsuranceApplicability { get; set; }
+    public bool PropParameters_CommissionApplicable { get; set; }
+    public bool PropParameters_ConditionApplicable { get; set; }
+    public bool PropParameters_CoverNoteApplicability { get; set; }
+    public bool PropParameters_EQHigherExcessDiscount { get; set; }
+    public bool PropParameters_ExclusionApplicable { get; set; }
+    public bool PropParameters_FamilyPackageDiscount { get; set; }
+    public bool PropParameters_FinancierApplicability { get; set; }
+    public bool PropParameters_FloaterRiskLoading { get; set; }
+    public bool PropParameters_GroupDiscount { get; set; }
+    public bool PropParameters_HighClaimLoading { get; set; }
+    public bool PropParameters_HigherExcessDiscount { get; set; }
+    public bool PropParameters_Installment { get; set; }
+    public bool PropParameters_LongTermPolicy { get; set; }
+    public bool PropParameters_LowClaimDiscount { get; set; }
+    public bool PropParameters_MinimumPremium { get; set; }
+    public bool PropParameters_NoClaimDiscount { get; set; }
+    public bool PropParameters_OverageLoading { get; set; }
+    public string PropParameters_PasPolicyApplicable { get; set; }
+    public bool PropParameters_PastPolicyApplicable { get; set; }
+    public bool PropParameters_PolicyCancellation { get; set; }
+    public bool PropParameters_PopulateTransactionBegin { get; set; }
+    public string PropParameters_PreviousPolicyApplicable { get; set; }
+    public bool PropParameters_RenewalAllowed { get; set; }
+    public bool PropParameters_SectionDiscount { get; set; }
+    public bool PropParameters_ServiceTaxExempted { get; set; }
+    public bool PropParameters_ShortPeriodLongPeriod { get; set; }
+    public bool PropParameters_SpecialDiscountApplicable { get; set; }
+    public bool PropParameters_StaffDiscount { get; set; }
+    public bool PropParameters_StampDutyChargeable { get; set; }
+    public bool PropParameters_TariffProduct { get; set; }
+    public bool PropParameters_TransferFees { get; set; }
+    public bool PropParameters_VDFDiscountAllowed { get; set; }
+    public bool PropParameters_ValidateClause { get; set; }
+    public bool PropParameters_ValidateCondition { get; set; }
+    public bool PropParameters_ValidateEndorsementData { get; set; }
+    public bool PropParameters_ValidateExclusion { get; set; }
+    public bool PropParameters_ValidateWarranty { get; set; }
+    public bool PropParameters_WarrentyApplicable { get; set; }
+    public string PropPolicyEffectivedate_Fromdate_Mandatary { get; set; }
+    public string PropPolicyEffectivedate_Fromhour_Mandatary { get; set; }
+    public string PropPolicyEffectivedate_Todate_Mandatary { get; set; }
+    public string PropPolicyEffectivedate_Tohour_Mandatary { get; set; }
+    public double PropPremiumCalculation_BasicPremium { get; set; }
+    public double PropPremiumCalculation_Cess { get; set; }
+    public double PropPremiumCalculation_CustomCoverLDPremium { get; set; }
+    public double PropPremiumCalculation_ERFAmount { get; set; }
+    public string PropPremiumCalculation_EduCess { get; set; }
+    public double PropPremiumCalculation_EndorsementERFAmount { get; set; }
+    public double PropPremiumCalculation_EndorsementPremium { get; set; }
+    public double PropPremiumCalculation_EndorsementServiceTax { get; set; }
+    public double PropPremiumCalculation_EndorsementStampDuty { get; set; }
+    public double PropPremiumCalculation_EndorsementTerrorismPremium { get; set; }
+    public string PropPremiumCalculation_EndtEduCess { get; set; }
+    public string PropPremiumCalculation_EndtHigherEduCess { get; set; }
+    public double PropPremiumCalculation_GrossCoverPremium { get; set; }
+    public string PropPremiumCalculation_HigherEduCess { get; set; }
+    public double PropPremiumCalculation_NetODPremium { get; set; }
+    public double PropPremiumCalculation_NetPremium { get; set; }
+    public double PropPremiumCalculation_NetTPPremium { get; set; }
+    public double PropPremiumCalculation_SP_PR_LTFactor { get; set; }
+    public double PropPremiumCalculation_ServiceTax { get; set; }
+    public double PropPremiumCalculation_StampDuty { get; set; }
+    public bool PropPremiumCalculation_StampDutyApplicability { get; set; }
+    public double PropPremiumCalculation_TerrorismPremium { get; set; }
+    public double PropPremiumCalculation_TotalPremium { get; set; }
+    public double PropPremiumCalculation_TransferFeeAmount { get; set; }
+    public bool PropPreviousPolicyDetails_AddRow { get; set; }
+    public bool PropPreviousPolicyDetails_CalculateClaimRatio { get; set; }
+    public double PropPreviousPolicyDetails_ClaimRatio { get; set; }
+    public string PropPreviousPolicyDetails_Combo1 { get; set; }
+    public string PropPreviousPolicyDetails_FirstPolicyInceptionDate { get; set; }
+    public double PropPreviousPolicyDetails_InceptionYear { get; set; }
+    public double PropPreviousPolicyDetails_NCBPercentage { get; set; }
+    public bool PropPreviousPolicyDetails_OldTariffSlab { get; set; }
+    public string PropPreviousPolicyDetails_PreviousPolicyType { get; set; }
+    public bool PropPreviousPolicyDetails_Validate { get; set; }
+    public string PropProductDetails_Component17 { get; set; }
+    public double PropProductDetails_DepartmentCode { get; set; }
+    public double PropProductDetails_ProductCode { get; set; }
+    public string PropProductDetails_ProductName { get; set; }
+    public string PropProductName { get; set; }
+    public string PropReferenceNoDate_ReferenceDate_Mandatary { get; set; }
+    public double PropReferenceNoDate_ReferenceNo_Mandatary { get; set; }
+    public double PropRepeatablePremiumBlock_BasicPremium { get; set; }
+    public string PropRepeatablePremiumBlock_BlockODPremium { get; set; }
+    public string PropRepeatablePremiumBlock_BlockTPPremium { get; set; }
+    public string PropRepeatablePremiumBlock_EduCess { get; set; }
+    public string PropRepeatablePremiumBlock_EndtEduCess { get; set; }
+    public string PropRepeatablePremiumBlock_EndtHigherEduCess { get; set; }
+    public string PropRepeatablePremiumBlock_HigherEduCess { get; set; }
+    public double PropRepeatablePremiumBlock_NetPremium { get; set; }
+    public double PropRepeatablePremiumBlock_NetPremiumCurrency { get; set; }
+    public double PropRepeatablePremiumBlock_ServiceTax { get; set; }
+    public string PropRepeatablePremiumBlock_TerrorismPremium { get; set; }
+    public double PropRepeatablePremiumBlock_TotalSumInsured { get; set; }
+    public string PropSPDetails_SPCode { get; set; }
+    public string PropSPDetails_SPName { get; set; }
+    public string PropSerIntermediaryDetails_SerIntermediaryCode { get; set; }
+    public string PropSerIntermediaryDetails_SerIntermediaryName { get; set; }
+    public string PropSerIntermediaryDetails_SerIntermediaryType { get; set; }
+    public string PropServiceTaxExemptionCategory_Component43 { get; set; }
+    public string PropVerticalDtls_PrimaryVerticalCode { get; set; }
+    public string PropVerticalDtls_PrimaryVerticalName { get; set; }
+    public string PropVerticalDtls_SecondaryVerticalCode { get; set; }
+    public string PropVerticalDtls_SecondaryVerticalName { get; set; }
+    public string PropVerticalDtls_ServicingPrimaryVerticalCode { get; set; }
+    public string PropVerticalDtls_ServicingPrimaryVerticalName { get; set; }
+    public string PropVerticalDtls_ServicingSecondaryVerticalCode { get; set; }
+    public string PropVerticalDtls_ServicingSecondaryVerticalName { get; set; }
+    public string PropVerticalDtls_ServicingTertiaryVerticalCode { get; set; }
+    public string PropVerticalDtls_ServicingTertiaryVerticalName { get; set; }
+    public string PropVerticalDtls_TertiaryVerticalCode { get; set; }
+    public string PropVerticalDtls_TertiaryVerticalName { get; set; }
+    public double PropWarranty_DepartmentCode { get; set; }
+    public double PropWarranty_ProductCode { get; set; }
+    public string PropWarranty_SectionCode { get; set; }
+
+}
+
+public class RiskDetails
+{
+    public string PropRisks_AdmittedNonAdmittedLocation { get; set; }
+    public string PropRisks_AreaLocality { get; set; }
+    public string PropRisks_Country1 { get; set; }
+    public string PropRisks_EarthquakeZone { get; set; }
+    public string PropRisks_IsFloaterApplicable { get; set; }
+    public bool PropRisks_IsMasterPolicytobePrinted { get; set; }
+    public bool PropRisks_IsPremCalcBypassReqd { get; set; }
+    public string PropRisks_LocationCode { get; set; }
+    public double PropRisks_LocationDiscountLoading { get; set; }
+    public string PropRisks_LocationSumInsured { get; set; }
+    public string PropRisks_MasterPolicyEndDate { get; set; }
+    public string PropRisks_MasterPolicyStartDate { get; set; }
+    public double PropRisks_NoOfFloaterLocation { get; set; }
+    public bool PropRisks_OtherCheck1 { get; set; }
+    public bool PropRisks_OtherCheck2 { get; set; }
+    public bool PropRisks_OtherCheck3 { get; set; }
+    public bool PropRisks_OtherCheck4 { get; set; }
+    public bool PropRisks_OtherCheck5 { get; set; }
+    public string PropRisks_OtherCombo1 { get; set; }
+    public string PropRisks_OtherCombo2 { get; set; }
+    public string PropRisks_OtherCombo3 { get; set; }
+    public string PropRisks_OtherCombo4 { get; set; }
+    public string PropRisks_OtherCombo5 { get; set; }
+    public string PropRisks_OtherInfo1 { get; set; }
+    public string PropRisks_OtherInfo10 { get; set; }
+    public string PropRisks_OtherInfo2 { get; set; }
+    public string PropRisks_OtherInfo3 { get; set; }
+    public string PropRisks_OtherInfo4 { get; set; }
+    public string PropRisks_OtherInfo5 { get; set; }
+    public string PropRisks_OtherInfo6 { get; set; }
+    public string PropRisks_OtherInfo7 { get; set; }
+    public string PropRisks_OtherInfo8 { get; set; }
+    public string PropRisks_OtherInfo9 { get; set; }
+    public string PropCustomerDtls_CustomerName { get; set; }
+    public double PropRisks_OtherNumber2 { get; set; }
+    public double PropRisks_OtherNumber3 { get; set; }
+    public double PropRisks_OtherNumber4 { get; set; }
+    public double PropRisks_OtherNumber5 { get; set; }
+    public double PropRisks_OtherNumber6 { get; set; }
+    public double PropRisks_OtherNumber7 { get; set; }
+    public double PropRisks_OtherNumber8 { get; set; }
+    public double PropRisks_OtherNumber9 { get; set; }
+    public string PropRisks_Product1686 { get; set; }
+    public string PropRisks_Product1687 { get; set; }
+    public bool PropRisks_PropRisks_IsMasterPolicyReqd { get; set; }
+    public string PropRisks_RiskLocationCode { get; set; }
+    public string PropRisks_RiskLocationDescription  { get; set; }
+    public double PropRisks_SecIAgeOfTheBuilding { get; set; }
+    public double PropRisks_SecIAgeOfTheBuildingV { get; set; }
+    public bool PropRisks_SecIAtLeastTwoAvailable { get; set; }
+    public string PropRisks_SecIBasisOfIndemnity { get; set; }
+    public string PropRisks_SecIBriefDescOfOccupancy { get; set; }
+    public bool PropRisks_SecIBuildingExcludePlinthCheck { get; set; }
+    public string PropRisks_SecIBuildingExcludePlinthDesc { get; set; }
+    public double PropRisks_SecIBuildingExcludePlinthSI { get; set; }
+    public bool PropRisks_SecIBuildingIncludePlinthCheck { get; set; }
+    public string PropRisks_SecIBuildingIncludePlinthDesc { get; set; }
+    public double PropRisks_SecIBuildingIncludePlinthSI { get; set; }
+    public string PropRisks_SecIDeclarationApplicable { get; set; }
+    public string PropRisks_SecIDescriptionOfOccupancy { get; set; }
+    public double PropRisks_SecIDiscountOnGrossTariffRate { get; set; }
+    public double PropRisks_SecIEQRate { get; set; }
+    public string PropRisks_SecIElectricalInstalationDesc { get; set; }
+    public double PropRisks_SecIElectricalInstalationSI { get; set; }
+    public string PropRisks_SecIElectricalRegulations { get; set; }
+    public double PropRisks_SecIElectricalRegulationsV { get; set; }
+    public string PropRisks_SecIExcessDeductibles { get; set; }
+    public string PropRisks_SecIExcludingStocksDesc { get; set; }
+    public double PropRisks_SecIExcludingStocksSI { get; set; }
+    public string PropRisks_SecIFinishedStockDesc { get; set; }
+    public double PropRisks_SecIFinishedStockSI { get; set; }
+    public bool PropRisks_SecIFireAlarmSystem { get; set; }
+    public bool PropRisks_SecIFixedWaterSpraySystem { get; set; }
+    public double PropRisks_SecIFlexaRate { get; set; }
+    public bool PropRisks_SecIFoamSystem { get; set; }
+    public string PropRisks_SecIFurnitureDescription { get; set; }
+    public double PropRisks_SecIFurnitureSI { get; set; }
+    public bool PropRisks_SecIGasFloodingSystem { get; set; }
+    public string PropRisks_SecIGoodsDesc { get; set; }
+    public double PropRisks_SecIGoodsSI { get; set; }
+    public string PropRisks_SecIGroundFloorHillyTerrain { get; set; }
+    public double PropRisks_SecIGroundFloorHillyTerrainV { get; set; }
+    public string PropRisks_SecIHazardousGoodStored { get; set; }
+    public double PropRisks_SecIHazardousGoodStoredV { get; set; }
+    public double PropRisks_SecIHeightOfTheBuilding { get; set; }
+    public double PropRisks_SecIHeightOfTheBuildingV { get; set; }
+    public bool PropRisks_SecIHydrantSystem { get; set; }
+    public bool PropRisks_SecIIAir { get; set; }
+    public double PropRisks_SecIIAnnualGrossProfitSI { get; set; }
+    public string PropRisks_SecIIBasisOfIndemnity { get; set; }
+    public string PropRisks_SecIIBasisOfSumInsured { get; set; }
+    public string PropRisks_SecIIBriefDescOfOccupancy { get; set; }
+    public string PropRisks_SecIICustomerDependency { get; set; }
+    public string PropRisks_SecIIDescriptionOfOccupancy { get; set; }
+    public string PropRisks_SecIIExcessDeductibles { get; set; }
+    public string PropRisks_SecIIFirePolicyCoverage { get; set; }
+    public bool PropRisks_SecIIGas { get; set; }
+    public string PropRisks_SecIIIBasisOfSumInsured { get; set; }
+    public string PropRisks_SecIIICoinsCurrencyDesc { get; set; }
+    public double PropRisks_SecIIICoinsCurrencySI { get; set; }
+    public string PropRisks_SecIIIExcessDeductibles { get; set; }
+    public double PropRisks_SecIIIFirstLossBasis { get; set; }
+    public string PropRisks_SecIIIFurnitureDescription { get; set; }
+    public double PropRisks_SecIIIFurnitureSI { get; set; }
+    public string PropRisks_SecIIIGoodsDescription { get; set; }
+    public double PropRisks_SecIIIGoodsSumInsured { get; set; }
+    public double PropRisks_SecIIIMAS { get; set; }
+    public string PropRisks_SecIIIOtherAssetsDesc { get; set; }
+    public double PropRisks_SecIIIOtherAssetsSI { get; set; }
+    public double PropRisks_SecIIIPML { get; set; }
+    public string PropRisks_SecIIIStockInTradeDesc { get; set; }
+    public double PropRisks_SecIIIStockInTradeSI { get; set; }
+    public double PropRisks_SecIIITotalSI { get; set; }
+    public string PropRisks_SecIIIWhetherFirstLossBasis { get; set; }
+    public string PropRisks_SecIILayoffandRetrenchment { get; set; }
+    public double PropRisks_SecIIMAS { get; set; }
+    public double PropRisks_SecIINetProfitSI { get; set; }
+    public string PropRisks_SecIINumberOfCustomer { get; set; }
+    public double PropRisks_SecIINumberOfLocations { get; set; }
+    public string PropRisks_SecIINumberOfSuppliers { get; set; }
+    public string PropRisks_SecIIOccupancyType { get; set; }
+    public double PropRisks_SecIIPML { get; set; }
+    public bool PropRisks_SecIIPower { get; set; }
+    public string PropRisks_SecIISIBreakupAvailable { get; set; }
+    public double PropRisks_SecIIStandingChargesSI { get; set; }
+    public bool PropRisks_SecIISteam { get; set; }
+    public string PropRisks_SecIISupplierDependency { get; set; }
+    public double PropRisks_SecIITotalSumInsured { get; set; }
+    public string PropRisks_SecIIWages { get; set; }
+    public string PropRisks_SecIIWagesIndemnityPeriod { get; set; }
+    public string PropRisks_SecIIWagesPeriodOfLiability { get; set; }
+    public string PropRisks_SecIIWagesRemainder { get; set; }
+    public string PropRisks_SecIIWagesinweeks { get; set; }
+    public bool PropRisks_SecIIWater { get; set; }
+    public string PropGeneralProposalInformation_BusinessType_Mandatary { get; set; }
+    public string PropRisks_SecIIndicatewhetherAMC { get; set; }
+    public double PropRisks_SecIIndicatewhetherAMCV { get; set; }
+    public string PropRisks_SecIIsItCHS { get; set; }
+    public double PropRisks_SecILocationBasementV { get; set; }
+    public string PropRisks_SecILossHistory { get; set; }
+    public double PropRisks_SecILossHistoryV { get; set; }
+    public double PropRisks_SecIMAS { get; set; }
+    public bool PropRisks_SecINoFireProtection { get; set; }
+    public double PropRisks_SecINoOfFloors { get; set; }
+    public double PropRisks_SecINoOfFloorsV { get; set; }
+    public string PropRisks_SecIOccupancyType { get; set; }
+    public bool PropRisks_SecIOneProtectionAvailable { get; set; }
+    public string PropRisks_SecIOtherDesc { get; set; }
+    public double PropRisks_SecIOtherSI { get; set; }
+    public string PropRisks_SecIOthers { get; set; }
+    public double PropRisks_SecIOthersV { get; set; }
+    public bool PropRisks_SecIOtherspleasespecifybelow { get; set; }
+    public double PropRisks_SecIPML { get; set; }
+    public string PropRisks_SecIPlantandMachineryDesc { get; set; }
+    public double PropRisks_SecIPlantandMachinerySI { get; set; }
+    public string PropRisks_SecIPlinthandFoundationDesc { get; set; }
+    public double PropRisks_SecIPlinthandFoundationSI { get; set; }
+    public bool PropRisks_SecIPortableExtinguishers { get; set; }
+    public string PropRisks_SecIRSMDcovered { get; set; }
+    public string PropRisks_SecIRawMaterialDesc { get; set; }
+    public double PropRisks_SecIRawMaterialSI { get; set; }
+    public string PropRisks_SecIRiskAndFireBrigade { get; set; }
+    public double PropRisks_SecIRiskAndFireBrigadeV { get; set; }
+    public string PropRisks_SecIRiskSlient { get; set; }
+    public double PropRisks_SecIRiskSlientV { get; set; }
+    public double PropRisks_SecISTFIRate { get; set; }
+    public bool PropRisks_SecISmallBoreHoseReels { get; set; }
+    public bool PropRisks_SecISprinklerSystem { get; set; }
+    public string PropRisks_SecIStocksExcludingDesc { get; set; }
+    public double PropRisks_SecIStocksExcludingSI { get; set; }
+    public string PropRisks_SecIStocksInProcessDesc { get; set; }
+    public double PropRisks_SecIStocksInProcessSI { get; set; }
+    public string PropGeneralProposalInformation_OfficeName { get; set; }
+    public double PropRisks_SecITerrorismRate { get; set; }
+    public double PropRisks_SecITotalSumInsured { get; set; }
+    public bool PropRisks_SecITrailerPumpsFireEngines { get; set; }
+    public string PropRisks_SecITypeOfConstruction { get; set; }
+    public double PropRisks_SecITypeOfConstructionV { get; set; }
+    public string PropRisks_SecITypeOfFireProtection { get; set; }
+    public double PropRisks_SecITypeOfFireProtectionV { get; set; }
+    public string PropRisks_SecIVAdmittedNonAdmittedLoc { get; set; }
+    public string PropRisks_SecIVAreaLocality { get; set; }
+    public string PropRisks_SecIVCountry { get; set; }
+    public string PropRisks_SecIVExcessDeductibles { get; set; }
+    public string PropRisks_SecIVInSafeParticulars { get; set; }
+    public double PropRisks_SecIVInSafeRate { get; set; }
+    public double PropRisks_SecIVInsuredSafeLimit { get; set; }
+    public string PropRisks_SecIVInsuredSafeParticulars { get; set; }
+    public double PropRisks_SecIVInsuredSafeRate { get; set; }
+    public double PropRisks_SecIVLimitOfLiability { get; set; }
+    public double PropRisks_SecIVMAS { get; set; }
+    public double PropRisks_SecIVOtherPerTransitLimit { get; set; }
+    public double PropRisks_SecIVOtherRate { get; set; }
+    public string PropRisks_SecIVOtherTransitFrom { get; set; }
+    public string PropRisks_SecIVOtherTransitTo { get; set; }
+    public double PropRisks_SecIVOtherTurnover { get; set; }
+    public double PropRisks_SecIVOutOfSafeLimit { get; set; }
+    public string PropRisks_SecIVOutOfSafeParticulars { get; set; }
+    public double PropRisks_SecIVOutOfSafeRate { get; set; }
+    public double PropRisks_SecIVPML { get; set; }
+    public string PropGeneralProposalInformation_ServiceTaxExemptionCategory_Mandatary { get; set; }
+    public string PropRisks_SecIVRiskLocationDesc { get; set; }
+    public string PropRisks_SecIVTownCity { get; set; }
+    public double PropRisks_SecIVWagesPerTransitLimit { get; set; }
+    public double PropRisks_SecIVWagesRate { get; set; }
+    public string PropRisks_SecIVWagesTransitFrom { get; set; }
+    public string PropRisks_SecIVWagesTransitTo { get; set; }
+    public double PropRisks_SecIVWagesTurnover { get; set; }
+    public string PropRisks_SecIXExcessDeductibles { get; set; }
+    public double PropRisks_SecIXMAS { get; set; }
+    public double PropRisks_SecIXPML { get; set; }
+    public double PropRisks_SecIXSumInsured { get; set; }
+    public double PropRisks_SecIindemnityPeriodExpenses { get; set; }
+    public double PropRisks_SecIindemnityPeriodLossOfRent { get; set; }
+    public double PropRisks_SecVAOA { get; set; }
+    public double PropRisks_SecVAOY { get; set; }
+    public string PropRisks_SecVExcessDeductibles { get; set; }
+    public double PropRisks_SecVIAOA { get; set; }
+    public double PropRisks_SecVIAOY { get; set; }
+    public string PropRisks_SecVIExcessDeductibles { get; set; }
+    public double PropRisks_SecVIIAOA { get; set; }
+    public double PropRisks_SecVIIAOY { get; set; }
+    public string PropRisks_SecVIIExcessDeductibles { get; set; }
+    public string PropRisks_SecVIIIExcessDeductibles { get; set; }
+    public double PropRisks_SecVIIIMAS { get; set; }
+    public double PropRisks_SecVIIIPML { get; set; }
+    public double PropRisks_SecVIIISumInsured { get; set; }
+    public double PropRisks_SecVIIMAS { get; set; }
+    public double PropRisks_SecVIIPML { get; set; }
+    public double PropRisks_SecVIISumInsured { get; set; }
+    public double PropRisks_SecVIMAS { get; set; }
+    public double PropRisks_SecVIPML { get; set; }
+    public double PropRisks_SecVISumInsured { get; set; }
+    public double PropRisks_SecVMAS { get; set; }
+    public double PropRisks_SecVPML { get; set; }
+    public double PropRisks_SecVSumInsured { get; set; }
+    public string PropRisks_SecXExcessDeductibles { get; set; }
+    public double PropRisks_SecXIAOA { get; set; }
+    public double PropRisks_SecXIAOY { get; set; }
+    public string PropRisks_SecXIExcessDeductibles { get; set; }
+    public string PropRisks_SecXIIBasis { get; set; }
+    public string PropRisks_SecXIIDesignation { get; set; }
+    public string PropRisks_SecXIIExcessDeductibles { get; set; }
+    public double PropRisks_SecXIIIAggregateLimit { get; set; }
+    public double PropRisks_SecXIIIAnyOneAccident { get; set; }
+    public string PropRisks_SecXIIICoverageTerritory { get; set; }
+    public string PropRisks_SecXIIIExcessDeductibles { get; set; }
+    public double PropRisks_SecXIIIMAS { get; set; }
+    public double PropRisks_SecXIIIPML { get; set; }
+    public string PropRisks_SecXIIIRetroactiveDate { get; set; }
+    public double PropRisks_SecXIIITurnover { get; set; }
+    public double PropRisks_SecXIIMAS { get; set; }
+    public double PropRisks_SecXIINamedSumInsured { get; set; }
+    public double PropRisks_SecXIINoOfEmployee { get; set; }
+    public double PropRisks_SecXIIPML { get; set; }
+    public double PropRisks_SecXIIUnnamedSumInsured { get; set; }
+    public double PropRisks_SecXIMAS { get; set; }
+    public double PropRisks_SecXIPML { get; set; }
+    public double PropRisks_SecXISumInsured { get; set; }
+    public string PropRisks_SecXIVCoverageTerritory { get; set; }
+    public string PropRisks_SecXIVExcessDeductibles { get; set; }
+    public double PropRisks_SecXIVMAS { get; set; }
+    public double PropRisks_SecXIVPML { get; set; }
+    public double PropRisks_SecXIVSumInsured { get; set; }
+    public double PropRisks_SecXMAS { get; set; }
+    public double PropRisks_SecXPML { get; set; }
+    public double PropRisks_SecXSumInsured { get; set; }
+    public string PropRisks_SecXVExcessDeductibles { get; set; }
+    public string PropRisks_SecXVIBasisOfDeclaration { get; set; }
+    public string PropRisks_SecXVIBasisOfValuation { get; set; }
+    public string PropRisks_SecXVIExcessDeductibles { get; set; }
+    public double PropRisks_SecXVIMAS { get; set; }
+    public string PropRisks_SecXVIModeOfConveyance { get; set; }
+    public double PropRisks_SecXVIPML { get; set; }
+    public string PropRisks_SecXVIPackingDetails { get; set; }
+    public double PropRisks_SecXVIPerLocationLimit { get; set; }
+    public double PropRisks_SecXVIPerSendingLimit { get; set; }
+    public string PropRisks_SecXVISubjectMatterInsured { get; set; }
+    public double PropRisks_SecXVISumInsured { get; set; }
+    public string PropRisks_SecXVIVoyageFrom { get; set; }
+    public string PropRisks_SecXVIvoyageTo { get; set; }
+    public double PropRisks_SecXVLOLAllOccurrences { get; set; }
+    public double PropRisks_SecXVLOLEachOccurrence { get; set; }
+    public double PropRisks_SecXVMAS { get; set; }
+    public double PropRisks_SecXVPML { get; set; }
+    public bool PropRisks_SectionIFAP { get; set; }
+    public bool PropRisks_SectionIIFLP { get; set; }
+    public bool PropRisks_SectionIIIBH { get; set; }
+    public bool PropRisks_SectionIVMoneyTransitSafe { get; set; }
+    public bool PropRisks_SectionIXFGSanitaryFittings { get; set; }
+    public bool PropRisks_SectionVEMAppliancesBreakdown { get; set; }
+    public bool PropRisks_SectionVIElectronicEquipment { get; set; }
+    public bool PropRisks_SectionVIIBPplant { get; set; }
+    public bool PropRisks_SectionVIIIPortableEquipment { get; set; }
+    public bool PropRisks_SectionXAccompaniedBaggage { get; set; }
+    public bool PropRisks_SectionXIIILegalLiability { get; set; }
+    public bool PropRisks_SectionXIIInfidelityDishonesty { get; set; }
+    public bool PropRisks_SectionXISignage { get; set; }
+    public bool PropRisks_SectionXIVEmpCompensation { get; set; }
+    public bool PropRisks_SectionXVIInlandTransit { get; set; }
+    public bool PropRisks_SectionXVTenantLegalLiability { get; set; }
+    public string PropRisks_TownCity { get; set; }
+    public string PropRisks_WhetherDeclaration { get; set; }
+
+    
+}
+
+
+
+public class BPSooksmaFireSectionSI
+{
+    public string ItemType { get; set; }
+    public string Description { get; set; }
+    public double SumInsured { get; set; }
+}
+public class SectionIAddonNonTerrorismCover
+{
+    public string CoverGroups { get; set; }
+    public string Description { get; set; }
+    public double SumInsured { get; set; }
+    public double Rate { get; set; }
+    public double Premium { get; set; }
+}
+
+public class PropRiskCol
+{
+    public bool IsOptionalCover { get; set; }
+    public double PropRisks_DifferentialSI { get; set; }
+    public double PropRisks_DummyPremium { get; set; }
+    public double PropRisks_DummyRate { get; set; }
+    public double PropRisks_DummySumInsured { get; set; }
+    public double PropRisks_EndorsementAmount { get; set; }
+    public bool PropRisks_IsDataDeleted { get; set; }
+    public bool PropRisks_IsOldDataDeleted { get; set; }
+    public double PropRisks_Premium { get; set; }
+    public double PropRisks_Rate { get; set; }
+    public string PropRisks_RiskSIComponent { get; set; }
+    public string PropRisks_Section { get; set; }
+    public double PropRisks_SumInsured { get; set; }
+}
+
+public class RiskGroup
+{
+    public List<CoverSIComponantDetails> coverSIComponantDetails { get; set; }
+}
+
+public class CoverSIComponantDetails
+{
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public string Value { get; set; }
+    public List<CoverSIComponant> CoverSIComponant { get; set; }
+}
+
+public class CoverSIComponant
+{
+    public string PropCoverDetails_CoverGroups { get; set; }
+    public double PropCoverDetails_DifferentialSI { get; set; }
+    public double PropCoverDetails_DifferentialSINonTerrorism { get; set; }
+    public double PropCoverDetails_DifferentialSITerrorism { get; set; }
+    public double PropCoverDetails_EndorsementAmount { get; set; }
+    public bool PropCoverDetails_IsDataDeleted { get; set; }
+    public bool PropCoverDetails_IsOldDataDeleted { get; set; }
+    public double PropCoverDetails_ManualPremium { get; set; }
+    public double PropCoverDetails_Premium { get; set; }
+    public double PropCoverDetails_PremiumNonTerrorism { get; set; }
+    public double PropCoverDetails_PremiumTerrorism { get; set; }
+    public double PropCoverDetails_Rate { get; set; }
+    public double PropCoverDetails_RefundAmountNonTerrorism { get; set; }
+    public double PropCoverDetails_RefundAmountTerrorism { get; set; }
+    public double PropCoverDetails_SumInsured { get; set; }
+    public double PropCoverDetails_SumInsuredNonTerrorism { get; set; }
+    public double PropCoverDetails_SumInsuredTerrorism { get; set; }
+
+}
+
+public class ClauseDetails
+{
+
+}
+public class WarrantyDetails { }
+
+public class ConditionDetails { }
+public class ExclusionDetails { }
+public class OtherMappingFields { }
+}
+
+using HomeConnect.Domain.GCModels;
+
+namespace HomeConnect.GCintegration;
+
+public class XMLObjectConverter
+{
+    public ProposalDetails genProposalDetails()
+    {
+        ProposalDetails response = new ProposalDetails();
+        
+        response.generalProposalInformation = genGeneralProposalInformation();
+        response.RiskDetails = genRiskDetails();
+
+        return response;
+    }
+
+    private GeneralProposalInformation genGeneralProposalInformation()
+    {
+        GeneralProposalInformation generalProposalInformation = new GeneralProposalInformation
+        {
+            ErrorTrackingNeeded = true,
+            ProductType = "MB",
+            PropBranchDetails_IMDBranchCode = "BR123",
+            PropBranchDetails_IMDBranchName = "Nilamani Branch",
+            PropClauseDetails_DepartmentCode_Mandatary = 29.0
+        };
+
+        return generalProposalInformation;
+    }
+
+    private RiskDetails genRiskDetails()
+    {
+        RiskDetails riskDetails = new RiskDetails
+        {
+            PropCustomerDtls_CustomerName = "Nilamani"
+
+        };
+
+        return riskDetails;
+    }
+
+
+    //RiskDetails OtherDetailsGrid BPSooksmaFireSectionSI
+    public BPSooksmaFireSectionSI genBPSooksmaFireSectionSI()
+    {
+        BPSooksmaFireSectionSI bPSooksmaFireSectionSI = new BPSooksmaFireSectionSI
+        {
+            ItemType = "Nilamani",
+            SumInsured= 123234
+        };
+        return bPSooksmaFireSectionSI;
+    }
+
+    //RiskDetails OtherDetailsGrid SectionIAddonNonTerrorismCover
+    public SectionIAddonNonTerrorismCover genSectionIAddonNonTerrorismCover()
+    {
+        SectionIAddonNonTerrorismCover sectionIAddonNonTerrorismCover = new SectionIAddonNonTerrorismCover
+        {
+            Description= "Nilamani",
+            SumInsured = 123234
+        };
+        return sectionIAddonNonTerrorismCover;
+    }
+
+    //RiskDetails OtherDetailsGrid PropRiskCol
+    public PropRiskCol genPropRiskCol()
+    {
+        PropRiskCol propRiskCol = new PropRiskCol
+        {
+           PropRisks_Section  = "Nilamani"
+        };
+        return propRiskCol;
+    }
+
+
+    //RiskDetails OtherDetailsGrid RiskGroup
+    public RiskGroup genRiskGroup()
+    {
+        RiskGroup riskGroup = new RiskGroup
+        {
+            coverSIComponantDetails = new List<CoverSIComponantDetails>
+            {
+                new CoverSIComponantDetails()
+                {
+                    Name = "Section I Bharat Griha Raksha Material Damage",
+                    Value = "10000",
+                    Type = "GroupData",
+                    CoverSIComponant = new List<CoverSIComponant>()
+                    {
+                        new CoverSIComponant()
+                        {
+                            PropCoverDetails_CoverGroups = "Section I Bharat Griha Raksha Material Damage",
+                            PropCoverDetails_DifferentialSI =10000
+                        }
+                    }
+                },
+                 new CoverSIComponantDetails()
+                {
+                    Name = "Section I Terrorism Cover",
+                    Value = "10000",
+                    Type = "GroupData",
+                    CoverSIComponant = new List<CoverSIComponant>()
+                    {
+                        new CoverSIComponant()
+                        {
+                            PropCoverDetails_CoverGroups = "Section I Bharat Griha Raksha Material Damage",
+                            PropCoverDetails_DifferentialSI =10000
+                        }
+                    }
+                }
+            }
+        };
+
+        return riskGroup;
+    }
+
+}
+
+
+
+
+
+
+
+
+    public XElement CreateRootXML()
+    {
+        //string productCode, string type, object objRisk, CommissionProposalInformation objGen
+        HCXMLIntegration hCXMLIntegration = new HCXMLIntegration();
+        XElement xmlRoot = hCXMLIntegration.CreateHomeComprehensivePackageXml();
+        
+
+
+        return xmlRoot;
+    }
