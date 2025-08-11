@@ -1,0 +1,107 @@
+public XElement CreateXmlFromModel(object model, string objectName = null)
+{
+    if (model == null) return null;
+
+    Type modelType = model.GetType();
+    XElement root = new XElement(objectName ?? modelType.Name);
+
+    foreach (var property in modelType.GetProperties())
+    {
+        object value = property.GetValue(model);
+        Type propType = property.PropertyType;
+        string typeName = GetTypeName(propType);
+
+        // Handle nulls
+        if (value == null)
+        {
+            root.Add(new XElement(property.Name,
+                new XAttribute("Type", typeName),
+                new XAttribute("Value", "")));
+        }
+        // Handle primitive types
+        else if (IsSimple(propType))
+        {
+            string stringValue = value.ToString();
+            if (propType == typeof(bool) || propType == typeof(bool?))
+                stringValue = stringValue.ToLower();
+
+            root.Add(new XElement(property.Name,
+                new XAttribute("Type", typeName),
+                new XAttribute("Value", stringValue)));
+        }
+        // Handle nested complex objects
+        else
+        {
+            XElement childElement = CreateXmlFromModel(value, property.Name);
+            root.Add(childElement);
+        }
+    }
+
+    return root;
+}
+
+
+
+
+private string GetTypeName(Type type)
+{
+    if (type == typeof(bool) || type == typeof(bool?)) return "Boolean";
+    if (type == typeof(string)) return "String";
+    if (type == typeof(double) || type == typeof(double?)) return "Double";
+    if (type == typeof(int) || type == typeof(int?)) return "Int32";
+    if (type == typeof(decimal) || type == typeof(decimal?)) return "Decimal";
+    if (type == typeof(DateTime) || type == typeof(DateTime?)) return "DateTime";
+
+    // Handle nullable types
+    if (Nullable.GetUnderlyingType(type) != null)
+    {
+        return GetTypeName(Nullable.GetUnderlyingType(type));
+    }
+
+    return "Object"; // Default type
+}
+
+private bool IsSimple(Type type)
+{
+    return type.IsPrimitive
+        || type == typeof(string)
+        || type == typeof(decimal)
+        || type == typeof(DateTime)
+        || type == typeof(Guid)
+        || type == typeof(bool)
+        || type == typeof(double)
+        || type == typeof(int)
+        || Nullable.GetUnderlyingType(type) != null && IsSimple(Nullable.GetUnderlyingType(type));
+}
+
+
+
+
+public class RiskDetails
+{
+    public string PropRisks_AdmittedNonAdmittedLocation { get; set; }
+    public string PropRisks_AreaLocality { get; set; }
+    public string PropRisks_Country1 { get; set; }
+    public string PropRisks_EarthquakeZone { get; set; }
+    public string PropRisks_IsMasterPolicytobePrinted { get; set; }
+    public OtherDetailsGrid OtherDetailsGrid { get; set; }
+}
+
+public class OtherDetailsGrid
+{
+    public BPSooksmaFireSectionSI BPSooksmaFireSectionSI { get; set; }
+
+    public string PropRisks_AreaLocality { get; set; }
+    public string PropRisks_Country1 { get; set; }
+    public string PropRisks_EarthquakeZone { get; set; }
+    public string PropRisks_IsMasterPolicytobePrinted { get; set; }
+}
+
+public class BPSooksmaFireSectionSI
+{
+    public string ItemType { get; set; }
+    public string Description { get; set; }
+    public string SumInsured { get; set; }
+}
+
+
