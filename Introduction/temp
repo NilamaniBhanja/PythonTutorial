@@ -1,85 +1,153 @@
-using System.Collections.Generic;
-
-public class ClauseDetails
+public static List<ClauseDetails> GetClauseDetailsList()
 {
-    public double PropClauseDetails_ClauseCode_Mandatary { get; set; }
-    public string PropClauseDetails_ClauseNumber_Mandatary { get; set; }
-    public string PropClauseDetails_ClauseShortDescription { get; set; }
-    public string PropClauseDetails_ClauseType { get; set; }
-    public bool PropClauseDetails_Default_Mandatary { get; set; }
-    public bool PropClauseDetails_IsDataDeleted { get; set; }
-    public bool PropClauseDetails_IsOldDataDeleted { get; set; }
-}
-
-public class ClauseData
-{
-    public static List<ClauseDetails> GetClauseDetailsList()
+    return new List<ClauseDetails>
     {
-        return new List<ClauseDetails>
-        {
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 48230,
-                PropClauseDetails_ClauseNumber_Mandatary = "385",
-                PropClauseDetails_ClauseShortDescription = "COMMUNICABLE DISEASE EXCLUSION CLAUSE",
-                PropClauseDetails_ClauseType = "Mandatory True",
-                PropClauseDetails_Default_Mandatary = true,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            },
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 51134,
-                PropClauseDetails_ClauseNumber_Mandatary = "12",
-                PropClauseDetails_ClauseShortDescription = "Common Clause : Co-insurance Clause",
-                PropClauseDetails_ClauseType = "Optional True",
-                PropClauseDetails_Default_Mandatary = false,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            },
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 51131,
-                PropClauseDetails_ClauseNumber_Mandatary = "9",
-                PropClauseDetails_ClauseShortDescription = "Section I: ATM Cash Withdrawal Protection",
-                PropClauseDetails_ClauseType = "Optional True",
-                PropClauseDetails_Default_Mandatary = false,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            },
-            // Continue with all the remaining clauses...
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 51129,
-                PropClauseDetails_ClauseNumber_Mandatary = "6",
-                PropClauseDetails_ClauseShortDescription = "Section I: Accidental Damage Cover",
-                PropClauseDetails_ClauseType = "Optional True",
-                PropClauseDetails_Default_Mandatary = false,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            },
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 51124,
-                PropClauseDetails_ClauseNumber_Mandatary = "1",
-                PropClauseDetails_ClauseShortDescription = "Section I: Agreed Value Basis for Valuable Content",
-                PropClauseDetails_ClauseType = "Optional True",
-                PropClauseDetails_Default_Mandatary = false,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            },
-            // Add all remaining clauses following the same pattern
-            // ...
-            new ClauseDetails
-            {
-                PropClauseDetails_ClauseCode_Mandatary = 51251,
-                PropClauseDetails_ClauseNumber_Mandatary = "135",
-                PropClauseDetails_ClauseShortDescription = "Section X:Tenanat's Legal Liability Coverage Endoresement",
-                PropClauseDetails_ClauseType = "Optional True",
-                PropClauseDetails_Default_Mandatary = false,
-                PropClauseDetails_IsDataDeleted = false,
-                PropClauseDetails_IsOldDataDeleted = false
-            }
-        };
-    }
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "COMMUNICABLE DISEASE EXCLUSION CLAUSE", PropClauseDetails_ClauseType = "Mandatory True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Common Clause : Co-insurance Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: ATM Cash Withdrawal Protection", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Accidental Damage Cover", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Agreed Value Basis for Valuable Content", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Escalation Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Insurance of Additional Expenses of rent for an alternative accommodation Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Loss of Rent Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Temporary Resettlement Cover", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Terrorism Cover Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Third Party Legal Liability", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Water Damage Cover", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Agreed Bank Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Architects, Surveyor And Consulting Engineers Fees (Upto 5% Of Claim Amount)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Coinsurance Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Computer Loss General Exclusion", PropClauseDetails_ClauseType = "Mandatory True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Contract Price Insurance Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Designation Of Property Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:EARTHQUAKE (FIRE AND SHOCK)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Electronic Date Recognition Clause EDRC (B)", PropClauseDetails_ClauseType = "Mandatory True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Local Authority Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Market Value Clause for Stock", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Reinstatement Value Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Removal Of Debris Clause(Upto 2% Of Claim Amount)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Special Extension to the above General Exclusion", PropClauseDetails_ClauseType = "Mandatory True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Agreed Bank Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:CAPITAL ADDITIONS / NEWLY ACQUIRED PROPERTY / INTEREST", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:COSTS FOR CHANGING LOCKS AND REPAIR OF DAMAGE CAUSED TO THE INSURED PREMISES AFTER AN INSURED EVENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:DESIGNATION OF PROPERTY CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Declaration Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:EXPENSES TOWARDS REMOVAL OF DEBRIS AND MOVEMENT AND PROTECTION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:EXPENSES TOWARDS RESTORING PAPER FILES, PLANS, DATA AND INSTALLATION COSTS FOR COMPUTER PROGRAMS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:First Loss Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOSS OR DAMAGE DUE TO RIOT, STRIKE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOSS OR DAMAGE TO THE PROPERTIES OF THE EMPLOYEES OF THE INSURED", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Loss Minimisation Expenses", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:THEFT COVER UNACCOMPANIED BY HOUSEBREAKING", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:ASSAULT (Personal Accident)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:AUTOMATIC REINSTATEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:BUSINESS / WORKING HOURS EXTENDED", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DESIGNATION OF PROPERTY CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DIRECTORS, PARTNERS & EMPLOYEES EFFECTS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:INFIDILITY OF EMPLOYEE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:LOSS OR DAMAGE TO SAFES, STRONGROOMS & MONEY RECEPTACLES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:REPLACEMENT / REPAIR OF KEYS & LOCKS, RECODING OF LOCKING DEVICES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:TEMPORARY SAFE RENTAL (and the insurance thereof)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ADDITIONAL CUSTOMS DUTY", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:AIR FREIGHT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ALL TYPES OF IMPORTED MACHINERY", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Alternate Working", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Bakeries", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Carding Machines in Textile Industry", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:DEPRECIATION ADJUSTMENT FOR COMPONETS ALONG THE HOT GAS PATH OF GAS TURBINES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:DG SET ENDORSEMENT for ' Loss Minimisation'", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ESCALATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:EXPRESS FREIGHT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Expellers/Expellers Gears", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:FURNACE ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:GAS WORKS PLANTS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:GLASS LINED VESSELS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Glass and Graphite Equipments", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:INSURANCE OF ROPES IN LIFTS, CRANES AND ROPEWAYS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OVERHAUL OF ELECTRIC MOTORS (ABOVE 750 KW FOR MOTORS WITH 2 POLES AND ABOVE 1,000 KW FOR MOTORS WITH 4 AND MORE POLES)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OVERHAUL OF PLATEN PRESSES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OWNERS SURROUNDING PROPERTY", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Patterns and Core-Boxes", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Plastic Extruders/Injection Moulding Machines", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:REFRACTORY MATERIALS IN BOILERS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Reduction Gear Box", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Stand-by Machinery", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:THIRD PARTY LIABILITY", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:WIND MILLS ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ACT OF GOD PERILS EXTENTION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARE CUSTODY AND CONTROL EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARE, CUSTODY AND CONTROL EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARRIAGE OF EFFLUENTS (OUTSIDE THE PREMISES) EXTENSION.", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CONSTRUCTION EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:DEFENCE COST INCLUSIVE ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT FOR COVERING FOOD AND BEVERAGES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT FOR COVERING GOODS KEPT IN CUSTODY OF INSURED:", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT TO COVER LIABILITY ARISING OUT OF TRANSPORTATION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:FOOD & BEVERAGE EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:LIFT LIABILITY EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:LIFT LIABILITY EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:OTHER FACILITIES EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:OTHER FACILITIES EXTENSIONS COVERED BY INSURED AS LISTED BELOW", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:PROFESSIONAL LIABILITY EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:Prior & Pending Litigation Exclusion", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SPORTS FACILITIES COVERED BY THE INSURED AS LISTED BELOW:", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SUDDEN & ACCIDENTAL POLLUTION EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SWIMMING POOL EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:Sudden and Accidental Pollution Extension", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:TECHNICAL COLLABORATORS INCLUSION ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:TERRORISM LIABILITY EXTENTION ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:UNDERGROUND FACILITIES EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Additional Customs Duty", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Air Freight", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Concerning Air-Conditioning Plant", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Escalation Clause", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Express Freight", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Lightning and Overvoltage Protection Devices", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Medical Equipment using X-ray tubes", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Owners Surrounding Property", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Third Party Liability", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:EXPENSES TOWARDS RESTORING PAPER FILES, DATA AND INSTALLATION COSTS FOR COMPUTER PROGRAMS", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for Midterm inclusion of Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for Midterm inclusion of Riot, Strike and Malicious Damage cover was missing in the clause master list", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for exclusion of Damage caused by Riot, Strike, and Malicious Damage (RSMD)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:LOSS MINIMISATION EXPENSES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:NEWLY ACQUIRED PROPERTY / INTEREST", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:EXPENSES TOWARDS REMOVAL OF DEBRIS AND MOVEMENT AND PROTECTION", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for Midterm inclusion of Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for Midterm inclusion of Riot, Strike and Malicious Damage cover", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for exclusion of Damage caused by Riot, Strike, and Malicious Damage (RSMD)", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:LOSS MINIMISATION EXPENSES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:AUTOMATIC REINSTATEMENT", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
+        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section X:Tenanat's Legal Liability Coverage Endoresement", PropClauseDetails_ClauseType = "Optional True" }
+    };
 }
