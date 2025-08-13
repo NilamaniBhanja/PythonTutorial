@@ -1,153 +1,663 @@
-public static List<ClauseDetails> GetClauseDetailsList()
-{
-    return new List<ClauseDetails>
+    return new List<WarrantyDetail>
     {
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "COMMUNICABLE DISEASE EXCLUSION CLAUSE", PropClauseDetails_ClauseType = "Mandatory True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Common Clause : Co-insurance Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: ATM Cash Withdrawal Protection", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Accidental Damage Cover", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Agreed Value Basis for Valuable Content", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Escalation Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Insurance of Additional Expenses of rent for an alternative accommodation Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Loss of Rent Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Temporary Resettlement Cover", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Terrorism Cover Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Third Party Legal Liability", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I: Water Damage Cover", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Agreed Bank Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Architects, Surveyor And Consulting Engineers Fees (Upto 5% Of Claim Amount)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Coinsurance Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Computer Loss General Exclusion", PropClauseDetails_ClauseType = "Mandatory True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Contract Price Insurance Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Designation Of Property Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:EARTHQUAKE (FIRE AND SHOCK)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Electronic Date Recognition Clause EDRC (B)", PropClauseDetails_ClauseType = "Mandatory True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Local Authority Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Market Value Clause for Stock", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Reinstatement Value Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Removal Of Debris Clause(Upto 2% Of Claim Amount)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section I:Special Extension to the above General Exclusion", PropClauseDetails_ClauseType = "Mandatory True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Agreed Bank Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:CAPITAL ADDITIONS / NEWLY ACQUIRED PROPERTY / INTEREST", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:COSTS FOR CHANGING LOCKS AND REPAIR OF DAMAGE CAUSED TO THE INSURED PREMISES AFTER AN INSURED EVENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:DESIGNATION OF PROPERTY CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Declaration Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:EXPENSES TOWARDS REMOVAL OF DEBRIS AND MOVEMENT AND PROTECTION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:EXPENSES TOWARDS RESTORING PAPER FILES, PLANS, DATA AND INSTALLATION COSTS FOR COMPUTER PROGRAMS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:First Loss Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOSS OR DAMAGE DUE TO RIOT, STRIKE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:LOSS OR DAMAGE TO THE PROPERTIES OF THE EMPLOYEES OF THE INSURED", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Loss Minimisation Expenses", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:THEFT COVER UNACCOMPANIED BY HOUSEBREAKING", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section II:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:ASSAULT (Personal Accident)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:AUTOMATIC REINSTATEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:BUSINESS / WORKING HOURS EXTENDED", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DESIGNATION OF PROPERTY CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:DIRECTORS, PARTNERS & EMPLOYEES EFFECTS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:INFIDILITY OF EMPLOYEE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:LOSS OR DAMAGE TO SAFES, STRONGROOMS & MONEY RECEPTACLES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:REPLACEMENT / REPAIR OF KEYS & LOCKS, RECODING OF LOCKING DEVICES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:TEMPORARY SAFE RENTAL (and the insurance thereof)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section III:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ADDITIONAL CUSTOMS DUTY", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:AIR FREIGHT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ALL TYPES OF IMPORTED MACHINERY", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Alternate Working", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Bakeries", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Carding Machines in Textile Industry", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:DEPRECIATION ADJUSTMENT FOR COMPONETS ALONG THE HOT GAS PATH OF GAS TURBINES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:DG SET ENDORSEMENT for ' Loss Minimisation'", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:ESCALATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:EXPRESS FREIGHT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Expellers/Expellers Gears", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:FURNACE ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:GAS WORKS PLANTS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:GLASS LINED VESSELS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Glass and Graphite Equipments", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:INSURANCE OF ROPES IN LIFTS, CRANES AND ROPEWAYS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OVERHAUL OF ELECTRIC MOTORS (ABOVE 750 KW FOR MOTORS WITH 2 POLES AND ABOVE 1,000 KW FOR MOTORS WITH 4 AND MORE POLES)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OVERHAUL OF PLATEN PRESSES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:OWNERS SURROUNDING PROPERTY", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Patterns and Core-Boxes", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Plastic Extruders/Injection Moulding Machines", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:REFRACTORY MATERIALS IN BOILERS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Reduction Gear Box", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Stand-by Machinery", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:THIRD PARTY LIABILITY", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IV:WIND MILLS ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ACT OF GOD PERILS EXTENTION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARE CUSTODY AND CONTROL EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARE, CUSTODY AND CONTROL EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CARRIAGE OF EFFLUENTS (OUTSIDE THE PREMISES) EXTENSION.", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:CONSTRUCTION EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:DEFENCE COST INCLUSIVE ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT FOR COVERING FOOD AND BEVERAGES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT FOR COVERING GOODS KEPT IN CUSTODY OF INSURED:", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:ENDORSEMENT TO COVER LIABILITY ARISING OUT OF TRANSPORTATION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:FOOD & BEVERAGE EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:LIFT LIABILITY EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:LIFT LIABILITY EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:OTHER FACILITIES EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:OTHER FACILITIES EXTENSIONS COVERED BY INSURED AS LISTED BELOW", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:PROFESSIONAL LIABILITY EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:Prior & Pending Litigation Exclusion", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SPORTS FACILITIES COVERED BY THE INSURED AS LISTED BELOW:", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SUDDEN & ACCIDENTAL POLLUTION EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:SWIMMING POOL EXTENSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:Sudden and Accidental Pollution Extension", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:TECHNICAL COLLABORATORS INCLUSION ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:TERRORISM LIABILITY EXTENTION ENDORSEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section IX:UNDERGROUND FACILITIES EXCLUSION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Additional Customs Duty", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Air Freight", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Concerning Air-Conditioning Plant", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Escalation Clause", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Express Freight", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Lightning and Overvoltage Protection Devices", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Medical Equipment using X-ray tubes", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Owners Surrounding Property", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section V:Third Party Liability", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:EXPENSES TOWARDS RESTORING PAPER FILES, DATA AND INSTALLATION COSTS FOR COMPUTER PROGRAMS", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for Midterm inclusion of Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for Midterm inclusion of Riot, Strike and Malicious Damage cover was missing in the clause master list", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Endorsement for exclusion of Damage caused by Riot, Strike, and Malicious Damage (RSMD)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:LOSS MINIMISATION EXPENSES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:NEWLY ACQUIRED PROPERTY / INTEREST", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VI:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:EXPENSES TOWARDS REMOVAL OF DEBRIS AND MOVEMENT AND PROTECTION", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for Midterm inclusion of Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for Midterm inclusion of Riot, Strike and Malicious Damage cover", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for exclusion of Damage caused by Fire and Allied Perils", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Endorsement for exclusion of Damage caused by Riot, Strike, and Malicious Damage (RSMD)", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:LOCAL AUTHORITIES CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:LOSS MINIMISATION EXPENSES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VII:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:AGREED BANK CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:AUTOMATIC REINSTATEMENT", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:DECLARATION CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:DESIGNATION OF PROPERTY CLAUSE:", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:FLOATER CLAUSE", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:REINSTATEMENT VALUE POLICIES", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section VIII:Terrorism", PropClauseDetails_ClauseType = "Optional True" },
-        new ClauseDetails { PropClauseDetails_ClauseShortDescription = "Section X:Tenanat's Legal Liability Coverage Endoresement", PropClauseDetails_ClauseType = "Optional True" }
-    };
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45415,
+            PropWarranty_WarrantyNumber = "287",
+            PropWarranty_WarrantyShortDescription = "Section I: Insurable interest under the policy will be either the legal owner of the property or person/ entity having insurable interest by law.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45413,
+            PropWarranty_WarrantyNumber = "285",
+            PropWarranty_WarrantyShortDescription = "Section I: It is hereby declared and agreed that any loss or damage arising out of STFI (Storm, Tempest, Flood and Inundation) group of Perils under the policy, wherever STFI is not excluded, shall be admissible under the policy only after completion of a \"waiting period of 15 days\" starting from the inception date of the policy and/or the date of inclusion of new risk location (s) and/or enhancement of sum insured under the policy",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45411,
+            PropWarranty_WarrantyNumber = "283",
+            PropWarranty_WarrantyShortDescription = "Section I: It is hereby warranted that proposal has been accepted at risk occupancy as mentioned in schedule. In event of loss if it is found that risk occupancy is different than what has been mentioned in policy schedule, coverage for the policy shall be void.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45402,
+            PropWarranty_WarrantyNumber = "35",
+            PropWarranty_WarrantyShortDescription = "Section I: Its Hereby declared and agreed at the policy will not cover the building having age above 10 years",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45403,
+            PropWarranty_WarrantyNumber = "275",
+            PropWarranty_WarrantyShortDescription = "Section I: Its Hereby declared and agreed that there are nil claims in expiring policy",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45407,
+            PropWarranty_WarrantyNumber = "279",
+            PropWarranty_WarrantyShortDescription = "Section I: Its Hereby declared and agreed the policy (long term) will not cover cooperative society",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45404,
+            PropWarranty_WarrantyNumber = "276",
+            PropWarranty_WarrantyShortDescription = "Section I: Its Hereby declared and agreed the policy will not cover dwellings inside the factory compound",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45405,
+            PropWarranty_WarrantyNumber = "277",
+            PropWarranty_WarrantyShortDescription = "Section I: Its Hereby declared and agreed the policy will not cover pump houses,Garages,Compound walls and ancillary equipments and/or other utilities at the risk location",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45406,
+            PropWarranty_WarrantyNumber = "278",
+            PropWarranty_WarrantyShortDescription = "Section I: Its warranted that there are no known end reported loss till date of quotation",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45414,
+            PropWarranty_WarrantyNumber = "286",
+            PropWarranty_WarrantyShortDescription = "Section I: This policy covers interest as \"building only\". Contents are excluded under the policy",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45368,
+            PropWarranty_WarrantyNumber = "1",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that 24 hours physical security is available at the risk premise",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45410,
+            PropWarranty_WarrantyNumber = "282",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Adequate Portable fire extinguishers are installed in the Insured premise and are functional at all times during the currency of the policy",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45383,
+            PropWarranty_WarrantyNumber = "16",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Cellulose is not used for the manufacture of Man-Made Fibre.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45393,
+            PropWarranty_WarrantyNumber = "26",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Coir waste, Coir fibre and Caddies are not stored in the risk location.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45381,
+            PropWarranty_WarrantyNumber = "14",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Detergent Manufacturing process is carried out without Sulphonation.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45385,
+            PropWarranty_WarrantyNumber = "18",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Industrial grade Nitro cellulose is not manufactured.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45408,
+            PropWarranty_WarrantyNumber = "280",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Liquids with flashing below 32 DegreeC are not stored.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45384,
+            PropWarranty_WarrantyNumber = "17",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Metallising / Metal Coating and Electroplating Works are without use of metals.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45394,
+            PropWarranty_WarrantyNumber = "27",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that No Stocks stored in open.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45387,
+            PropWarranty_WarrantyNumber = "20",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Pulvarizing activity does not use Hazardous Goods.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45388,
+            PropWarranty_WarrantyNumber = "21",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that Rope work manufacturing does not use plastic goods of any type.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45373,
+            PropWarranty_WarrantyNumber = "6",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that all electrical installations are as per ISI standard. ",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45409,
+            PropWarranty_WarrantyNumber = "281",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that coverage for any Loss of, destruction of or damage to Transmission and Distribution lines upto 1,500 feet from an insured plant of the Insured",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45401,
+            PropWarranty_WarrantyNumber = "34",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that for a Building in course of construction, there is no storage activity carried out.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45395,
+            PropWarranty_WarrantyNumber = "28",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that gases like Nitrogen, Carbon dioxide and inert gases are not stored.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45377,
+            PropWarranty_WarrantyNumber = "10",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that goods are kept only for display and no sales is carried out in the risk premise.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45391,
+            PropWarranty_WarrantyNumber = "24",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that goods listed in Category II, III as per Fire Tariff, Coir waste, Coir fibre and Caddies are not stored in the risk location",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45392,
+            PropWarranty_WarrantyNumber = "25",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that goods listed in Category III as per Fire Tariff, Coir waste, Coir fibre and Caddies are not stored in the risk location",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45390,
+            PropWarranty_WarrantyNumber = "23",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that hazardous goods of Category I, II, III as per Fire Tariff, Coir waste, Coir fibre and Caddies are not stored in the risk location",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45412,
+            PropWarranty_WarrantyNumber = "284",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that if Insured is involved in any of the business activity like warehouse / godown, chemical mfg, plastic mfg, rubber mfg, foam plastic risks, garment mfg, embroidery mfg, textile mfg etc. then it is excluded from the scope of cover",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45380,
+            PropWarranty_WarrantyNumber = "13",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that no Film Processing is carried out.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45382,
+            PropWarranty_WarrantyNumber = "15",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that no inflammable solvents are being used.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45378,
+            PropWarranty_WarrantyNumber = "11",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that no materials of Flash Point below 32 DegreeC is used. ",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45375,
+            PropWarranty_WarrantyNumber = "8",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that no software development activity is carried on within the premises.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45379,
+            PropWarranty_WarrantyNumber = "12",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that no solvents with Flash Point below 32 DegreeC is used.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45371,
+            PropWarranty_WarrantyNumber = "4",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that pallets are used for storage of stocks.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45376,
+            PropWarranty_WarrantyNumber = "9",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that presence of hazardous goods like Celluloid Goods,Coir Loose, Crackers and Fire Works,Explosives of any kind,Hay/Straw,Hemp,Jute Loose,Matches,Methylated Spirit,Nitro-Cellulose Plastics,Oils/Ether/Industrial Solvents and other inflammable liquids flashing liquids flashing at and below 32 DegreeC (Closed Cup test),Paints with inflammable base having Flash point below 32 DegreeC (Closed Cup test) Other than in sealed tins or drums,Varnishes having Flash point below 32 DegreeC.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45386,
+            PropWarranty_WarrantyNumber = "19",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that raw materials having calorific value of above 15000 btu/lb is not used.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45389,
+            PropWarranty_WarrantyNumber = "22",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that spreading activity is not carried out for Manufacturing of Rubber Goods.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45369,
+            PropWarranty_WarrantyNumber = "2",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that the Fire  Protection Systems as declared by the insured are functional at all times.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45372,
+            PropWarranty_WarrantyNumber = "5",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that the premises are equipped with functional de-watering / sump pumps.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45374,
+            PropWarranty_WarrantyNumber = "7",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that the premises is used solely for the insured's use and no third party goods are stored.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45370,
+            PropWarranty_WarrantyNumber = "3",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there are no known and reported loss, as declared by the insured at a proposal stage.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45398,
+            PropWarranty_WarrantyNumber = "31",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there is Physical Security available round the clock.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45396,
+            PropWarranty_WarrantyNumber = "29",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there is no Kutcha Construction (Buildings having walls and /or roofs of wooden planks/ thatched leaves and /or grass / hay of any kind / bamboo/plastic cloth / asphalt cloth / canvas / Tarpaulin and the like).",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45397,
+            PropWarranty_WarrantyNumber = "30",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there is no basement  / underground exposure.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45400,
+            PropWarranty_WarrantyNumber = "33",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there is no manufactring or storage activity carried out in the premises for a SILENT risk.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45399,
+            PropWarranty_WarrantyNumber = "32",
+            PropWarranty_WarrantyShortDescription = "Section I: Warranted that there is no molten metal spillage exposure.",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45416,
+            PropWarranty_WarrantyNumber = "147",
+            PropWarranty_WarrantyShortDescription = "Section I:A",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45417,
+            PropWarranty_WarrantyNumber = "148",
+            PropWarranty_WarrantyShortDescription = "Section I:B",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45418,
+            PropWarranty_WarrantyNumber = "149",
+            PropWarranty_WarrantyShortDescription = "Section I:C",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45419,
+            PropWarranty_WarrantyNumber = "150",
+            PropWarranty_WarrantyShortDescription = "Section I:D",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45420,
+            PropWarranty_WarrantyNumber = "151",
+            PropWarranty_WarrantyShortDescription = "Section I:E",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45421,
+            PropWarranty_WarrantyNumber = "152",
+            PropWarranty_WarrantyShortDescription = "Section I:F",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45422,
+            PropWarranty_WarrantyNumber = "153",
+            PropWarranty_WarrantyShortDescription = "Section I:G",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45423,
+            PropWarranty_WarrantyNumber = "154",
+            PropWarranty_WarrantyShortDescription = "Section I:H",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 29536,
+            PropWarranty_WarrantyNumber = "36",
+            PropWarranty_WarrantyShortDescription = "Section II:24 hours physical security is available at the risk premise",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45424,
+            PropWarranty_WarrantyNumber = "155",
+            PropWarranty_WarrantyShortDescription = "Section II:A",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45553,
+            PropWarranty_WarrantyNumber = "289",
+            PropWarranty_WarrantyShortDescription = "Section II:Alarm System and CCTV is installed in the Premises and are functional",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45425,
+            PropWarranty_WarrantyNumber = "156",
+            PropWarranty_WarrantyShortDescription = "Section II:B",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45426,
+            PropWarranty_WarrantyNumber = "157",
+            PropWarranty_WarrantyShortDescription = "Section II:C",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45554,
+            PropWarranty_WarrantyNumber = "290",
+            PropWarranty_WarrantyShortDescription = "Section II:Client is maintaining a good accounting and bookkeeping practices",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45427,
+            PropWarranty_WarrantyNumber = "158",
+            PropWarranty_WarrantyShortDescription = "Section II:D",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45428,
+            PropWarranty_WarrantyNumber = "159",
+            PropWarranty_WarrantyShortDescription = "Section II:E",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45429,
+            PropWarranty_WarrantyNumber = "160",
+            PropWarranty_WarrantyShortDescription = "Section II:F",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        },
+        new WarrantyDetail
+        {
+            PropWarranty_WarrantyCode = 45430,
+            PropWarranty_WarrantyNumber = "161",
+            PropWarranty_WarrantyShortDescription = "Section II:G",
+            PropWarranty_WarrantyType = "Optional True",
+            PropWarranty_IsOldDataDeleted = false,
+            PropWarranty_IsDataDeleted = false,
+            PropWarranty_Default_Val = false
+        }
 }
