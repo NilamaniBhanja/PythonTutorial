@@ -1,143 +1,85 @@
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
-namespace HomeConnect.Domain.TPSEntities;
-
-public class tblUserExt
+public class ClauseDetails
 {
-    [Key]
-    public long UserExtID { get; set; }
-    public Guid? RoleID { get; set; }
-    public Guid UserID { get; set; }
-    public string? RoleName { get; set; }
-    public string? UserName { get; set; }
-    public string IMDCode { get; set; }
-    public bool? IsActive { get; set; }
-    public bool? IsBlocked { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public bool? IsSubID { get; set; }
-    public bool? HasParent { get; set; }
-    public bool? HasCumulative { get; set; }
-    public bool CanCreateUser { get; set; }
-    public decimal? VerticalId { get; set; }
-    public bool? CancellationRights { get; set; }
-    public bool? ForgotPasswordStatus { get; set; }
-    public decimal? GroupId { get; set; }
-    public bool? IsAgentBlocked { get; set; }
-    public bool? isTPPartner { get; set; }
-    public bool? isAdvancePaymentAllowed { get; set; }
-    public bool? IsDocumentAccessed { get; set; }
-    public bool? IsParentinAVO { get; set; }
-    public string? ParentIMDCodeinAVO { get; set; }
-    public string?  AppUserType { get; set; }
-    public virtual UserBranchMapping UserBranchMappings { get; set; }
-
+    public double PropClauseDetails_ClauseCode_Mandatary { get; set; }
+    public string PropClauseDetails_ClauseNumber_Mandatary { get; set; }
+    public string PropClauseDetails_ClauseShortDescription { get; set; }
+    public string PropClauseDetails_ClauseType { get; set; }
+    public bool PropClauseDetails_Default_Mandatary { get; set; }
+    public bool PropClauseDetails_IsDataDeleted { get; set; }
+    public bool PropClauseDetails_IsOldDataDeleted { get; set; }
 }
 
-
-
-namespace HomeConnect.Domain.TPSEntities;
-
-public class UserBranchMapping
+public class ClauseData
 {
-    public decimal ID { get; set; }
-    public System.Guid UserID { get; set; }
-    //public virtual tblUserExt tblUserExts { get; set; }
-    public decimal BranchID { get; set; }
-    //public virtual MASBranch MASBranch { get; set; }
-}
-
-
-
-namespace HomeConnect.Domain.TPSEntities;
-
-public class MASBranch
-{
-    public decimal ID { get; set; }
-    public string Name { get; set; }
-    public string OfficeType { get; set; }
-    public string AddressLine1 { get; set; }
-    public string AddressLine2 { get; set; }
-    public string AddressLine3 { get; set; }
-    public string Locality { get; set; }
-    public Nullable<decimal> PinCode { get; set; }
-    public string ISDCode { get; set; }
-    public string STDCode { get; set; }
-    public string Telephone { get; set; }
-    public string CityName { get; set; }
-    public string StateName { get; set; }
-    public string BranchCode { get; set; }
-    public string RegionCode { get; set; }
-    public string RegionName { get; set; }
-    public string ZoneCode { get; set; }
-    public string ZoneName { get; set; }
-    //public ICollection<UserBranchMapping> UserBranchMappings { get; set; }
-
-}
-
-
-
-protected override void OnModelCreating(ModelBuilder modelBuilder)
-{
-    modelBuilder.Entity<TblUserExt>(entity =>
+    public static List<ClauseDetails> GetClauseDetailsList()
     {
-        entity.HasKey(e => e.UserExtId);
-
-        entity.HasOne(e => e.UserBranchMapping)
-              .WithOne(e => e.User)
-              .HasForeignKey<UserBranchMapping>(e => e.UserId)
-              .HasPrincipalKey<TblUserExt>(e => e.UserId)
-              .OnDelete(DeleteBehavior.ClientSetNull); // Optional: Choose behavior
-    });
-
-    modelBuilder.Entity<UserBranchMapping>(entity =>
-    {
-        entity.HasKey(e => e.Id);
-    });
-
-    // Other model configurations...
+        return new List<ClauseDetails>
+        {
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 48230,
+                PropClauseDetails_ClauseNumber_Mandatary = "385",
+                PropClauseDetails_ClauseShortDescription = "COMMUNICABLE DISEASE EXCLUSION CLAUSE",
+                PropClauseDetails_ClauseType = "Mandatory True",
+                PropClauseDetails_Default_Mandatary = true,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            },
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 51134,
+                PropClauseDetails_ClauseNumber_Mandatary = "12",
+                PropClauseDetails_ClauseShortDescription = "Common Clause : Co-insurance Clause",
+                PropClauseDetails_ClauseType = "Optional True",
+                PropClauseDetails_Default_Mandatary = false,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            },
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 51131,
+                PropClauseDetails_ClauseNumber_Mandatary = "9",
+                PropClauseDetails_ClauseShortDescription = "Section I: ATM Cash Withdrawal Protection",
+                PropClauseDetails_ClauseType = "Optional True",
+                PropClauseDetails_Default_Mandatary = false,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            },
+            // Continue with all the remaining clauses...
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 51129,
+                PropClauseDetails_ClauseNumber_Mandatary = "6",
+                PropClauseDetails_ClauseShortDescription = "Section I: Accidental Damage Cover",
+                PropClauseDetails_ClauseType = "Optional True",
+                PropClauseDetails_Default_Mandatary = false,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            },
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 51124,
+                PropClauseDetails_ClauseNumber_Mandatary = "1",
+                PropClauseDetails_ClauseShortDescription = "Section I: Agreed Value Basis for Valuable Content",
+                PropClauseDetails_ClauseType = "Optional True",
+                PropClauseDetails_Default_Mandatary = false,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            },
+            // Add all remaining clauses following the same pattern
+            // ...
+            new ClauseDetails
+            {
+                PropClauseDetails_ClauseCode_Mandatary = 51251,
+                PropClauseDetails_ClauseNumber_Mandatary = "135",
+                PropClauseDetails_ClauseShortDescription = "Section X:Tenanat's Legal Liability Coverage Endoresement",
+                PropClauseDetails_ClauseType = "Optional True",
+                PropClauseDetails_Default_Mandatary = false,
+                PropClauseDetails_IsDataDeleted = false,
+                PropClauseDetails_IsOldDataDeleted = false
+            }
+        };
+    }
 }
-
-
-
-   async Task<T?> ITPSRepository<T>.FirstOrDefaultAsync(Expression<Func<T, bool>>? Filter, string IncludeProperties = "")
-   {
-       try
-       {
-           IQueryable<T> query = _dbSet;
-
-           // Apply includes
-           foreach (var includeProperty in IncludeProperties.Split(
-               new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-           {
-               query = query.Include(includeProperty);
-           }
-
-           // Apply filter
-           if (Filter != null)
-           {
-               query = query.Where(Filter);
-           }
-           // Get total count before pagination
-           var totalItems = await query.CountAsync();
-
-           return await query
-               .FirstOrDefaultAsync();
-       }
-       catch (Exception ex)
-       {
-           throw new Exception("DAta issue");
-       }
-   }
-
-
-Error creating query string: An error was generated for warning 'Microsoft.EntityFrameworkCore.Query.InvalidIncludePathError': Unable to find navigation 'UserBranchMapping' specified in string based include path 'UserBranchMapping'. This exception can be suppressed or logged by passing event ID 'CoreEventId.InvalidIncludePathError' to the 'ConfigureWarnings' method in 'DbContext.OnConfiguring' or 'AddDbContext'..
-  
-
-
-// Many-to-One: UserBranchMapping → MASBranch
-    modelBuilder.Entity<UserBranchMapping>()
-        .HasOne(ub => ub.MASBranch)
-        .WithMany(b => b.UserBranchMappings)
-        .HasForeignKey(ub => ub.BranchID)
-        .OnDelete(DeleteBehavior.Restrict);
