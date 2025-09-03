@@ -1,4 +1,17 @@
-svcutil http://your-wcf-service-url?wsdl ^
-  /serializer:DataContractSerializer ^
-  /namespace:*,MyService.Client ^
-  /out:GeneratedServiceReference.cs
+// Store this in database: "SELECT {0} FROM Products WHERE ProductCode = @ProductCode"
+string queryTemplate = GetQueryFromDatabase(); // Get template from DB
+
+// Resolve dynamic parts safely using whitelisting
+Dictionary<string, string> safeColumns = new()
+{
+    {"name", "ProductName"},
+    {"price", "UnitPrice"},
+    {"description", "ProductDescription"}
+};
+
+string safeColumn = safeColumns.GetValueOrDefault(columnName, "ProductName");
+string safeQuery = string.Format(queryTemplate, safeColumn);
+
+SqlCommand cmd1 = new SqlCommand(safeQuery, con);
+cmd1.Parameters.AddWithValue("@ProductCode", productCode);
+string result = cmd1.ExecuteScalar()?.ToString();
