@@ -1,130 +1,117 @@
-private void SetCommonRateProperties(addonCoverDtls item, DomQuickQuote obj, string coverType)
+private void SetYearRate(DomQuickQuote obj, string coverType, int year, decimal rate)
 {
-    decimal rate1 = Convert.ToDecimal(item.addonCoverRate1);
-    
-    var propertySetters = new Dictionary<string, Action<decimal>>
+    var rateSetters = new Dictionary<string, Action<int, decimal>>
     {
-        { "Consumable", (rate) => SetConsumableProperties(obj, rate) },
-        { "NilDep", (rate) => SetNilDepProperties(obj, rate) },
-        { "EngineCover", (rate) => SetEngineCoverProperties(obj, rate) },
-        { "GAP", (rate) => SetGAPProperties(obj, rate) },
-        { "KeyLoss", (rate) => SetKeyLossProperties(obj, rate) },
-        { "Towing", (rate) => SetTowingProperties(obj, rate) },
-        { "TyreProtection", (rate) => SetTyreProtectionProperties(obj, rate) },
-        { "DamageToCharger", (rate) => SetDamageToChargerProperties(obj, rate) },
-        { "ReinstallationOfWallMountedCharger", (rate) => SetReinstallationProperties(obj, rate) },
-        { "DamageToProperty", (rate) => SetDamageToPropertyProperties(obj, rate) },
-        { "ChargerLiabilityProtection", (rate) => SetChargerLiabilityProperties(obj, rate) },
-        { "PersonalBelonging", (rate) => SetPersonalBelongingProperties(obj, rate) },
-        { "RoadSideAssist", (rate) => SetRoadSideAssistProperties(obj, rate) }
+        { "Consumable", (y, r) => SetConsumableYearRate(obj, y, r) },
+        { "NilDep", (y, r) => SetNilDepYearRate(obj, y, r) },
+        { "EngineCover", (y, r) => SetEngineCoverYearRate(obj, y, r) },
+        { "GAP", (y, r) => SetGAPYearRate(obj, y, r) },
+        { "KeyLoss", (y, r) => SetKeyLossYearRate(obj, y, r) },
+        { "Towing", (y, r) => SetTowingYearRate(obj, y, r) },
+        { "TyreProtection", (y, r) => SetTyreProtectionYearRate(obj, y, r) },
+        { "DamageToCharger", (y, r) => SetDamageToChargerYearRate(obj, y, r) },
+        { "ReinstallationOfWallMountedCharger", (y, r) => SetReinstallationYearRate(obj, y, r) },
+        { "DamageToProperty", (y, r) => SetDamageToPropertyYearRate(obj, y, r) },
+        { "ChargerLiabilityProtection", (y, r) => SetChargerLiabilityYearRate(obj, y, r) },
+        { "PersonalBelonging", (y, r) => SetPersonalBelongingYearRate(obj, y, r) },
+        { "RoadSideAssist", (y, r) => SetRoadSideAssistYearRate(obj, y, r) },
+        { "Liberty", (y, r) => SetLibertyYearRate(obj, y, r) }
     };
 
-    if (propertySetters.TryGetValue(coverType, out var setter))
+    if (rateSetters.TryGetValue(coverType, out var setter))
     {
-        setter(rate1);
+        setter(year, rate);
     }
-
-    SetAdditionalYearRates(item, obj, coverType);
 }
 
-private void SetConsumableProperties(DomQuickQuote obj, decimal rate)
+private void SetConsumableYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerConsumable = rate;
-    obj.PerConsumableEntered = rate;
-    obj.ConsumableRateYear1 = rate;
-    obj.IsConsumableApplicable = true;
+    if (year == 2) obj.ConsumableRateYear2 = rate;
+    else if (year == 3) obj.ConsumableRateYear3 = rate;
 }
 
-private void SetNilDepProperties(DomQuickQuote obj, decimal rate)
+private void SetNilDepYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerNilDep = rate;
-    obj.PerNilDepEntered = rate;
-    obj.NilDepreciationRateYear1 = rate;
-    obj.IsNilDepApplicable = true;
+    if (year == 2) obj.NilDepreciationRateYear2 = rate;
+    else if (year == 3) obj.NilDepreciationRateYear3 = rate;
 }
 
-private void SetEngineCoverProperties(DomQuickQuote obj, decimal rate)
+private void SetEngineCoverYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerEngine = rate;
-    obj.percentEngineCoverentered = rate;
-    obj.EngineSafeRateYear1 = rate;
-    obj.IsEngineCoverApplicable = true;
+    if (year == 2) obj.EngineSafeRateYear2 = rate;
+    else if (year == 3) obj.EngineSafeRateYear3 = rate;
 }
 
-private void SetGAPProperties(DomQuickQuote obj, decimal rate)
+private void SetGAPYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerGAP = rate;
-    obj.percentGAPentered = rate;
-    obj.GapRateYear1 = rate;
-    obj.IsGAPApplicable = true;
+    if (year == 2) obj.GapRateYear2 = rate;
+    else if (year == 3) obj.GapRateYear3 = rate;
 }
 
-private void SetKeyLossProperties(DomQuickQuote obj, decimal rate)
+private void SetKeyLossYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerKL = rate;
-    obj.percentKeyLossentered = rate;
-    obj.KeyLossRateYear1 = rate;
-    obj.IsKeyLoassApplicable = true;
+    if (year == 2) obj.KeyLossRateYear2 = rate;
+    else if (year == 3) obj.KeyLossRateYear3 = rate;
 }
 
-private void SetTowingProperties(DomQuickQuote obj, decimal rate)
+private void SetTowingYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerTowing = rate;
-    obj.PerTowingEntered = rate;
-    obj.TowingRateYear1 = rate;
-    obj.IsTowingApplicable = true;
+    if (year == 2) obj.TowingRateYear2 = rate;
+    else if (year == 3) obj.TowingRateYear3 = rate;
 }
 
-private void SetTyreProtectionProperties(DomQuickQuote obj, decimal rate)
+private void SetTyreProtectionYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerTP = rate;
-    obj.PercentTyreProtectionEntered = rate;
-    obj.TyreProtectionRateYear1 = rate;
-    obj.IsTyreProtectionApplicable = true;
+    if (year == 2) obj.TyreProtectionRateYear2 = rate;
+    else if (year == 3) obj.TyreProtectionRateYear3 = rate;
 }
 
-private void SetDamageToChargerProperties(DomQuickQuote obj, decimal rate)
+private void SetDamageToChargerYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerDTC = rate;
-    obj.PercentDamageToChargerEntered = rate;
-    obj.DamageToChargerRateYear1 = rate;
-    obj.IsDamageToChargerApplicable = true;
+    if (year == 2) obj.DamageToChargerRateYear2 = rate;
+    else if (year == 3) obj.DamageToChargerRateYear3 = rate;
 }
 
-private void SetReinstallationProperties(DomQuickQuote obj, decimal rate)
+private void SetReinstallationYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerROWMC = rate;
-    obj.PercentReinstallationOfWallMountedChargerEntered = rate;
-    obj.ReinstallationOfWallMountedChargerRateYear1 = rate;
-    obj.IsReinstallationOfWallMountedChargerApplicable = true;
+    if (year == 2) obj.ReinstallationOfWallMountedChargerRateYear2 = rate;
+    else if (year == 3) obj.ReinstallationOfWallMountedChargerRateYear3 = rate;
 }
 
-private void SetDamageToPropertyProperties(DomQuickQuote obj, decimal rate)
+private void SetDamageToPropertyYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerDTP = rate;
-    obj.PercentDamageToPropertyEntered = rate;
-    obj.DamageToPropertyRateYear1 = rate;
-    obj.IsDamageToPropertyApplicable = true;
+    if (year == 2) obj.DamageToPropertyRateYear2 = rate;
+    else if (year == 3) obj.DamageToPropertyRateYear3 = rate;
 }
 
-private void SetChargerLiabilityProperties(DomQuickQuote obj, decimal rate)
+private void SetChargerLiabilityYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerDTP = rate;
-    obj.PercentChargerLiabilityProtectionEntered = rate;
-    obj.ChargerLiabilityProtectionRateYear1 = rate;
-    obj.IsChargerLiabilityProtectionApplicable = true;
+    if (year == 2) obj.ChargerLiabilityProtectionRateYear2 = rate;
+    else if (year == 3) obj.ChargerLiabilityProtectionRateYear3 = rate;
 }
 
-private void SetPersonalBelongingProperties(DomQuickQuote obj, decimal rate)
+private void SetPersonalBelongingYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.DefaultPerPB = rate;
-    obj.PercentPersonalBelongingEntered = rate;
-    obj.PersonalBelongingRateYear1 = rate;
-    obj.IsPersonalBelongingApplicable = true;
+    if (year == 2) obj.PersonalBelongingRateYear2 = rate;
+    else if (year == 3) obj.PersonalBelongingRateYear3 = rate;
 }
 
-private void SetRoadSideAssistProperties(DomQuickQuote obj, decimal rate)
+private void SetRoadSideAssistYearRate(DomQuickQuote obj, int year, decimal rate)
 {
-    obj.RoadSideAssistanceRateYear1 = rate;
-    obj.IsRoadSideAssistApplicable = true;
+    if (year == 2) obj.RoadSideAssistanceRateYear2 = rate;
+    else if (year == 3) obj.RoadSideAssistanceRateYear3 = rate;
+}
+
+private void SetLibertyYearRate(DomQuickQuote obj, int year, decimal rate)
+{
+    if (year == 2)
+    {
+        if (obj.IsLibertyBatterySecureApplicable) obj.LibertyBatterySecureRateYear2 = rate;
+        if (obj.IsLibertyAssureApplicable) obj.LibertyAssureRateYear2 = rate;
+    }
+    else if (year == 3)
+    {
+        if (obj.IsLibertyBatterySecureApplicable) obj.LibertyBatterySecureRateYear3 = rate;
+        if (obj.IsLibertyAssureApplicable) obj.LibertyAssureRateYear3 = rate;
+    }
 }
