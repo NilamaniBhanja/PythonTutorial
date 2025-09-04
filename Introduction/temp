@@ -50,22 +50,28 @@ namespace BRMSIntegration
             initDefaults();
 
             SetYearlyRates(
-                year => Convert.ToDecimal(year switch
+                delegate (int year)
                 {
-                    1 => item.addonCoverRate1,
-                    2 => item.addonCoverRate2,
-                    3 => item.addonCoverRate3,
-                    4 => item.addonCoverRate4,
-                    5 => item.addonCoverRate5,
-                    _ => 0
-                }),
-                year => year switch
+                    switch (year)
+                    {
+                        case 1: return Convert.ToDecimal(item.addonCoverRate1);
+                        case 2: return Convert.ToDecimal(item.addonCoverRate2);
+                        case 3: return Convert.ToDecimal(item.addonCoverRate3);
+                        case 4: return Convert.ToDecimal(item.addonCoverRate4);
+                        case 5: return Convert.ToDecimal(item.addonCoverRate5);
+                        default: return 0;
+                    }
+                },
+                delegate (int year)
                 {
-                    1 => item.statusDecline1,
-                    2 => item.statusDecline2,
-                    3 => item.statusDecline3,
-                    5 => item.statusDecline5,
-                    _ => "N"
+                    switch (year)
+                    {
+                        case 1: return item.statusDecline1;
+                        case 2: return item.statusDecline2;
+                        case 3: return item.statusDecline3;
+                        case 5: return item.statusDecline5;
+                        default: return "N";
+                    }
                 },
                 setRate,
                 tenure,
@@ -74,23 +80,29 @@ namespace BRMSIntegration
 
             setApplicability(
                 CheckApplicability(
-                    year => year switch
+                    delegate (int year)
                     {
-                        1 => item.statusDecline1,
-                        2 => item.statusDecline2,
-                        3 => item.statusDecline3,
-                        5 => item.statusDecline5,
-                        _ => "N"
+                        switch (year)
+                        {
+                            case 1: return item.statusDecline1;
+                            case 2: return item.statusDecline2;
+                            case 3: return item.statusDecline3;
+                            case 5: return item.statusDecline5;
+                            default: return "N";
+                        }
                     },
-                    year => Convert.ToDecimal(year switch
+                    delegate (int year)
                     {
-                        1 => item.addonCoverRate1,
-                        2 => item.addonCoverRate2,
-                        3 => item.addonCoverRate3,
-                        4 => item.addonCoverRate4,
-                        5 => item.addonCoverRate5,
-                        _ => 0
-                    }),
+                        switch (year)
+                        {
+                            case 1: return Convert.ToDecimal(item.addonCoverRate1);
+                            case 2: return Convert.ToDecimal(item.addonCoverRate2);
+                            case 3: return Convert.ToDecimal(item.addonCoverRate3);
+                            case 4: return Convert.ToDecimal(item.addonCoverRate4);
+                            case 5: return Convert.ToDecimal(item.addonCoverRate5);
+                            default: return 0;
+                        }
+                    },
                     tenure
                 )
             );
@@ -102,13 +114,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerConsumable = obj.PerConsumableEntered = obj.ConsumableRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerConsumable = obj.PerConsumableEntered = obj.ConsumableRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.ConsumableRateYear2 = rate;
                     if (year == 3) obj.ConsumableRateYear3 = rate;
                 },
-                applicable => obj.IsConsumableApplicable = applicable,
+                delegate (bool applicable) { obj.IsConsumableApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -117,13 +132,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerNilDep = obj.PerNilDepEntered = obj.NilDepreciationRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerNilDep = obj.PerNilDepEntered = obj.NilDepreciationRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.NilDepreciationRateYear2 = rate;
                     if (year == 3) obj.NilDepreciationRateYear3 = rate;
                 },
-                applicable => obj.IsNilDepApplicable = applicable,
+                delegate (bool applicable) { obj.IsNilDepApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -132,13 +150,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerEngine = obj.percentEngineCoverentered = obj.EngineSafeRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerEngine = obj.percentEngineCoverentered = obj.EngineSafeRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.EngineSafeRateYear2 = rate;
                     if (year == 3) obj.EngineSafeRateYear3 = rate;
                 },
-                applicable => obj.IsEngineCoverApplicable = applicable,
+                delegate (bool applicable) { obj.IsEngineCoverApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -147,13 +168,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerGAP = obj.percentGAPCoverentered = obj.GAPRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerGAP = obj.percentGAPCoverentered = obj.GAPRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.GAPRateYear2 = rate;
                     if (year == 3) obj.GAPRateYear3 = rate;
                 },
-                applicable => obj.IsGapApplicable = applicable,
+                delegate (bool applicable) { obj.IsGapApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -162,13 +186,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerKeyLoss = obj.percentKeyLossentered = obj.KeyLossRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerKeyLoss = obj.percentKeyLossentered = obj.KeyLossRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.KeyLossRateYear2 = rate;
                     if (year == 3) obj.KeyLossRateYear3 = rate;
                 },
-                applicable => obj.IsKeyApplicable = applicable,
+                delegate (bool applicable) { obj.IsKeyApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -177,13 +204,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerPassengerAssist = obj.percentPassengerAssistentered = obj.PassengerAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerPassengerAssist = obj.percentPassengerAssistentered = obj.PassengerAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.PassengerAssistRateYear2 = rate;
                     if (year == 3) obj.PassengerAssistRateYear3 = rate;
                 },
-                applicable => obj.IsPassengerApplicable = applicable,
+                delegate (bool applicable) { obj.IsPassengerApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -192,13 +222,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerTyreProtect = obj.percentTyreProtectentered = obj.TyreProtectRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerTyreProtect = obj.percentTyreProtectentered = obj.TyreProtectRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.TyreProtectRateYear2 = rate;
                     if (year == 3) obj.TyreProtectRateYear3 = rate;
                 },
-                applicable => obj.IsTyreApplicable = applicable,
+                delegate (bool applicable) { obj.IsTyreApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -207,13 +240,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerRoadSideAssist = obj.percentRoadSideAssistentered = obj.RoadSideAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerRoadSideAssist = obj.percentRoadSideAssistentered = obj.RoadSideAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.RoadSideAssistRateYear2 = rate;
                     if (year == 3) obj.RoadSideAssistRateYear3 = rate;
                 },
-                applicable => obj.IsRoadSideApplicable = applicable,
+                delegate (bool applicable) { obj.IsRoadSideApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
@@ -222,13 +258,16 @@ namespace BRMSIntegration
         {
             ApplyConfig(
                 item, obj,
-                () => obj.DefaultPerRTI = obj.percentRTIentered = obj.RTIRateYear1 = Convert.ToDecimal(item.addonCoverRate1),
-                (year, rate) =>
+                delegate
+                {
+                    obj.DefaultPerRTI = obj.percentRTIentered = obj.RTIRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+                },
+                delegate (int year, decimal rate)
                 {
                     if (year == 2) obj.RTIRateYear2 = rate;
                     if (year == 3) obj.RTIRateYear3 = rate;
                 },
-                applicable => obj.IsRTIApplicable = applicable,
+                delegate (bool applicable) { obj.IsRTIApplicable = applicable; },
                 obj.PolicyTenure
             );
         }
