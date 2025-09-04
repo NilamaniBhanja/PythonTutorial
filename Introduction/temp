@@ -7,269 +7,387 @@ namespace BRMSIntegration
 {
     internal class AddonConfig
     {
-        // ✅ Common helper to assign yearly rates dynamically
-        private void SetYearlyRates(
-            Func<int, decimal> getRate,
-            Func<int, string> getStatus,
-            Action<int, decimal> setRate,
-            int tenure,
-            int maxYears = 3)
-        {
-            for (int year = 1; year <= maxYears; year++)
-            {
-                if (year == 1 || getStatus(year) == "N")
-                    setRate(year, getRate(year));
-            }
-        }
-
-        // ✅ Common helper to check applicability
-        private bool CheckApplicability(
-            Func<int, string> getStatus,
-            Func<int, decimal> getRate,
-            int tenure)
-        {
-            if (getStatus(tenure) == "Y") return false;
-
-            for (int i = 1; i <= tenure; i++)
-            {
-                if (getRate(i) == 0) return false;
-            }
-            return true;
-        }
-
-        // ✅ Generic pattern for all configs
-        private void ApplyConfig(
-            addonCoverDtls item,
-            DomQuickQuote obj,
-            Action initDefaults,
-            Action<int, decimal> setRate,
-            Action<bool> setApplicability,
-            int tenure,
-            int maxYears = 3)
-        {
-            initDefaults();
-
-            SetYearlyRates(
-                delegate (int year)
-                {
-                    switch (year)
-                    {
-                        case 1: return Convert.ToDecimal(item.addonCoverRate1);
-                        case 2: return Convert.ToDecimal(item.addonCoverRate2);
-                        case 3: return Convert.ToDecimal(item.addonCoverRate3);
-                        case 4: return Convert.ToDecimal(item.addonCoverRate4);
-                        case 5: return Convert.ToDecimal(item.addonCoverRate5);
-                        default: return 0;
-                    }
-                },
-                delegate (int year)
-                {
-                    switch (year)
-                    {
-                        case 1: return item.statusDecline1;
-                        case 2: return item.statusDecline2;
-                        case 3: return item.statusDecline3;
-                        case 5: return item.statusDecline5;
-                        default: return "N";
-                    }
-                },
-                setRate,
-                tenure,
-                maxYears
-            );
-
-            setApplicability(
-                CheckApplicability(
-                    delegate (int year)
-                    {
-                        switch (year)
-                        {
-                            case 1: return item.statusDecline1;
-                            case 2: return item.statusDecline2;
-                            case 3: return item.statusDecline3;
-                            case 5: return item.statusDecline5;
-                            default: return "N";
-                        }
-                    },
-                    delegate (int year)
-                    {
-                        switch (year)
-                        {
-                            case 1: return Convert.ToDecimal(item.addonCoverRate1);
-                            case 2: return Convert.ToDecimal(item.addonCoverRate2);
-                            case 3: return Convert.ToDecimal(item.addonCoverRate3);
-                            case 4: return Convert.ToDecimal(item.addonCoverRate4);
-                            case 5: return Convert.ToDecimal(item.addonCoverRate5);
-                            default: return 0;
-                        }
-                    },
-                    tenure
-                )
-            );
-        }
-
-        // ✅ Individual configs using ApplyConfig()
-
         public void ConsumableConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerConsumable = obj.PerConsumableEntered = obj.ConsumableRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.ConsumableRateYear2 = rate;
-                    if (year == 3) obj.ConsumableRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsConsumableApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerConsumable = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PerConsumableEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.IsConsumableApplicable = true;
+            obj.ConsumableRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.ConsumableRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.ConsumableRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+
+            CheckApplicability(item, obj, "Consumable");
         }
 
         public void DepreciationConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerNilDep = obj.PerNilDepEntered = obj.NilDepreciationRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.NilDepreciationRateYear2 = rate;
-                    if (year == 3) obj.NilDepreciationRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsNilDepApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerNilDep = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PerNilDepEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.NilDepreciationRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.NilDepreciationRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.NilDepreciationRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsNilDepApplicable = true;
+            CheckApplicability(item, obj, "NilDep");
         }
 
         public void EngineSafeConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerEngine = obj.percentEngineCoverentered = obj.EngineSafeRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.EngineSafeRateYear2 = rate;
-                    if (year == 3) obj.EngineSafeRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsEngineCoverApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerEngine = Convert.ToDecimal(item.addonCoverRate1);
+            obj.percentEngineCoverentered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.EngineSafeRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.EngineSafeRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.EngineSafeRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+
+            obj.IsEngineCoverApplicable = true;
+            CheckApplicability(item, obj, "EngineCover");
         }
 
         public void GAPConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerGAP = obj.percentGAPCoverentered = obj.GAPRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.GAPRateYear2 = rate;
-                    if (year == 3) obj.GAPRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsGapApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerGAP = Convert.ToDecimal(item.addonCoverRate1);
+            obj.percentGAPentered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.GapRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.GapRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.GapRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsGAPApplicable = true;
+            CheckApplicability(item, obj, "GAP");
         }
 
         public void KeyLossConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerKeyLoss = obj.percentKeyLossentered = obj.KeyLossRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.KeyLossRateYear2 = rate;
-                    if (year == 3) obj.KeyLossRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsKeyApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerKL = Convert.ToDecimal(item.addonCoverRate1);
+            obj.percentKeyLossentered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.KeyLossRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.KeyLossRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.KeyLossRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsKeyLoassApplicable = true;
+            CheckKeyLossApplicability(item, obj);
         }
 
         public void PassengerAssistConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerPassengerAssist = obj.percentPassengerAssistentered = obj.PassengerAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.PassengerAssistRateYear2 = rate;
-                    if (year == 3) obj.PassengerAssistRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsPassengerApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPassengerAssistValue = Convert.ToDecimal(item.addonCoverValue1);
+            obj.DefaultPassengerAssist = Convert.ToDecimal(item.addonCoverValue1);
+            obj.PassengerAssistRateYear1 = Convert.ToDecimal(item.addonCoverValue1);
+            
+            if (item.statusDecline2 == "N") { obj.PassengerAssistRateYear2 = Convert.ToDecimal(item.addonCoverValue2); }
+            if (item.statusDecline3 == "N") { obj.PassengerAssistRateYear3 = Convert.ToDecimal(item.addonCoverValue3); }
+            
+            obj.IsPassgAssistApplicable = true;
+            CheckValueApplicability(item, obj, "PassgAssist");
         }
 
-        public void TyreProtectConfig(addonCoverDtls item, DomQuickQuote obj)
+        public void EMIProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerTyreProtect = obj.percentTyreProtectentered = obj.TyreProtectRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.TyreProtectRateYear2 = rate;
-                    if (year == 3) obj.TyreProtectRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsTyreApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.IsEMICoverApplicable = true;
         }
 
-        public void RoadSideAssistConfig(addonCoverDtls item, DomQuickQuote obj)
+        public void TowingConfig(addonCoverDtls item, DomQuickQuote obj, double minimumAdditionalTowingSI, double maximumAdditionalTowingSI)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
-                {
-                    obj.DefaultPerRoadSideAssist = obj.percentRoadSideAssistentered = obj.RoadSideAssistRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.RoadSideAssistRateYear2 = rate;
-                    if (year == 3) obj.RoadSideAssistRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsRoadSideApplicable = applicable; },
-                obj.PolicyTenure
-            );
+            obj.DefaultPerTowing = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PerTowingEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.MinTowingSI = Convert.ToDecimal(minimumAdditionalTowingSI);
+            obj.MaxTowingSI = Convert.ToDecimal(maximumAdditionalTowingSI);
+            obj.IsTowingApplicable = true;
+            obj.TowingRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.TowingRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.TowingRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+
+            CheckApplicability(item, obj, "Towing");
         }
 
-        public void RTIConfig(addonCoverDtls item, DomQuickQuote obj)
+        public void LCAConfig(addonCoverDtls item, DomQuickQuote obj)
         {
-            ApplyConfig(
-                item, obj,
-                delegate
+            if (!string.IsNullOrEmpty(obj.LCACoverPlan) && item.coverName == CrossCuttings_Constants.Addon_LCA)
+            {
+                decimal? addonCoverValue1 = 0;
+                foreach (var objPlanLst in item.availablePlanLst)
                 {
-                    obj.DefaultPerRTI = obj.percentRTIentered = obj.RTIRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
-                },
-                delegate (int year, decimal rate)
-                {
-                    if (year == 2) obj.RTIRateYear2 = rate;
-                    if (year == 3) obj.RTIRateYear3 = rate;
-                },
-                delegate (bool applicable) { obj.IsRTIApplicable = applicable; },
-                obj.PolicyTenure
-            );
+                    if (!string.IsNullOrEmpty(objPlanLst.planName) && objPlanLst.planName.ToUpper() == obj.LCACoverPlan.ToUpper())
+                    {
+                        addonCoverValue1 = Convert.ToDecimal(objPlanLst.minValue);
+                    }
+                }
+                obj.DefaultRoadAssistValue = addonCoverValue1;
+                obj.EnteredRoadAssistvalue = addonCoverValue1;
+                item.addonCoverValue1 = Convert.ToDouble(addonCoverValue1);
+            }
+            else
+            {
+                obj.DefaultRoadAssistValue = Convert.ToDecimal(item.addonCoverValue1);
+                obj.EnteredRoadAssistvalue = Convert.ToDecimal(item.addonCoverValue1);
+            }
+            
+            obj.RoadSideAssistanceRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            if (item.statusDecline2 == "N") { obj.RoadSideAssistanceRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.RoadSideAssistanceRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsRoadSideAssistApplicable = true;
+            CheckValueApplicability(item, obj, "RoadSideAssist");
+
+            if (!string.IsNullOrEmpty(obj.LCACoverPlan) && item.coverName == CrossCuttings_Constants.Addon_RoadsideAssist)
+            {
+                obj.IsRoadSideAssistApplicable = false;
+            }
+        }
+
+        public void PersonalBelongingConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerPB = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentPersonalBelongingEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PersonalBelongingRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.PersonalBelongingRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.PersonalBelongingRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsPersonalBelongingApplicable = true;
+            CheckPersonalBelongingApplicability(item, obj);
+        }
+
+        public void TyreProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerTP = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentTyreProtectionEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.TyreProtectionRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.TyreProtectionRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.TyreProtectionRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsTyreProtectionApplicable = true;
+            CheckApplicability(item, obj, "TyreProtection");
+        }
+
+        public void LibertyBatterySecureConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerLBS = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentLibertyBatterySecureEntered = Convert.ToDecimal(item.addonCoverValue1);
+            obj.LibertyBatterySecureRateYear1 = Convert.ToDecimal(item.addonCoverValue1);
+            
+            if (item.statusDecline2 == "N") { obj.LibertyBatterySecureRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.LibertyBatterySecureRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsLibertyBatterySecureApplicable = true;
+            CheckLibertyBatterySecureApplicability(item, obj);
+        }
+
+        public void LibertyAssureConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerLBS = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentLibertyAssureEntered = Convert.ToDecimal(item.addonCoverValue1);
+            obj.LibertyAssureRateYear1 = Convert.ToDecimal(item.addonCoverValue1);
+            
+            if (item.statusDecline2 == "N") { obj.LibertyAssureRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.LibertyAssureRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsLibertyAssureApplicable = true;
+            CheckLibertyAssureApplicability(item, obj);
+        }
+
+        public void DamageToChargerConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerDTC = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentDamageToChargerEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.DamageToChargerRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.DamageToChargerRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.DamageToChargerRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsDamageToChargerApplicable = true;
+            CheckApplicability(item, obj, "DamageToCharger");
+        }
+
+        public void ReinstallationOfWallMountedChargerConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerROWMC = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentReinstallationOfWallMountedChargerEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.ReinstallationOfWallMountedChargerRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.ReinstallationOfWallMountedChargerRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.ReinstallationOfWallMountedChargerRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsReinstallationOfWallMountedChargerApplicable = true;
+            CheckApplicability(item, obj, "ReinstallationOfWallMountedCharger");
+        }
+
+        public void DamageToPropertyConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerDTP = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentDamageToPropertyEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.DamageToPropertyRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.DamageToPropertyRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.DamageToPropertyRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsDamageToPropertyApplicable = true;
+            CheckApplicability(item, obj, "DamageToProperty");
+        }
+
+        public void ChargerLiabilityProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.DefaultPerDTP = Convert.ToDecimal(item.addonCoverRate1);
+            obj.PercentChargerLiabilityProtectionEntered = Convert.ToDecimal(item.addonCoverRate1);
+            obj.ChargerLiabilityProtectionRateYear1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (item.statusDecline2 == "N") { obj.ChargerLiabilityProtectionRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
+            if (item.statusDecline3 == "N") { obj.ChargerLiabilityProtectionRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
+            
+            obj.IsChargerLiabilityProtectionApplicable = true;
+            CheckApplicability(item, obj, "ChargerLiabilityProtection");
+        }
+
+        private void CheckApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
+                    break;
+                case 5:
+                    if (item.statusDecline5 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0 || item.addonCoverRate4 == 0 || item.addonCoverRate5 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            SetApplicability(obj, coverType, isApplicable);
+        }
+
+        private void CheckValueApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0) { isApplicable = false; }
+                    break;
+                case 5:
+                    if (item.statusDecline5 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0 || item.addonCoverValue4 == 0 || item.addonCoverValue5 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            SetApplicability(obj, coverType, isApplicable);
+        }
+
+        private void CheckKeyLossApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
+                    if (!isApplicable) { isApplicable = true; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            obj.IsKeyLoassApplicable = isApplicable;
+        }
+
+        private void CheckPersonalBelongingApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
+                    if (!isApplicable) { isApplicable = true; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            obj.IsPersonalBelongingApplicable = isApplicable;
+        }
+
+        private void CheckLibertyBatterySecureApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            obj.IsLibertyBatterySecureApplicable = isApplicable;
+        }
+
+        private void CheckLibertyAssureApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = true;
+            
+            switch (obj.PolicyTenure)
+            {
+                case 1:
+                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
+                    break;
+                case 2:
+                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
+                    break;
+                case 3:
+                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
+                    break;
+            }
+
+            obj.IsLibertyAssureApplicable = isApplicable;
+        }
+
+        private void SetApplicability(DomQuickQuote obj, string coverType, bool isApplicable)
+        {
+            switch (coverType)
+            {
+                case "Consumable": obj.IsConsumableApplicable = isApplicable; break;
+                case "NilDep": obj.IsNilDepApplicable = isApplicable; break;
+                case "EngineCover": obj.IsEngineCoverApplicable = isApplicable; break;
+                case "GAP": obj.IsGAPApplicable = isApplicable; break;
+                case "Towing": obj.IsTowingApplicable = isApplicable; break;
+                case "RoadSideAssist": obj.IsRoadSideAssistApplicable = isApplicable; break;
+                case "TyreProtection": obj.IsTyreProtectionApplicable = isApplicable; break;
+                case "DamageToCharger": obj.IsDamageToChargerApplicable = isApplicable; break;
+                case "ReinstallationOfWallMountedCharger": obj.IsReinstallationOfWallMountedChargerApplicable = isApplicable; break;
+                case "DamageToProperty": obj.IsDamageToPropertyApplicable = isApplicable; break;
+                case "ChargerLiabilityProtection": obj.IsChargerLiabilityProtectionApplicable = isApplicable; break;
+            }
         }
     }
 }
