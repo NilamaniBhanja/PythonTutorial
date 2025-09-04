@@ -17,7 +17,7 @@ namespace BRMSIntegration
             if (item.statusDecline2 == "N") { obj.ConsumableRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
             if (item.statusDecline3 == "N") { obj.ConsumableRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
 
-            CheckApplicability(item, obj, "Consumable");
+            CheckRateApplicability(item, obj, "Consumable");
         }
 
         public void DepreciationConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -30,7 +30,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.NilDepreciationRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsNilDepApplicable = true;
-            CheckApplicability(item, obj, "NilDep");
+            CheckRateApplicability(item, obj, "NilDep");
         }
 
         public void EngineSafeConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -43,7 +43,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.EngineSafeRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
 
             obj.IsEngineCoverApplicable = true;
-            CheckApplicability(item, obj, "EngineCover");
+            CheckRateApplicability(item, obj, "EngineCover");
         }
 
         public void GAPConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -56,7 +56,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.GapRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsGAPApplicable = true;
-            CheckApplicability(item, obj, "GAP");
+            CheckRateApplicability(item, obj, "GAP");
         }
 
         public void KeyLossConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -102,7 +102,7 @@ namespace BRMSIntegration
             if (item.statusDecline2 == "N") { obj.TowingRateYear2 = Convert.ToDecimal(item.addonCoverRate2); }
             if (item.statusDecline3 == "N") { obj.TowingRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
 
-            CheckApplicability(item, obj, "Towing");
+            CheckRateApplicability(item, obj, "Towing");
         }
 
         public void LCAConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -163,7 +163,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.TyreProtectionRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsTyreProtectionApplicable = true;
-            CheckApplicability(item, obj, "TyreProtection");
+            CheckRateApplicability(item, obj, "TyreProtection");
         }
 
         public void LibertyBatterySecureConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -202,7 +202,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.DamageToChargerRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsDamageToChargerApplicable = true;
-            CheckApplicability(item, obj, "DamageToCharger");
+            CheckRateApplicability(item, obj, "DamageToCharger");
         }
 
         public void ReinstallationOfWallMountedChargerConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -215,7 +215,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.ReinstallationOfWallMountedChargerRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsReinstallationOfWallMountedChargerApplicable = true;
-            CheckApplicability(item, obj, "ReinstallationOfWallMountedCharger");
+            CheckRateApplicability(item, obj, "ReinstallationOfWallMountedCharger");
         }
 
         public void DamageToPropertyConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -228,7 +228,7 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.DamageToPropertyRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsDamageToPropertyApplicable = true;
-            CheckApplicability(item, obj, "DamageToProperty");
+            CheckRateApplicability(item, obj, "DamageToProperty");
         }
 
         public void ChargerLiabilityProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
@@ -241,152 +241,186 @@ namespace BRMSIntegration
             if (item.statusDecline3 == "N") { obj.ChargerLiabilityProtectionRateYear3 = Convert.ToDecimal(item.addonCoverRate3); }
             
             obj.IsChargerLiabilityProtectionApplicable = true;
-            CheckApplicability(item, obj, "ChargerLiabilityProtection");
+            CheckRateApplicability(item, obj, "ChargerLiabilityProtection");
         }
 
-        private void CheckApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        private void CheckRateApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
-            {
-                case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
-                    break;
-                case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
-                    break;
-                case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
-                    break;
-                case 5:
-                    if (item.statusDecline5 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0 || item.addonCoverRate4 == 0 || item.addonCoverRate5 == 0) { isApplicable = false; }
-                    break;
-            }
-
+            bool isApplicable = CheckRateApplicabilityByTenure(item, obj.PolicyTenure);
             SetApplicability(obj, coverType, isApplicable);
         }
 
         private void CheckValueApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
+            bool isApplicable = CheckValueApplicabilityByTenure(item, obj.PolicyTenure);
+            SetApplicability(obj, coverType, isApplicable);
+        }
+
+        private bool CheckRateApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
             {
                 case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline1 == "Y" || item.addonCoverRate1 == 0);
                 case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0);
                 case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
                 case 5:
-                    if (item.statusDecline5 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0 || item.addonCoverValue4 == 0 || item.addonCoverValue5 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline5 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || 
+                            item.addonCoverRate3 == 0 || item.addonCoverRate4 == 0 || item.addonCoverRate5 == 0);
+                default:
+                    return true;
             }
+        }
 
-            SetApplicability(obj, coverType, isApplicable);
+        private bool CheckValueApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
+            {
+                case 1:
+                    return !(item.statusDecline1 == "Y" || item.addonCoverValue1 == 0);
+                case 2:
+                    return !(item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0);
+                case 3:
+                    return !(item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0);
+                case 5:
+                    return !(item.statusDecline5 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || 
+                            item.addonCoverValue3 == 0 || item.addonCoverValue4 == 0 || item.addonCoverValue5 == 0);
+                default:
+                    return true;
+            }
         }
 
         private void CheckKeyLossApplicability(addonCoverDtls item, DomQuickQuote obj)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
+            bool isApplicable = CheckKeyLossApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsKeyLoassApplicable = isApplicable;
+        }
+
+        private bool CheckKeyLossApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
             {
                 case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
-                    if (!isApplicable) { isApplicable = true; }
-                    break;
+                    bool isApplicable = !(item.statusDecline1 == "Y" || item.addonCoverRate1 == 0);
+                    return isApplicable ? isApplicable : true; // Special case: always true if false
                 case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0);
                 case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
+                default:
+                    return true;
             }
-
-            obj.IsKeyLoassApplicable = isApplicable;
         }
 
         private void CheckPersonalBelongingApplicability(addonCoverDtls item, DomQuickQuote obj)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
+            bool isApplicable = CheckPersonalBelongingApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsPersonalBelongingApplicable = isApplicable;
+        }
+
+        private bool CheckPersonalBelongingApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
             {
                 case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverRate1 == 0) { isApplicable = false; }
-                    if (!isApplicable) { isApplicable = true; }
-                    break;
+                    bool isApplicable = !(item.statusDecline1 == "Y" || item.addonCoverRate1 == 0);
+                    return isApplicable ? isApplicable : true; // Special case: always true if false
                 case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0);
                 case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
+                default:
+                    return true;
             }
-
-            obj.IsPersonalBelongingApplicable = isApplicable;
         }
 
         private void CheckLibertyBatterySecureApplicability(addonCoverDtls item, DomQuickQuote obj)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
+            bool isApplicable = CheckLibertyBatterySecureApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsLibertyBatterySecureApplicable = isApplicable;
+        }
+
+        private bool CheckLibertyBatterySecureApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
             {
                 case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline1 == "Y" || item.addonCoverValue1 == 0);
                 case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0);
                 case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
+                default:
+                    return true;
             }
-
-            obj.IsLibertyBatterySecureApplicable = isApplicable;
         }
 
         private void CheckLibertyAssureApplicability(addonCoverDtls item, DomQuickQuote obj)
         {
-            bool isApplicable = true;
-            
-            switch (obj.PolicyTenure)
+            bool isApplicable = CheckLibertyAssureApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsLibertyAssureApplicable = isApplicable;
+        }
+
+        private bool CheckLibertyAssureApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            switch (policyTenure)
             {
                 case 1:
-                    if (item.statusDecline1 == "Y" || item.addonCoverValue1 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline1 == "Y" || item.addonCoverValue1 == 0);
                 case 2:
-                    if (item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0);
                 case 3:
-                    if (item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0) { isApplicable = false; }
-                    break;
+                    return !(item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
+                default:
+                    return true;
             }
-
-            obj.IsLibertyAssureApplicable = isApplicable;
         }
 
         private void SetApplicability(DomQuickQuote obj, string coverType, bool isApplicable)
         {
             switch (coverType)
             {
-                case "Consumable": obj.IsConsumableApplicable = isApplicable; break;
-                case "NilDep": obj.IsNilDepApplicable = isApplicable; break;
-                case "EngineCover": obj.IsEngineCoverApplicable = isApplicable; break;
-                case "GAP": obj.IsGAPApplicable = isApplicable; break;
-                case "Towing": obj.IsTowingApplicable = isApplicable; break;
-                case "RoadSideAssist": obj.IsRoadSideAssistApplicable = isApplicable; break;
-                case "TyreProtection": obj.IsTyreProtectionApplicable = isApplicable; break;
-                case "DamageToCharger": obj.IsDamageToChargerApplicable = isApplicable; break;
-                case "ReinstallationOfWallMountedCharger": obj.IsReinstallationOfWallMountedChargerApplicable = isApplicable; break;
-                case "DamageToProperty": obj.IsDamageToPropertyApplicable = isApplicable; break;
-                case "ChargerLiabilityProtection": obj.IsChargerLiabilityProtectionApplicable = isApplicable; break;
+                case "Consumable": 
+                    obj.IsConsumableApplicable = isApplicable; 
+                    break;
+                case "NilDep": 
+                    obj.IsNilDepApplicable = isApplicable; 
+                    break;
+                case "EngineCover": 
+                    obj.IsEngineCoverApplicable = isApplicable; 
+                    break;
+                case "GAP": 
+                    obj.IsGAPApplicable = isApplicable; 
+                    break;
+                case "Towing": 
+                    obj.IsTowingApplicable = isApplicable; 
+                    break;
+                case "RoadSideAssist": 
+                    obj.IsRoadSideAssistApplicable = isApplicable; 
+                    break;
+                case "TyreProtection": 
+                    obj.IsTyreProtectionApplicable = isApplicable; 
+                    break;
+                case "DamageToCharger": 
+                    obj.IsDamageToChargerApplicable = isApplicable; 
+                    break;
+                case "ReinstallationOfWallMountedCharger": 
+                    obj.IsReinstallationOfWallMountedChargerApplicable = isApplicable; 
+                    break;
+                case "DamageToProperty": 
+                    obj.IsDamageToPropertyApplicable = isApplicable; 
+                    break;
+                case "ChargerLiabilityProtection": 
+                    obj.IsChargerLiabilityProtectionApplicable = isApplicable; 
+                    break;
+                case "PassgAssist":
+                    obj.IsPassgAssistApplicable = isApplicable;
+                    break;
+                default:
+                    // No action for unknown cover types
+                    break;
             }
         }
     }
