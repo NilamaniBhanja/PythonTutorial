@@ -1,59 +1,510 @@
-Method BRMSAPIIntegration::MapAddonCovers has 80 lines of code (limit is 50)
-private List<AddonCover> MapAddonCovers(List<AddonCover> requestAddons, List<AddonPlanPremiumList> addonPlanPremiumLists, string BusinessType)
+using System;
+using AVOGIModel.Models.Motor;
+using BRMSintegration;
+using BRMSIntegration.BRMSService;
 
-Method BRMSAPIIntegration::MapAddonCovers has a cyclomatic complexity of 23 (limit is 8)
-private List<AddonCover> MapAddonCovers(List<AddonCover> requestAddons, List<AddonPlanPremiumList> addonPlanPremiumLists, string BusinessType)
+namespace BRMSIntegration
+{
+    internal class AddonConfig
+    {
+        public void ConsumableConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "Consumable");
+            CheckRateApplicability(item, obj, "Consumable");
+        }
 
-Method BRMSAPIIntegration::GetQuotePremium has a cyclomatic complexity of 9 (limit is 8)
-public QuotePremiumModel GetQuotePremium(premiumCalculation premiumCalculation, DomQuickQuote domQuick,  premiumCalculationResponse objPremiumCalculationResponse)
+        public void DepreciationConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "NilDep");
+            CheckRateApplicability(item, obj, "NilDep");
+        }
 
+        public void EngineSafeConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "EngineCover");
+            CheckRateApplicability(item, obj, "EngineCover");
+        }
 
-Method BRMSAPIIntegration::MapCalculationResponse has 938 lines of code (limit is 50)
-private premiumCalculationResponse MapCalculationResponse(PremiumCalculationResponse request, premiumCalculationResponse response)
+        public void GAPConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "GAP");
+            CheckRateApplicability(item, obj, "GAP");
+        }
 
+        public void KeyLossConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "KeyLoss");
+            CheckKeyLossApplicability(item, obj);
+        }
 
-File IMDPortalWebAPI/BRMSIntegration/BRMSAPIService/BRMSAPIIntegration.cs has 1292 non-comment lines of code
-﻿using System;
+        public void PassengerAssistConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonValueProperties(item, obj, "PassgAssist");
+            CheckValueApplicability(item, obj, "PassgAssist");
+        }
 
+        public void EMIProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            obj.IsEMICoverApplicable = true;
+        }
 
-File IMDPortalWebAPI/BRMSIntegration/BRMSAPIService/getQuotePremiumModelResponse.cs has 1329 non-comment lines of code
-﻿using System.Collections.Generic;
+        public void TowingConfig(addonCoverDtls item, DomQuickQuote obj, double minimumAdditionalTowingSI, double maximumAdditionalTowingSI)
+        {
+            SetCommonRateProperties(item, obj, "Towing");
+            obj.MinTowingSI = Convert.ToDecimal(minimumAdditionalTowingSI);
+            obj.MaxTowingSI = Convert.ToDecimal(maximumAdditionalTowingSI);
+            CheckRateApplicability(item, obj, "Towing");
+        }
 
+        public void LCAConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            ProcessLCAConfiguration(item, obj);
+            SetCommonRateProperties(item, obj, "RoadSideAssist");
+            CheckValueApplicability(item, obj, "RoadSideAssist");
+            
+            if (!string.IsNullOrEmpty(obj.LCACoverPlan) && item.coverName == CrossCuttings_Constants.Addon_RoadsideAssist)
+            {
+                obj.IsRoadSideAssistApplicable = false;
+            }
+        }
 
-Method AddonValidation::isTyreSerialNoMandatory has a cyclomatic complexity of 11 (limit is 8)
-public bool isTyreSerialNoMandatory(TPCalculatePremium PremiumObj)
+        public void PersonalBelongingConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "PersonalBelonging");
+            CheckPersonalBelongingApplicability(item, obj);
+        }
 
+        public void TyreProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "TyreProtection");
+            CheckRateApplicability(item, obj, "TyreProtection");
+        }
 
-Method BRMSAPIIntegration::getQuoteRequestMapper has 174 lines of code (limit is 50)
-private getQuotePremiumModelRequest getQuoteRequestMapper(premiumCalculation calculation, DomQuickQuote domQuick)
+        public void LibertyBatterySecureConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetLibertyProperties(item, obj, "BatterySecure");
+            CheckLibertyBatterySecureApplicability(item, obj);
+        }
 
+        public void LibertyAssureConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetLibertyProperties(item, obj, "Assure");
+            CheckLibertyAssureApplicability(item, obj);
+        }
 
+        public void DamageToChargerConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "DamageToCharger");
+            CheckRateApplicability(item, obj, "DamageToCharger");
+        }
 
-Method BRMSAPIIntegration::GetQuotePremium has 52 lines of code (limit is 50)
-public QuotePremiumModel GetQuotePremium(premiumCalculation premiumCalculation, DomQuickQuote domQuick,  premiumCalculationResponse objPremiumCalculationResponse)
+        public void ReinstallationOfWallMountedChargerConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "ReinstallationOfWallMountedCharger");
+            CheckRateApplicability(item, obj, "ReinstallationOfWallMountedCharger");
+        }
 
-Method AddonConfig::SetApplicability has a cyclomatic complexity of 12 (limit is 8)
-private void SetApplicability(DomQuickQuote obj, string coverType, bool isApplicable)
+        public void DamageToPropertyConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "DamageToProperty");
+            CheckRateApplicability(item, obj, "DamageToProperty");
+        }
 
-Method AddonConfig::CheckKeyLossApplicabilityByTenure has a cyclomatic complexity of 11 (limit is 8)
-private bool CheckKeyLossApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        public void ChargerLiabilityProtectionConfig(addonCoverDtls item, DomQuickQuote obj)
+        {
+            SetCommonRateProperties(item, obj, "ChargerLiabilityProtection");
+            CheckRateApplicability(item, obj, "ChargerLiabilityProtection");
+        }
 
-Method AddonConfig::CheckValueApplicabilityByTenure has a cyclomatic complexity of 16 (limit is 8)
-private bool CheckValueApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        #region Helper Methods
 
+        private void SetCommonRateProperties(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            decimal rate1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            switch (coverType)
+            {
+                case "Consumable":
+                    obj.DefaultPerConsumable = rate1;
+                    obj.PerConsumableEntered = rate1;
+                    obj.ConsumableRateYear1 = rate1;
+                    obj.IsConsumableApplicable = true;
+                    break;
+                case "NilDep":
+                    obj.DefaultPerNilDep = rate1;
+                    obj.PerNilDepEntered = rate1;
+                    obj.NilDepreciationRateYear1 = rate1;
+                    obj.IsNilDepApplicable = true;
+                    break;
+                case "EngineCover":
+                    obj.DefaultPerEngine = rate1;
+                    obj.percentEngineCoverentered = rate1;
+                    obj.EngineSafeRateYear1 = rate1;
+                    obj.IsEngineCoverApplicable = true;
+                    break;
+                case "GAP":
+                    obj.DefaultPerGAP = rate1;
+                    obj.percentGAPentered = rate1;
+                    obj.GapRateYear1 = rate1;
+                    obj.IsGAPApplicable = true;
+                    break;
+                case "KeyLoss":
+                    obj.DefaultPerKL = rate1;
+                    obj.percentKeyLossentered = rate1;
+                    obj.KeyLossRateYear1 = rate1;
+                    obj.IsKeyLoassApplicable = true;
+                    break;
+                case "Towing":
+                    obj.DefaultPerTowing = rate1;
+                    obj.PerTowingEntered = rate1;
+                    obj.TowingRateYear1 = rate1;
+                    obj.IsTowingApplicable = true;
+                    break;
+                case "TyreProtection":
+                    obj.DefaultPerTP = rate1;
+                    obj.PercentTyreProtectionEntered = rate1;
+                    obj.TyreProtectionRateYear1 = rate1;
+                    obj.IsTyreProtectionApplicable = true;
+                    break;
+                case "DamageToCharger":
+                    obj.DefaultPerDTC = rate1;
+                    obj.PercentDamageToChargerEntered = rate1;
+                    obj.DamageToChargerRateYear1 = rate1;
+                    obj.IsDamageToChargerApplicable = true;
+                    break;
+                case "ReinstallationOfWallMountedCharger":
+                    obj.DefaultPerROWMC = rate1;
+                    obj.PercentReinstallationOfWallMountedChargerEntered = rate1;
+                    obj.ReinstallationOfWallMountedChargerRateYear1 = rate1;
+                    obj.IsReinstallationOfWallMountedChargerApplicable = true;
+                    break;
+                case "DamageToProperty":
+                    obj.DefaultPerDTP = rate1;
+                    obj.PercentDamageToPropertyEntered = rate1;
+                    obj.DamageToPropertyRateYear1 = rate1;
+                    obj.IsDamageToPropertyApplicable = true;
+                    break;
+                case "ChargerLiabilityProtection":
+                    obj.DefaultPerDTP = rate1;
+                    obj.PercentChargerLiabilityProtectionEntered = rate1;
+                    obj.ChargerLiabilityProtectionRateYear1 = rate1;
+                    obj.IsChargerLiabilityProtectionApplicable = true;
+                    break;
+                case "PersonalBelonging":
+                    obj.DefaultPerPB = rate1;
+                    obj.PercentPersonalBelongingEntered = rate1;
+                    obj.PersonalBelongingRateYear1 = rate1;
+                    obj.IsPersonalBelongingApplicable = true;
+                    break;
+                case "RoadSideAssist":
+                    obj.RoadSideAssistanceRateYear1 = rate1;
+                    obj.IsRoadSideAssistApplicable = true;
+                    break;
+            }
 
-Method AddonConfig::LCAConfig has a cyclomatic complexity of 29 (limit is 8)
-public void LCAConfig(addonCoverDtls item, DomQuickQuote obj)
+            SetAdditionalYearRates(item, obj, coverType);
+        }
 
+        private void SetCommonValueProperties(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            decimal value1 = Convert.ToDecimal(item.addonCoverValue1);
+            
+            switch (coverType)
+            {
+                case "PassgAssist":
+                    obj.DefaultPassengerAssistValue = value1;
+                    obj.DefaultPassengerAssist = value1;
+                    obj.PassengerAssistRateYear1 = value1;
+                    obj.IsPassgAssistApplicable = true;
+                    break;
+            }
 
-Method AddonConfig::CheckLibertyAssureApplicabilityByTenure has a cyclomatic complexity of 10 (limit is 8)
-private bool CheckLibertyAssureApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+            SetAdditionalYearValueRates(item, obj, coverType);
+        }
 
-Method AddonConfig::CheckPersonalBelongingApplicabilityByTenure has a cyclomatic complexity of 11 (limit is 8)
-private bool CheckPersonalBelongingApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        private void SetLibertyProperties(addonCoverDtls item, DomQuickQuote obj, string libertyType)
+        {
+            decimal value1 = Convert.ToDecimal(item.addonCoverValue1);
+            decimal rate1 = Convert.ToDecimal(item.addonCoverRate1);
+            
+            if (libertyType == "BatterySecure")
+            {
+                obj.DefaultPerLBS = rate1;
+                obj.PercentLibertyBatterySecureEntered = value1;
+                obj.LibertyBatterySecureRateYear1 = value1;
+                obj.IsLibertyBatterySecureApplicable = true;
+            }
+            else if (libertyType == "Assure")
+            {
+                obj.DefaultPerLBS = rate1;
+                obj.PercentLibertyAssureEntered = value1;
+                obj.LibertyAssureRateYear1 = value1;
+                obj.IsLibertyAssureApplicable = true;
+            }
 
-Method AddonConfig::CheckRateApplicabilityByTenure has a cyclomatic complexity of 16 (limit is 8)
-private bool CheckRateApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+            SetAdditionalYearRates(item, obj, "Liberty");
+        }
 
-Method AddonConfig::CheckLibertyBatterySecureApplicabilityByTenure has a cyclomatic complexity of 10 (limit is 8)
-private bool CheckLibertyBatterySecureApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        private void SetAdditionalYearRates(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            if (item.statusDecline2 == "N")
+            {
+                decimal rate2 = Convert.ToDecimal(item.addonCoverRate2);
+                SetYearRate(obj, coverType, 2, rate2);
+            }
+            
+            if (item.statusDecline3 == "N")
+            {
+                decimal rate3 = Convert.ToDecimal(item.addonCoverRate3);
+                SetYearRate(obj, coverType, 3, rate3);
+            }
+        }
+
+        private void SetAdditionalYearValueRates(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            if (item.statusDecline2 == "N")
+            {
+                decimal value2 = Convert.ToDecimal(item.addonCoverValue2);
+                SetYearValueRate(obj, coverType, 2, value2);
+            }
+            
+            if (item.statusDecline3 == "N")
+            {
+                decimal value3 = Convert.ToDecimal(item.addonCoverValue3);
+                SetYearValueRate(obj, coverType, 3, value3);
+            }
+        }
+
+        private void SetYearRate(DomQuickQuote obj, string coverType, int year, decimal rate)
+        {
+            switch (coverType)
+            {
+                case "Consumable" when year == 2: obj.ConsumableRateYear2 = rate; break;
+                case "Consumable" when year == 3: obj.ConsumableRateYear3 = rate; break;
+                case "NilDep" when year == 2: obj.NilDepreciationRateYear2 = rate; break;
+                case "NilDep" when year == 3: obj.NilDepreciationRateYear3 = rate; break;
+                case "EngineCover" when year == 2: obj.EngineSafeRateYear2 = rate; break;
+                case "EngineCover" when year == 3: obj.EngineSafeRateYear3 = rate; break;
+                case "GAP" when year == 2: obj.GapRateYear2 = rate; break;
+                case "GAP" when year == 3: obj.GapRateYear3 = rate; break;
+                case "KeyLoss" when year == 2: obj.KeyLossRateYear2 = rate; break;
+                case "KeyLoss" when year == 3: obj.KeyLossRateYear3 = rate; break;
+                case "Towing" when year == 2: obj.TowingRateYear2 = rate; break;
+                case "Towing" when year == 3: obj.TowingRateYear3 = rate; break;
+                case "TyreProtection" when year == 2: obj.TyreProtectionRateYear2 = rate; break;
+                case "TyreProtection" when year == 3: obj.TyreProtectionRateYear3 = rate; break;
+                case "DamageToCharger" when year == 2: obj.DamageToChargerRateYear2 = rate; break;
+                case "DamageToCharger" when year == 3: obj.DamageToChargerRateYear3 = rate; break;
+                case "ReinstallationOfWallMountedCharger" when year == 2: obj.ReinstallationOfWallMountedChargerRateYear2 = rate; break;
+                case "ReinstallationOfWallMountedCharger" when year == 3: obj.ReinstallationOfWallMountedChargerRateYear3 = rate; break;
+                case "DamageToProperty" when year == 2: obj.DamageToPropertyRateYear2 = rate; break;
+                case "DamageToProperty" when year == 3: obj.DamageToPropertyRateYear3 = rate; break;
+                case "ChargerLiabilityProtection" when year == 2: obj.ChargerLiabilityProtectionRateYear2 = rate; break;
+                case "ChargerLiabilityProtection" when year == 3: obj.ChargerLiabilityProtectionRateYear3 = rate; break;
+                case "PersonalBelonging" when year == 2: obj.PersonalBelongingRateYear2 = rate; break;
+                case "PersonalBelonging" when year == 3: obj.PersonalBelongingRateYear3 = rate; break;
+                case "RoadSideAssist" when year == 2: obj.RoadSideAssistanceRateYear2 = rate; break;
+                case "RoadSideAssist" when year == 3: obj.RoadSideAssistanceRateYear3 = rate; break;
+                case "Liberty" when year == 2: 
+                    if (obj.IsLibertyBatterySecureApplicable) obj.LibertyBatterySecureRateYear2 = rate;
+                    if (obj.IsLibertyAssureApplicable) obj.LibertyAssureRateYear2 = rate;
+                    break;
+                case "Liberty" when year == 3: 
+                    if (obj.IsLibertyBatterySecureApplicable) obj.LibertyBatterySecureRateYear3 = rate;
+                    if (obj.IsLibertyAssureApplicable) obj.LibertyAssureRateYear3 = rate;
+                    break;
+            }
+        }
+
+        private void SetYearValueRate(DomQuickQuote obj, string coverType, int year, decimal value)
+        {
+            switch (coverType)
+            {
+                case "PassgAssist" when year == 2: obj.PassengerAssistRateYear2 = value; break;
+                case "PassgAssist" when year == 3: obj.PassengerAssistRateYear3 = value; break;
+            }
+        }
+
+        private void ProcessLCAConfiguration(addonCoverDtls item, DomQuickQuote obj)
+        {
+            if (!string.IsNullOrEmpty(obj.LCACoverPlan) && item.coverName == CrossCuttings_Constants.Addon_LCA)
+            {
+                decimal? addonCoverValue1 = 0;
+                foreach (var objPlanLst in item.availablePlanLst)
+                {
+                    if (!string.IsNullOrEmpty(objPlanLst.planName) && 
+                        objPlanLst.planName.ToUpper() == obj.LCACoverPlan.ToUpper())
+                    {
+                        addonCoverValue1 = Convert.ToDecimal(objPlanLst.minValue);
+                        break;
+                    }
+                }
+                obj.DefaultRoadAssistValue = addonCoverValue1;
+                obj.EnteredRoadAssistvalue = addonCoverValue1;
+                item.addonCoverValue1 = Convert.ToDouble(addonCoverValue1);
+            }
+            else
+            {
+                obj.DefaultRoadAssistValue = Convert.ToDecimal(item.addonCoverValue1);
+                obj.EnteredRoadAssistvalue = Convert.ToDecimal(item.addonCoverValue1);
+            }
+        }
+
+        #endregion
+
+        #region Applicability Check Methods
+
+        private void CheckRateApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            bool isApplicable = CheckApplicabilityByTenure(item, obj.PolicyTenure, false);
+            SetApplicability(obj, coverType, isApplicable);
+        }
+
+        private void CheckValueApplicability(addonCoverDtls item, DomQuickQuote obj, string coverType)
+        {
+            bool isApplicable = CheckApplicabilityByTenure(item, obj.PolicyTenure, true);
+            SetApplicability(obj, coverType, isApplicable);
+        }
+
+        private void CheckKeyLossApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = CheckKeyLossApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsKeyLoassApplicable = isApplicable;
+        }
+
+        private void CheckPersonalBelongingApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = CheckPersonalBelongingApplicabilityByTenure(item, obj.PolicyTenure);
+            obj.IsPersonalBelongingApplicable = isApplicable;
+        }
+
+        private void CheckLibertyBatterySecureApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = CheckLibertyApplicabilityByTenure(item, obj.PolicyTenure, "BatterySecure");
+            obj.IsLibertyBatterySecureApplicable = isApplicable;
+        }
+
+        private void CheckLibertyAssureApplicability(addonCoverDtls item, DomQuickQuote obj)
+        {
+            bool isApplicable = CheckLibertyApplicabilityByTenure(item, obj.PolicyTenure, "Assure");
+            obj.IsLibertyAssureApplicable = isApplicable;
+        }
+
+        private bool CheckApplicabilityByTenure(addonCoverDtls item, int policyTenure, bool isValueBased)
+        {
+            return policyTenure switch
+            {
+                1 => CheckYear1Applicability(item, isValueBased),
+                2 => CheckYear2Applicability(item, isValueBased),
+                3 => CheckYear3Applicability(item, isValueBased),
+                5 => CheckYear5Applicability(item, isValueBased),
+                _ => true
+            };
+        }
+
+        private bool CheckYear1Applicability(addonCoverDtls item, bool isValueBased)
+        {
+            if (isValueBased)
+                return !(item.statusDecline1 == "Y" || item.addonCoverValue1 == 0);
+            else
+                return !(item.statusDecline1 == "Y" || item.addonCoverRate1 == 0);
+        }
+
+        private bool CheckYear2Applicability(addonCoverDtls item, bool isValueBased)
+        {
+            if (isValueBased)
+                return !(item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0);
+            else
+                return !(item.statusDecline2 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0);
+        }
+
+        private bool CheckYear3Applicability(addonCoverDtls item, bool isValueBased)
+        {
+            if (isValueBased)
+                return !(item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || item.addonCoverValue3 == 0);
+            else
+                return !(item.statusDecline3 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0);
+        }
+
+        private bool CheckYear5Applicability(addonCoverDtls item, bool isValueBased)
+        {
+            if (isValueBased)
+                return !(item.statusDecline5 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverValue2 == 0 || 
+                        item.addonCoverValue3 == 0 || item.addonCoverValue4 == 0 || item.addonCoverValue5 == 0);
+            else
+                return !(item.statusDecline5 == "Y" || item.addonCoverRate1 == 0 || item.addonCoverRate2 == 0 || 
+                        item.addonCoverRate3 == 0 || item.addonCoverRate4 == 0 || item.addonCoverRate5 == 0);
+        }
+
+        private bool CheckKeyLossApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            bool isApplicable = policyTenure switch
+            {
+                1 => CheckYear1Applicability(item, false),
+                2 => CheckYear2Applicability(item, false),
+                3 => CheckYear3Applicability(item, false),
+                _ => true
+            };
+
+            // Special case for KeyLoss: always true if false for year 1
+            if (policyTenure == 1 && !isApplicable)
+                return true;
+
+            return isApplicable;
+        }
+
+        private bool CheckPersonalBelongingApplicabilityByTenure(addonCoverDtls item, int policyTenure)
+        {
+            bool isApplicable = policyTenure switch
+            {
+                1 => CheckYear1Applicability(item, false),
+                2 => CheckYear2Applicability(item, false),
+                3 => CheckYear3Applicability(item, false),
+                _ => true
+            };
+
+            // Special case for PersonalBelonging: always true if false for year 1
+            if (policyTenure == 1 && !isApplicable)
+                return true;
+
+            return isApplicable;
+        }
+
+        private bool CheckLibertyApplicabilityByTenure(addonCoverDtls item, int policyTenure, string libertyType)
+        {
+            return policyTenure switch
+            {
+                1 => !(item.statusDecline1 == "Y" || item.addonCoverValue1 == 0),
+                2 => !(item.statusDecline2 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0),
+                3 => !(item.statusDecline3 == "Y" || item.addonCoverValue1 == 0 || item.addonCoverRate2 == 0 || item.addonCoverRate3 == 0),
+                _ => true
+            };
+        }
+
+        private void SetApplicability(DomQuickQuote obj, string coverType, bool isApplicable)
+        {
+            var applicabilityMap = new Dictionary<string, Action<bool>>
+            {
+                { "Consumable", (applicable) => obj.IsConsumableApplicable = applicable },
+                { "NilDep", (applicable) => obj.IsNilDepApplicable = applicable },
+                { "EngineCover", (applicable) => obj.IsEngineCoverApplicable = applicable },
+                { "GAP", (applicable) => obj.IsGAPApplicable = applicable },
+                { "Towing", (applicable) => obj.IsTowingApplicable = applicable },
+                { "RoadSideAssist", (applicable) => obj.IsRoadSideAssistApplicable = applicable },
+                { "TyreProtection", (applicable) => obj.IsTyreProtectionApplicable = applicable },
+                { "DamageToCharger", (applicable) => obj.IsDamageToChargerApplicable = applicable },
+                { "ReinstallationOfWallMountedCharger", (applicable) => obj.IsReinstallationOfWallMountedChargerApplicable = applicable },
+                { "DamageToProperty", (applicable) => obj.IsDamageToPropertyApplicable = applicable },
+                { "ChargerLiabilityProtection", (applicable) => obj.IsChargerLiabilityProtectionApplicable = applicable },
+                { "PassgAssist", (applicable) => obj.IsPassgAssistApplicable = applicable }
+            };
+
+            if (applicabilityMap.TryGetValue(coverType, out var setAction))
+            {
+                setAction(isApplicable);
+            }
+        }
+
+        #endregion
+    }
+}
