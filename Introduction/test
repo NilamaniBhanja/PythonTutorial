@@ -1,34 +1,130 @@
-private bool CheckYear5Applicability(addonCoverDtls item, bool isValueBased)
+private void SetCommonRateProperties(addonCoverDtls item, DomQuickQuote obj, string coverType)
 {
-    if (item.statusDecline5 == "Y")
+    decimal rate1 = Convert.ToDecimal(item.addonCoverRate1);
+    
+    var propertySetters = new Dictionary<string, Action<decimal>>
     {
-        return false;
+        { "Consumable", (rate) => SetConsumableProperties(obj, rate) },
+        { "NilDep", (rate) => SetNilDepProperties(obj, rate) },
+        { "EngineCover", (rate) => SetEngineCoverProperties(obj, rate) },
+        { "GAP", (rate) => SetGAPProperties(obj, rate) },
+        { "KeyLoss", (rate) => SetKeyLossProperties(obj, rate) },
+        { "Towing", (rate) => SetTowingProperties(obj, rate) },
+        { "TyreProtection", (rate) => SetTyreProtectionProperties(obj, rate) },
+        { "DamageToCharger", (rate) => SetDamageToChargerProperties(obj, rate) },
+        { "ReinstallationOfWallMountedCharger", (rate) => SetReinstallationProperties(obj, rate) },
+        { "DamageToProperty", (rate) => SetDamageToPropertyProperties(obj, rate) },
+        { "ChargerLiabilityProtection", (rate) => SetChargerLiabilityProperties(obj, rate) },
+        { "PersonalBelonging", (rate) => SetPersonalBelongingProperties(obj, rate) },
+        { "RoadSideAssist", (rate) => SetRoadSideAssistProperties(obj, rate) }
+    };
+
+    if (propertySetters.TryGetValue(coverType, out var setter))
+    {
+        setter(rate1);
     }
 
-    if (isValueBased)
-    {
-        return CheckYear5ValueApplicability(item);
-    }
-    else
-    {
-        return CheckYear5RateApplicability(item);
-    }
+    SetAdditionalYearRates(item, obj, coverType);
 }
 
-private bool CheckYear5ValueApplicability(addonCoverDtls item)
+private void SetConsumableProperties(DomQuickQuote obj, decimal rate)
 {
-    return item.addonCoverValue1 != 0 && 
-           item.addonCoverValue2 != 0 && 
-           item.addonCoverValue3 != 0 && 
-           item.addonCoverValue4 != 0 && 
-           item.addonCoverValue5 != 0;
+    obj.DefaultPerConsumable = rate;
+    obj.PerConsumableEntered = rate;
+    obj.ConsumableRateYear1 = rate;
+    obj.IsConsumableApplicable = true;
 }
 
-private bool CheckYear5RateApplicability(addonCoverDtls item)
+private void SetNilDepProperties(DomQuickQuote obj, decimal rate)
 {
-    return item.addonCoverRate1 != 0 && 
-           item.addonCoverRate2 != 0 && 
-           item.addonCoverRate3 != 0 && 
-           item.addonCoverRate4 != 0 && 
-           item.addonCoverRate5 != 0;
+    obj.DefaultPerNilDep = rate;
+    obj.PerNilDepEntered = rate;
+    obj.NilDepreciationRateYear1 = rate;
+    obj.IsNilDepApplicable = true;
+}
+
+private void SetEngineCoverProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerEngine = rate;
+    obj.percentEngineCoverentered = rate;
+    obj.EngineSafeRateYear1 = rate;
+    obj.IsEngineCoverApplicable = true;
+}
+
+private void SetGAPProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerGAP = rate;
+    obj.percentGAPentered = rate;
+    obj.GapRateYear1 = rate;
+    obj.IsGAPApplicable = true;
+}
+
+private void SetKeyLossProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerKL = rate;
+    obj.percentKeyLossentered = rate;
+    obj.KeyLossRateYear1 = rate;
+    obj.IsKeyLoassApplicable = true;
+}
+
+private void SetTowingProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerTowing = rate;
+    obj.PerTowingEntered = rate;
+    obj.TowingRateYear1 = rate;
+    obj.IsTowingApplicable = true;
+}
+
+private void SetTyreProtectionProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerTP = rate;
+    obj.PercentTyreProtectionEntered = rate;
+    obj.TyreProtectionRateYear1 = rate;
+    obj.IsTyreProtectionApplicable = true;
+}
+
+private void SetDamageToChargerProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerDTC = rate;
+    obj.PercentDamageToChargerEntered = rate;
+    obj.DamageToChargerRateYear1 = rate;
+    obj.IsDamageToChargerApplicable = true;
+}
+
+private void SetReinstallationProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerROWMC = rate;
+    obj.PercentReinstallationOfWallMountedChargerEntered = rate;
+    obj.ReinstallationOfWallMountedChargerRateYear1 = rate;
+    obj.IsReinstallationOfWallMountedChargerApplicable = true;
+}
+
+private void SetDamageToPropertyProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerDTP = rate;
+    obj.PercentDamageToPropertyEntered = rate;
+    obj.DamageToPropertyRateYear1 = rate;
+    obj.IsDamageToPropertyApplicable = true;
+}
+
+private void SetChargerLiabilityProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerDTP = rate;
+    obj.PercentChargerLiabilityProtectionEntered = rate;
+    obj.ChargerLiabilityProtectionRateYear1 = rate;
+    obj.IsChargerLiabilityProtectionApplicable = true;
+}
+
+private void SetPersonalBelongingProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.DefaultPerPB = rate;
+    obj.PercentPersonalBelongingEntered = rate;
+    obj.PersonalBelongingRateYear1 = rate;
+    obj.IsPersonalBelongingApplicable = true;
+}
+
+private void SetRoadSideAssistProperties(DomQuickQuote obj, decimal rate)
+{
+    obj.RoadSideAssistanceRateYear1 = rate;
+    obj.IsRoadSideAssistApplicable = true;
 }
