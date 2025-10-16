@@ -1,411 +1,171 @@
-Liberty Battery Secure + EV Secure + Consumables + Depreciation + PassengerAsstCover + RoadSideAsstCover
 
-Combination 1:
-Liberty Battery Secure + EV Secure
-(Both Liberty Battery and EV coverage.)
-
-Combination 2:
-Liberty Battery Secure + Consumables
-(Battery protection + Consumables coverage.)
-
-Combination 3:
-Liberty Battery Secure + Depreciation
-(Battery protection + Depreciation coverage.)
-
-Combination 4:
-Liberty Battery Secure + Passenger Assistance Cover
-(Battery protection + Passenger assistance.)
-
-Combination 5:
-Liberty Battery Secure + Roadside Assistance Cover
-(Battery protection + Roadside support.)
-
-Combination 6:
-EV Secure + Consumables
-(EV coverage + Consumables protection.)
-
-Combination 7:
-EV Secure + Depreciation
-(EV coverage + Depreciation protection.)
-
-Combination 8:
-EV Secure + Passenger Assistance Cover
-(EV coverage + Passenger assistance.)
-
-Combination 9:
-EV Secure + Roadside Assistance Cover
-(EV coverage + Roadside support.)
-
-Combination 10:
-Liberty Battery Secure + EV Secure + Consumables
-(Full coverage for battery, EV, and consumables.)
-
-Combination 11:
-Liberty Battery Secure + EV Secure + Depreciation
-(Full coverage for battery, EV, and depreciation.)
-
-Combination 12:
-Liberty Battery Secure + EV Secure + Passenger Assistance Cover
-(Full coverage for battery, EV, and passenger assistance.)
-
-Combination 13:
-Liberty Battery Secure + EV Secure + Roadside Assistance Cover
-(Full coverage for battery, EV, and roadside support.)
-
-Combination 14:
 Liberty Battery Secure + EV Secure + Consumables + Depreciation
-(Full coverage for battery, EV, consumables, and depreciation.)
 
-Combination 15:
-Liberty Battery Secure + EV Secure + Consumables + Passenger Assistance Cover
-(Full coverage for battery, EV, consumables, and passenger assistance.)
+All Valid Combinations
+🔹 Minimum Combinations (2 Covers)
 
-Combination 16:
-Liberty Battery Secure + EV Secure + Consumables + Roadside Assistance Cover
-(Full coverage for battery, EV, consumables, and roadside support.)
+Liberty Battery Secure + EV Secure
 
-Combination 17:
-Liberty Battery Secure + EV Secure + Depreciation + Passenger Assistance Cover
-(Full coverage for battery, EV, depreciation, and passenger assistance.)
+Liberty Battery Secure + Consumables
 
-Combination 18:
-Liberty Battery Secure + EV Secure + Depreciation + Roadside Assistance Cover
-(Full coverage for battery, EV, depreciation, and roadside support.)
+Liberty Battery Secure + Depreciation
 
-Combination 19:
-Liberty Battery Secure + EV Secure + Passenger Assistance Cover + Roadside Assistance Cover
-(Full coverage for battery, EV, passenger assistance, and roadside support.)
+EV Secure + Consumables
 
-Combination 20:
-Liberty Battery Secure + EV Secure + Consumables + Depreciation + Passenger Assistance Cover
-(All-inclusive coverage with battery, EV, consumables, depreciation, and passenger assistance.)
+EV Secure + Depreciation
 
-Combination 21:
-Liberty Battery Secure + EV Secure + Consumables + Depreciation + Roadside Assistance Cover
-(All-inclusive coverage with battery, EV, consumables, depreciation, and roadside support.)
+🔸 Mid-Size Combinations (3 Covers)
 
-Combination 22:
-Liberty Battery Secure + EV Secure + Consumables + Passenger Assistance Cover + Roadside Assistance Cover
-(All-inclusive coverage with battery, EV, consumables, passenger assistance, and roadside support.)
+Liberty Battery Secure + EV Secure + Consumables
 
-Combination 23:
-Liberty Battery Secure + EV Secure + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-(All-inclusive coverage with battery, EV, depreciation, passenger assistance, and roadside support.)
+Liberty Battery Secure + EV Secure + Depreciation
 
-Combination 24:
-Liberty Battery Secure + EV Secure + Consumables + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-(Full coverage with all the plans included.)
+Liberty Battery Secure + Consumables + Depreciation
+
+EV Secure + Consumables + Depreciation
+
+🟢 Full Combination (All 4 Covers)
+
+Liberty Battery Secure + EV Secure + Consumables + Depreciation ✅
 
 
 
 
-Liberty Battery Secure + Tyre Protection + EV Secure + Consumables + Depreciation + PassengerAsstCover + RoadSideAsstCover
 
-Great — you're now including Tyre Protection in the mix, and want all combinations to always include either Liberty Battery Secure, EV Secure, or both (just like before).
 
-Here’s your full list of coverages:
+Liberty Battery Secure + Tyre Protection + EV Secure + Consumables + Depreciation
 
-Liberty Battery Secure
-
-Tyre Protection
-
-EV Secure
-
-Consumables
-
-Depreciation
-
-Passenger Assistance Cover
-
-Roadside Assistance Cover
-
-✅ Rule: Every combination must include Liberty Battery Secure OR EV Secure OR both.
-
-We’ll now build combinations based on that rule. For clarity, I’ll organize them in increasing order of coverage size — starting from smaller groupings and working up to the full package.
-
-🔹 MINIMUM Combinations (2 covers)
+All Valid Combinations
+🔹 Minimum Combinations (2 Covers)
 
 Liberty Battery Secure + Tyre Protection
 
-Liberty Battery Secure + Consumables
+Tyre Protection + EV Secure
 
-Liberty Battery Secure + Depreciation
+🔸 Combinations with 3 Covers
 
-Liberty Battery Secure + Passenger Assistance Cover
-
-Liberty Battery Secure + Roadside Assistance Cover
-
-EV Secure + Tyre Protection
-
-EV Secure + Consumables
-
-EV Secure + Depreciation
-
-EV Secure + Passenger Assistance Cover
-
-EV Secure + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure
-
-🔸 MEDIUM Combinations (3–5 covers)
-
-Liberty Battery Secure + EV Secure + Tyre Protection
-
-Liberty Battery Secure + EV Secure + Consumables
-
-Liberty Battery Secure + EV Secure + Depreciation
-
-Liberty Battery Secure + EV Secure + Passenger Assistance Cover
-
-Liberty Battery Secure + EV Secure + Roadside Assistance Cover
+Liberty Battery Secure + Tyre Protection + EV Secure
 
 Liberty Battery Secure + Tyre Protection + Consumables
 
 Liberty Battery Secure + Tyre Protection + Depreciation
 
-Liberty Battery Secure + Tyre Protection + Passenger Assistance Cover
+Tyre Protection + EV Secure + Consumables
 
-Liberty Battery Secure + Tyre Protection + Roadside Assistance Cover
+Tyre Protection + EV Secure + Depreciation
 
-EV Secure + Tyre Protection + Consumables
+🟢 Combinations with 4 Covers
 
-EV Secure + Tyre Protection + Depreciation
+Liberty Battery Secure + Tyre Protection + EV Secure + Consumables
 
-EV Secure + Tyre Protection + Passenger Assistance Cover
+Liberty Battery Secure + Tyre Protection + EV Secure + Depreciation
 
-EV Secure + Tyre Protection + Roadside Assistance Cover
+Liberty Battery Secure + Tyre Protection + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables
+Tyre Protection + EV Secure + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + Tyre Protection + Depreciation
+🟣 Full Combination (All 5 Covers)
 
-Liberty Battery Secure + EV Secure + Tyre Protection + Passenger Assistance Cover
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + Depreciation + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + Consumables + Passenger Assistance Cover
-
-🟢 LARGE Combinations (6 covers)
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables + Depreciation + Passenger Assistance Cover
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables + Depreciation + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables + Passenger Assistance Cover + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables + Depreciation + Roadside Assistance Cover
-
-🟣 FULL Combination (all 7 covers)
-
-Liberty Battery Secure + Tyre Protection + EV Secure + Consumables + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-→ ✅ All covers included.
+Liberty Battery Secure + Tyre Protection + EV Secure + Consumables + Depreciation ✅
 
 
 
 
-Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Consumables + Depreciation + PassengerAsstCover + RoadSideAsstCover
 
-✅ Your Updated List of Covers:
 
-Liberty Battery Secure
 
-GAP Value 1
 
-Tyre Protection
 
-EV Secure
+Liberty Battery Secure+GAP Value 1+EV Secure+Consumables+Depreciation
 
-Consumables
-
-Depreciation
-
-Passenger Assistance Cover
-
-Roadside Assistance Cover
-
-✅ Rule: Every combination must include Liberty Battery Secure, EV Secure, or both.
-🔹MINIMUM Combinations (2 covers)
-
-(Smallest valid groupings — always with Liberty Battery Secure or EV Secure)
+Minimum Combinations (2 covers)
 
 Liberty Battery Secure + GAP Value 1
 
-Liberty Battery Secure + Tyre Protection
+GAP Value 1 + EV Secure
 
-Liberty Battery Secure + Consumables
+🔸 3-cover combinations
 
-Liberty Battery Secure + Depreciation
+Liberty Battery Secure + GAP Value 1 + EV Secure
 
-Liberty Battery Secure + Passenger Assistance Cover
-
-Liberty Battery Secure + Roadside Assistance Cover
-
-EV Secure + GAP Value 1
-
-EV Secure + Tyre Protection
-
-EV Secure + Consumables
-
-EV Secure + Depreciation
-
-EV Secure + Passenger Assistance Cover
-
-EV Secure + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure
-
-🔸 MEDIUM Combinations (3–5 covers)
-
-(Useful mix of functional coverages while meeting the inclusion rule)
-
-Liberty Battery Secure + EV Secure + Tyre Protection
-
-Liberty Battery Secure + EV Secure + GAP Value 1
-
-Liberty Battery Secure + EV Secure + Depreciation
-
-Liberty Battery Secure + EV Secure + Consumables
-
-Liberty Battery Secure + EV Secure + Passenger Assistance Cover
-
-Liberty Battery Secure + EV Secure + Roadside Assistance Cover
-
-EV Secure + GAP Value 1 + Tyre Protection
-
-EV Secure + GAP Value 1 + Consumables
-
-EV Secure + GAP Value 1 + Depreciation
-
-EV Secure + GAP Value 1 + Passenger Assistance Cover
-
-EV Secure + GAP Value 1 + Roadside Assistance Cover
-
-Liberty Battery Secure + Tyre Protection + Consumables
+Liberty Battery Secure + GAP Value 1 + Consumables
 
 Liberty Battery Secure + GAP Value 1 + Depreciation
 
-Liberty Battery Secure + GAP Value 1 + Roadside Assistance Cover
+GAP Value 1 + EV Secure + Consumables
 
-Liberty Battery Secure + EV Secure + GAP Value 1 + Depreciation
+GAP Value 1 + EV Secure + Depreciation
 
-Liberty Battery Secure + EV Secure + Tyre Protection + Consumables
+🟢 4-cover combinations
 
-Liberty Battery Secure + EV Secure + Tyre Protection + GAP Value 1
+Liberty Battery Secure + GAP Value 1 + EV Secure + Consumables
 
-🟢 LARGE Combinations (6–7 covers)
+Liberty Battery Secure + GAP Value 1 + EV Secure + Depreciation
 
-(Comprehensive sets, still allowing for a bit of customization)
+Liberty Battery Secure + GAP Value 1 + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + Tyre Protection + GAP Value 1 + Depreciation + Consumables
+GAP Value 1 + EV Secure + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + GAP Value 1 + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
+🟣 Full combination (All 5 covers)
 
-Liberty Battery Secure + EV Secure + GAP Value 1 + Tyre Protection + Passenger Assistance Cover + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + GAP Value 1 + Tyre Protection + Consumables + Depreciation + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + GAP Value 1 + Tyre Protection + Consumables + Depreciation + Passenger Assistance Cover
-
-🟣 FULL Combination (All 8 Covers)
-
-Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Consumables + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-✅ Maximum protection – every coverage included.
+Liberty Battery Secure + GAP Value 1 + EV Secure + Consumables + Depreciation ✅
 
 
 
-Liberty Battery Secure+GAP Value 1+EV Secure+Consumables+Depreciation+PassengerAsstCover+RoadSideAsstCover
 
-You're now working with 7 covers, and you'd like to generate all possible combinations that:
 
-✅ Always include Liberty Battery Secure or EV Secure or both.
 
-✅ Cover List:
 
-Liberty Battery Secure
 
-GAP Value 1
 
-EV Secure
 
-Consumables
 
-Depreciation
 
-Passenger Assistance Cover
 
-Roadside Assistance Cover
 
-🔷 Valid Combinations (Grouped by size)
-🔹 MINIMUM Combinations (2 Covers)
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Consumables + Depreciation 
 
-Liberty Battery Secure + GAP Value 1
 
-Liberty Battery Secure + Consumables
 
-Liberty Battery Secure + Depreciation
+Minimum Combinations (3 covers)
 
-Liberty Battery Secure + Passenger Assistance Cover
+Liberty Battery Secure + GAP Value 1 + Tyre Protection
 
-Liberty Battery Secure + Roadside Assistance Cover
+GAP Value 1 + Tyre Protection + EV Secure
 
-EV Secure + GAP Value 1
+🔸 4-cover combinations
 
-EV Secure + Consumables
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure
 
-EV Secure + Depreciation
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + Consumables
 
-EV Secure + Passenger Assistance Cover
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + Depreciation
 
-EV Secure + Roadside Assistance Cover
+GAP Value 1 + Tyre Protection + EV Secure + Consumables
 
-Liberty Battery Secure + EV Secure
+GAP Value 1 + Tyre Protection + EV Secure + Depreciation
 
-🔸 MID-SIZED Combinations (3–5 Covers)
+🟢 5-cover combinations
 
-Liberty Battery Secure + EV Secure + GAP Value 1
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Consumables
 
-Liberty Battery Secure + EV Secure + Depreciation
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Depreciation
 
-Liberty Battery Secure + EV Secure + Consumables
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + Roadside Assistance Cover
+GAP Value 1 + Tyre Protection + EV Secure + Consumables + Depreciation
 
-Liberty Battery Secure + EV Secure + Passenger Assistance Cover
+🟣 Full combination (All 6 covers)
 
-Liberty Battery Secure + GAP Value 1 + Depreciation
+Liberty Battery Secure + GAP Value 1 + Tyre Protection + EV Secure + Consumables + Depreciation ✅
 
-Liberty Battery Secure + GAP Value 1 + Passenger Assistance Cover
 
-Liberty Battery Secure + GAP Value 1 + Roadside Assistance Cover
 
-EV Secure + GAP Value 1 + Consumables
 
-EV Secure + GAP Value 1 + Depreciation
 
-EV Secure + GAP Value 1 + Passenger Assistance Cover
 
-EV Secure + GAP Value 1 + Roadside Assistance Cover
 
-EV Secure + Depreciation + Roadside Assistance Cover
 
-Liberty Battery Secure + Depreciation + Passenger Assistance Cover
 
-🟢 LARGE Combinations (6 Covers)
 
-Liberty Battery Secure + EV Secure + GAP Value 1 + Consumables + Depreciation + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + GAP Value 1 + Consumables + Depreciation + Passenger Assistance Cover
-
-Liberty Battery Secure + EV Secure + GAP Value 1 + Consumables + Passenger Assistance Cover + Roadside Assistance Cover
-
-Liberty Battery Secure + EV Secure + GAP Value 1 + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-
-🟣 FULL Combination (All 7 Covers)
-
-Liberty Battery Secure + GAP Value 1 + EV Secure + Consumables + Depreciation + Passenger Assistance Cover + Roadside Assistance Cover
-✅ All coverages included – maximum protection.
 
