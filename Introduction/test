@@ -1,2 +1,118 @@
-[RegularExpression(@"^\d{10,12}$", ErrorMessage = "The field must be a number between 10 and 12 digits long.")]
-public string MobileOrAccountNumber { get; set; }
+using System;
+using System.ComponentModel.DataAnnotations;
+
+public class AccidentReportModel
+{
+    [Required(ErrorMessage = "Please specify whether there was Third Party Property/Bodily Injury.")]
+    public bool ThirdPartyPropertyOrBodilyInjury { get; set; }
+
+    [Required(ErrorMessage = "Accident Date & Time is required.")]
+    [DataType(DataType.DateTime, ErrorMessage = "Please enter a valid date and time.")]
+    public DateTime AccidentDateTime { get; set; }
+
+    [Required(ErrorMessage = "Please select the Nature of Loss.")]
+    public string NatureOfLoss { get; set; }
+
+    [Required(ErrorMessage = "Please enter the Location of Accident.")]
+    [StringLength(150, ErrorMessage = "Location cannot exceed 150 characters.")]
+    public string LocationOfAccident { get; set; }
+
+    [Required(ErrorMessage = "Please select the Damaged Parts.")]
+    public string DamagedParts { get; set; }
+
+    [Required(ErrorMessage = "Please enter the Driver Name.")]
+    [StringLength(100, ErrorMessage = "Driver Name cannot exceed 100 characters.")]
+    [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Driver Name must contain letters only.")]
+    public string DriverName { get; set; }
+
+    [Required(ErrorMessage = "Please describe the Accident.")]
+    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
+    public string DescriptionOfAccident { get; set; }
+
+    [Required(ErrorMessage = "Please specify if the vehicle was parked at the time of loss.")]
+    public bool WasVehicleParked { get; set; }
+
+    [Required(ErrorMessage = "Please select the Driver's Relationship with the Insured.")]
+    public string DriversRelationshipWithInsured { get; set; }
+
+    [Required(ErrorMessage = "Please enter the Driver License Number.")]
+    [RegularExpression(@"^\d{10,12}$", ErrorMessage = "Driver License Number must be a valid number between 10 and 12 digits.")]
+    public string DriverLicenseNumber { get; set; }
+
+    [Required(ErrorMessage = "Please enter accident time hour.")]
+    [Range(0, 23, ErrorMessage = "Hour must be between 0 and 23.")]
+    public int Hour { get; set; }
+
+    [Required(ErrorMessage = "Please enter accident time minute.")]
+    [Range(0, 59, ErrorMessage = "Minute must be between 0 and 59.")]
+    public int Minute { get; set; }
+}
+
+
+
+
+
+
+public static class NatureOfLossTypes
+{
+    public static readonly string[] AllowedValues =
+    {
+        "Accidental Damage",
+        "Fire",
+        "Theft",
+        "Third Party Damage",
+        "Natural Disaster",
+        "Other"
+    };
+}
+
+
+
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+
+public class AllowedNatureOfLossAttribute : ValidationAttribute
+{
+    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    {
+        if (value == null)
+            return new ValidationResult("Please select the Nature of Loss.");
+
+        var selectedValue = value.ToString();
+
+        // Check if valid
+        if (NatureOfLossTypes.AllowedValues.Contains(selectedValue, StringComparer.OrdinalIgnoreCase))
+            return ValidationResult.Success;
+
+        return new ValidationResult($"Invalid Nature of Loss. Allowed values are: {string.Join(", ", NatureOfLossTypes.AllowedValues)}.");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+public class AccidentReportModel
+{
+    // ... other fields ...
+
+    [Required(ErrorMessage = "Please select the Nature of Loss.")]
+    [AllowedNatureOfLoss]
+    public string NatureOfLoss { get; set; }
+
+    // ... other fields ...
+}
+
+
+
+
+
+
+
+
