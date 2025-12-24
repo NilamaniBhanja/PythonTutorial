@@ -1,57 +1,58 @@
 =Left(
-IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",""))
-+IIF(Fields!AAIMembershipDiscountValue.Value>0,"IMT 8, ","")
-+IIF(Fields!AntiTheftDiscountValue.Value>0,"IMT 10, ","")
-+IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value>0,"IMT 15,","")
-+IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value>0,"IMT 16, ","")
-+IIF(Fields!ElectricalAccessories.Value>0,"IMT 24, ","")
-+IIF(Fields!VoultaryExcessDiscountValue.Value>0,"IMT 22A, ","")
-+IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0,"IMT 25, ","")
-+IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value>0,"IMT 28, ","")
-+IIF(Fields!LegalLiabilityEmployeeCoverValue.Value>0,"IMT 29, ","")
-+IIF(Fields!TPOnlyPADriverCoverValue.Value>0,"IMT 17, " ,"")
-+IIF(Fields!TPPDCoverValueTP.Value>0,"IMT 20, " ,"")
+    IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
+    IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
+    IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
+    IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
+    IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
+    IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
+    IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
+    IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
+    IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
+    IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
+    IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
+    IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
+    IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
+    IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
+    IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
+    IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", ""),
 
-
-+IIF(Fields!AggreemnetTypeID.Value=1,"IMT 7, ","")
-+IIF(Fields!AggreemnetTypeID.Value=2,"IMT 5, ","")
-+IIF(Fields!AggreemnetTypeID.Value=3,"IMT 6, ",""),
-
-IIF(
-
-len(
-IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",""))
-+IIF(Fields!AAIMembershipDiscountValue.Value>0,"IMT 8, ","")
-+IIF(Fields!AntiTheftDiscountValue.Value>0,"IMT 10, ","")
-+IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value>0,"IMT 15,","")
-+IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value>0,"IMT 16, ","")
-+IIF(Fields!ElectricalAccessories.Value>0,"IMT 24, ","")
-+IIF(Fields!VoultaryExcessDiscountValue.Value>0,"IMT 22A, ","")
-+IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0,"IMT 25, ","")
-+IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value>0,"IMT 28, ","")
-+IIF(Fields!LegalLiabilityEmployeeCoverValue.Value>0,"IMT 29, ","")
-+IIF(Fields!TPOnlyPADriverCoverValue.Value>0,"IMT 17, " ,"")
-+IIF(Fields!TPPDCoverValueTP.Value>0,"IMT 20, " ,"")
-+IIF(Fields!AggreemnetTypeID.Value=1,"IMT 7, ","")
-+IIF(Fields!AggreemnetTypeID.Value=2,"IMT 5, ","")
-+IIF(Fields!AggreemnetTypeID.Value=3,"IMT 6, ",""))>1 
-,len(
-IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",IIF(Cdec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value)> 0,"IMT 1, ",""))
-+IIF(Fields!AAIMembershipDiscountValue.Value>0,"IMT 8, ","")
-+IIF(Fields!AntiTheftDiscountValue.Value>0,"IMT 10, ","")
-+IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value>0,"IMT 15,","")
-+IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value>0,"IMT 16, ","")
-+IIF(Fields!ElectricalAccessories.Value>0,"IMT 24, ","")
-+IIF(Fields!VoultaryExcessDiscountValue.Value>0,"IMT 22A, ","")
-+IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0,"IMT 25, ","")
-+IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value>0,"IMT 28, ","")
-+IIF(Fields!LegalLiabilityEmployeeCoverValue.Value>0,"IMT 29, ","")
-+IIF(Fields!TPOnlyPADriverCoverValue.Value>0,"IMT 17, " ,"")
-+IIF(Fields!TPPDCoverValueTP.Value>0,"IMT 20, " ,"")
-+IIF(Fields!AggreemnetTypeID.Value=1,"IMT 7, ","")
-+IIF(Fields!AggreemnetTypeID.Value=2,"IMT 5, ","")
-+IIF(Fields!AggreemnetTypeID.Value=3,"IMT 6, ","")) -2
-
-,0)
-
+    IIF(
+        Len(
+            IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
+            IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
+            IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
+            IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
+            IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
+            IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
+            IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
+            IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
+            IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
+            IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
+            IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
+            IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
+            IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", "")
+        ) > 1,
+        Len(
+            IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
+            IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
+            IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
+            IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
+            IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
+            IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
+            IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
+            IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
+            IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
+            IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
+            IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
+            IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
+            IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
+            IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", "")
+        ) - 2,
+        0
+    )
 )
