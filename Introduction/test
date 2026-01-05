@@ -2,17 +2,29 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class CustomDateTimeConverter : JsonConverter<DateTime>
+public class FlexibleNullableDateTimeConverter : JsonConverter<DateTime?>
 {
-    private const string Format = "dd/MM/yyyy HH:mm";
-
-    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private static readonly string[] Formats =
     {
+        "dd/MM/yyyy HH:mm",
+        "dd/MM/yyyy"
+    };
+
+    public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        // Handle JSON null
+        if (reader.TokenType == JsonTokenType.Null)
+            return null;
+
         var value = reader.GetString();
+
+        // Handle empty or whitespace
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
 
         if (DateTime.TryParseExact(
             value,
-            Format,
+            Formats,
             CultureInfo.InvariantCulture,
             DateTimeStyles.None,
             out var date))
@@ -20,11 +32,15 @@ public class CustomDateTimeConverter : JsonConverter<DateTime>
             return date;
         }
 
-        throw new JsonException($"Invalid date format. Expected {Format}");
+        throw new JsonException(
+            "Invalid date format. Allowed: dd/MM/yyyy or dd/MM/yyyy HH:mm");
     }
 
-    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value.ToString(Format));
+        if (value.HasValue)
+            writer.WriteStringValue(value.Value.ToString("dd/MM/yyyy HH:mm"));
+        else
+            writer.WriteNullValue();
     }
 }
