@@ -1,58 +1,30 @@
-=Left(
-    IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
-    IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
-    IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
-    IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
-    IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
-    IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
-    IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
-    IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
-    IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
-    IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
-    IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
-    IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
-    IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
-    IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
-    IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
-    IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", ""),
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-    IIF(
-        Len(
-            IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
-            IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
-            IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
-            IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
-            IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
-            IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
-            IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
-            IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
-            IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
-            IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
-            IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
-            IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
-            IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", "")
-        ) > 1,
-        Len(
-            IIF(CDec(Fields!TPOnlyGeoEXTTPPremiumCoverValue.Value) > 0, "IMT 1, ", "") +
-            IIF(Fields!AAIMembershipDiscountValue.Value > 0, "IMT 8, ", "") +
-            IIF(Fields!AntiTheftDiscountValue.Value > 0, "IMT 10, ", "") +
-            IIF(Fields!TPOnlyPANamedPersonsCoverValue.Value > 0, "IMT 15, ", "") +
-            IIF(Fields!TPOnlyPAUnnamedPassCoverValue.Value > 0, "IMT 16, ", "") +
-            IIF(Fields!ElectricalAccessories.Value > 0, "IMT 24, ", "") +
-            IIF(Fields!VoultaryExcessDiscountValue.Value > 0, "IMT 22A, ", "") +
-            IIF(CDec(Fields!TPOnlyFuelKitCoverValue.Value) > 0, "IMT 25, ", "") +
-            IIF(Fields!TPOnlyLegalLiabilityDriverCoverValue.Value > 0, "IMT 28, ", "") +
-            IIF(Fields!LegalLiabilityEmployeeCoverValue.Value > 0, "IMT 29, ", "") +
-            IIF(Fields!TPOnlyPADriverCoverValue.Value > 0, "IMT 17, ", "") +
-            IIF(Fields!TPPDCoverValueTP.Value > 0, "IMT 20, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 1, "IMT 7, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 2, "IMT 5, ", "") +
-            IIF(Fields!AggreemnetTypeID.Value = 3, "IMT 6, ", "") +
-            IIF(Fields!Assureinsurancevalue.Value > 0, "AD 23, ", "")
-        ) - 2,
-        0
-    )
-)
+public class CustomDateTimeConverter : JsonConverter<DateTime>
+{
+    private const string Format = "dd/MM/yyyy HH:mm";
+
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var value = reader.GetString();
+
+        if (DateTime.TryParseExact(
+            value,
+            Format,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var date))
+        {
+            return date;
+        }
+
+        throw new JsonException($"Invalid date format. Expected {Format}");
+    }
+
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString(Format));
+    }
+}
