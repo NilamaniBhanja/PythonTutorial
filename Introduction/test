@@ -1,67 +1,16 @@
-private string ExecuteTokenRequest(
-    string user,
-    string keypass,
-    string endpoint,
-    string formData,
-    string validate)
-{
-    if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri uri))
-        return "Invalid API URL";
-
-    if (uri.Scheme != Uri.UriSchemeHttps)
-        return "Invalid API URL";
-
-    // Always enforce allowlist
-    var allowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "login.microsoft.com"
-    };
-
-    if (!allowedHosts.Contains(uri.Host))
-        return "Untrusted API URL";
-
-    // Optional: block private IPs (extra SSRF hardening)
-    if (IPAddress.TryParse(uri.Host, out var ip) && IsPrivateIp(ip))
-        return "Untrusted API URL";
-
-    ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
-
-    string auth = Convert.ToBase64String(
-        Encoding.GetEncoding("ISO-8859-1")
-        .GetBytes($"{user}:{keypass}")
-    );
-
-    byte[] data = Encoding.ASCII.GetBytes(formData);
-
-    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-    request.AllowAutoRedirect = false;
-    request.ContentType = "application/x-www-form-urlencoded";
-    request.Method = "POST";
-    request.ContentLength = data.Length;
-    request.Headers.Add("Authorization", "Basic " + auth);
-    request.PreAuthenticate = true;
-
-    using (var stream = request.GetRequestStream())
-    {
-        stream.Write(data, 0, data.Length);
-    }
-
-    using (var response = (HttpWebResponse)request.GetResponse())
-    using (var reader = new StreamReader(response.GetResponseStream()))
-    {
-        return reader.ReadToEnd();
-    }
-}
-
-
 private static bool IsPrivateIp(IPAddress ip)
 {
     var bytes = ip.GetAddressBytes();
 
-    return bytes[0] == 10 ||
-           (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
-           (bytes[0] == 192 && bytes[1] == 168) ||
-           bytes[0] == 127 ||
-           bytes[0] == 169 && bytes[1] == 254;
+    return Is10(bytes)
+        || Is172(bytes)
+        || Is192(bytes)
+        || IsLoopback(bytes)
+        || IsLinkLocal(bytes);
 }
+
+private static bool Is10(byte[] b) => b[0] == 10;
+private static bool Is172(byte[] b) => b[0] == 172 && b[1] >= 16 && b[1] <= 31;
+private static bool Is192(byte[] b) => b[0] == 192 && b[1] == 168;
+private static bool IsLoopback(byte[] b) => b[0] == 127;
+private static bool IsLinkLocal(byte[] b) => b[0] == 169 && b[1] == 254;
