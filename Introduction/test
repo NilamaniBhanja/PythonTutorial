@@ -1,16 +1,29 @@
-private static bool IsPrivateIp(IPAddress ip)
-{
-    var bytes = ip.GetAddressBytes();
-
-    return Is10(bytes)
-        || Is172(bytes)
-        || Is192(bytes)
-        || IsLoopback(bytes)
-        || IsLinkLocal(bytes);
-}
-
-private static bool Is10(byte[] b) => b[0] == 10;
-private static bool Is172(byte[] b) => b[0] == 172 && b[1] >= 16 && b[1] <= 31;
-private static bool Is192(byte[] b) => b[0] == 192 && b[1] == 168;
-private static bool IsLoopback(byte[] b) => b[0] == 127;
-private static bool IsLinkLocal(byte[] b) => b[0] == 169 && b[1] == 254;
+Tag Name	Data Type	Length	Require Status	Data	MIBL comments	GC Comments	Third Party Comments	GC Comments - 29/10/25
+PeriodofInsuranceFrom 	DateTime		Yes		OK		non-mandatory for GC	
+PeriodofInsuranceTo	DateTime		Yes		OK		non-mandatory for GC	
+RiskLocation	String	100	Yes		Need understanding	Cannot be made non-mandatory since product is location specific	Cutomer will share only permanent address	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
+RiskLocationDescription	String	100	Yes		Need understanding	Cannot be made non-mandatory since product is location specific	Cutomer will share only permanent address	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
+Address1 	String	150	Yes		OK		non-mandatory for GC	
+Address2 	String	100	No		OK		non-mandatory for GC	
+Address3  	String	100	No		OK		non-mandatory for GC	
+City	String	50	Yes		OK		non-mandatory for GC	
+Locality	String	50	Yes		Need understanding	OK	non-mandatory for GC	
+Pincode	String	10	Yes		OK		non-mandatory for GC	
+							non-mandatory for GC	
+Nooffloor	Int		Yes		Not fessible	already NM	non-mandatory for GC	
+AgeofRisk	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
+ConstructionType	Int		Yes		Not fessible	already NM	non-mandatory for GC	
+BuildingSumInsured	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
+Basementexposure	bool		Yes		Not fessible	already NM	non-mandatory for GC	
+ContentSumInsured	Decimal		Yes		Not fessible	not present in UI	non-mandatory for GC	
+TotalSumInsured	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
+GeneralContent	String		Yes		Not fessible	not present in UI	non-mandatory for GC	
+anyiteminbasement	Bool		Yes		Not fessible	not present in UI	non-mandatory for GC	
+OccupancyType	String		Yes		Not fessible	Cannot be made non-mandatory since occupancy fetches rates for covers in this product	please configure your end for Home connect application because user will share the details	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
+DescriptionofOccupancy	String		Yes		Not fessible	Cannot be made non-mandatory since occupancy fetches rates for covers in this product and value in this field is master driven	please configure your end for Home connect application because user will share the details	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
+BriefDescriptionofOccupancy	String		Yes		Not fessible	OK	non-mandatory for GC	
+RSMDCovered	String		Yes		Not fessible	OK	non-mandatory for GC	
+Deductibles	String		Yes		Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 'Nil'
+PMLPercentage	Int		Yes	value between 0 and 100	Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 100
+MASPercentage	Int		Yes	value between 0 and 100	Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 100
+BasisofIndemnity	String		Yes		Not fessible	OK	non-mandatory for GC	
