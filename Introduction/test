@@ -1,29 +1,133 @@
-Tag Name	Data Type	Length	Require Status	Data	MIBL comments	GC Comments	Third Party Comments	GC Comments - 29/10/25
-PeriodofInsuranceFrom 	DateTime		Yes		OK		non-mandatory for GC	
-PeriodofInsuranceTo	DateTime		Yes		OK		non-mandatory for GC	
-RiskLocation	String	100	Yes		Need understanding	Cannot be made non-mandatory since product is location specific	Cutomer will share only permanent address	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
-RiskLocationDescription	String	100	Yes		Need understanding	Cannot be made non-mandatory since product is location specific	Cutomer will share only permanent address	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
-Address1 	String	150	Yes		OK		non-mandatory for GC	
-Address2 	String	100	No		OK		non-mandatory for GC	
-Address3  	String	100	No		OK		non-mandatory for GC	
-City	String	50	Yes		OK		non-mandatory for GC	
-Locality	String	50	Yes		Need understanding	OK	non-mandatory for GC	
-Pincode	String	10	Yes		OK		non-mandatory for GC	
-							non-mandatory for GC	
-Nooffloor	Int		Yes		Not fessible	already NM	non-mandatory for GC	
-AgeofRisk	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
-ConstructionType	Int		Yes		Not fessible	already NM	non-mandatory for GC	
-BuildingSumInsured	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
-Basementexposure	bool		Yes		Not fessible	already NM	non-mandatory for GC	
-ContentSumInsured	Decimal		Yes		Not fessible	not present in UI	non-mandatory for GC	
-TotalSumInsured	Decimal		Yes		Not fessible	already NM	non-mandatory for GC	
-GeneralContent	String		Yes		Not fessible	not present in UI	non-mandatory for GC	
-anyiteminbasement	Bool		Yes		Not fessible	not present in UI	non-mandatory for GC	
-OccupancyType	String		Yes		Not fessible	Cannot be made non-mandatory since occupancy fetches rates for covers in this product	please configure your end for Home connect application because user will share the details	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
-DescriptionofOccupancy	String		Yes		Not fessible	Cannot be made non-mandatory since occupancy fetches rates for covers in this product and value in this field is master driven	please configure your end for Home connect application because user will share the details	GC master shared. Kindly check and provide default value or clarity on what to be done for these fields.
-BriefDescriptionofOccupancy	String		Yes		Not fessible	OK	non-mandatory for GC	
-RSMDCovered	String		Yes		Not fessible	OK	non-mandatory for GC	
-Deductibles	String		Yes		Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 'Nil'
-PMLPercentage	Int		Yes	value between 0 and 100	Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 100
-MASPercentage	Int		Yes	value between 0 and 100	Not fessible	OK, but default value already present	please configure the default value from your end for Home connect application because user will share the details	GC to use the GC default values for portal syncing as well. Default value - 100
-BasisofIndemnity	String		Yes		Not fessible	OK	non-mandatory for GC	
+Below are structured UAT / SIT test cases to be shared with the GC team for validation.
+These are aligned with the latest decisions (non-mandatory fields, default values, master-driven fields, and portal sync requirements).
+
+📘 Test Case Document
+
+Objective:
+To validate policy generation and successful synchronization with GC portal as per agreed data dictionary and default handling rules.
+
+🔹 Section 1: Policy Period Validation
+TC_01 – Validate Policy Period Fields (Non-Mandatory for GC)
+Field	Test Scenario	Expected Result
+PeriodofInsuranceFrom	Pass valid DateTime	Policy generated successfully
+PeriodofInsuranceTo	Pass valid DateTime	Policy generated successfully
+Both fields blank	Leave blank	Policy should generate and sync successfully (Non-mandatory for GC)
+🔹 Section 2: Address Validation
+TC_02 – Validate Address Fields (Non-Mandatory for GC)
+Field	Scenario	Expected Result
+Address1	Provide value	Policy generated successfully
+Address2	Blank	Should allow
+Address3	Blank	Should allow
+City	Blank	Should allow
+Locality	Blank	Should allow
+Pincode	Blank	Should allow
+All address fields blank	Submit policy	Policy generation & GC sync successful
+🔹 Section 3: Risk Location Mapping (Mandatory – Product Driven)
+TC_03 – RiskLocation Mapping from Permanent Address
+Scenario	Expected Result
+Permanent address mapped to RiskLocation	Policy generated successfully
+RiskLocation blank	System should either auto-populate from permanent address OR fail with validation error
+RiskLocationDescription blank	Should auto-populate OR fail (as per GC master logic)
+
+✔ GC to confirm mapping logic during execution.
+
+🔹 Section 4: Occupancy Validation (Rate Fetch Dependent)
+TC_04 – Valid OccupancyType (Master Driven)
+Scenario	Expected Result
+Valid master OccupancyType passed	Rates fetched correctly
+Invalid OccupancyType passed	System should throw validation error
+OccupancyType blank	Policy generation should fail (Mandatory)
+TC_05 – DescriptionofOccupancy (Master Driven)
+Scenario	Expected Result
+Valid master description	Policy generated
+Invalid description	Validation error
+Blank value	Policy generation fails
+🔹 Section 5: Default Value Validation (System Driven)
+TC_06 – Deductibles Default
+Scenario	Expected Result
+No value passed	System auto-sets 'Nil'
+Policy synced	GC receives value = 'Nil'
+TC_07 – PMLPercentage Default
+Scenario	Expected Result
+No value passed	Default set to 100
+Value = 50	Acceptable (0–100 validation)
+Value >100	Validation error
+Value <0	Validation error
+TC_08 – MASPercentage Default
+Scenario	Expected Result
+No value passed	Default set to 100
+Value between 0–100	Acceptable
+Invalid value	Validation error
+🔹 Section 6: Non-UI Fields Handling
+TC_09 – Fields Not Present in UI
+
+Fields:
+
+ContentSumInsured
+
+GeneralContent
+
+anyiteminbasement
+
+Scenario	Expected Result
+Fields not passed in payload	Policy generated successfully
+GC sync validation	No rejection from GC
+🔹 Section 7: End-to-End Policy Generation & GC Sync
+TC_10 – Successful Policy Generation with Minimum Mandatory Data
+
+Input:
+
+Valid OccupancyType (Master)
+
+Valid DescriptionofOccupancy
+
+RiskLocation mapped
+
+Deductible blank (default applied)
+
+PML & MAS blank (default applied)
+
+Expected Result:
+
+Policy number generated.
+
+Premium calculated correctly.
+
+Policy successfully synced to GC portal.
+
+GC acknowledgement received.
+
+No rejection errors from GC.
+
+TC_11 – Policy Sync Failure Handling
+Scenario	Expected Result
+Invalid Occupancy	GC rejection message logged
+Missing RiskLocation	Sync failure
+Incorrect PML value	Validation failure before sync
+🔹 Section 8: Negative Test Cases
+TC ID	Scenario	Expected Result
+TC_12	OccupancyType invalid master	Error before policy issuance
+TC_13	RiskLocation null	Error
+TC_14	PML = 150	Validation error
+TC_15	MAS = -10	Validation error
+✅ Final Acceptance Criteria
+
+Policy should:
+
+Generate successfully with minimum mandatory fields.
+
+Apply default values:
+
+Deductibles → 'Nil'
+
+PMLPercentage → 100
+
+MASPercentage → 100
+
+Accept non-mandatory fields as blank.
+
+Fetch rates correctly based on OccupancyType.
+
+Map RiskLocation appropriately.
+
+Successfully sync to GC without rejection.
