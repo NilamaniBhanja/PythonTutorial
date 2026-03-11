@@ -1,4 +1,20 @@
-Below are structured UAT / SIT test cases to be shared with the GC team for validation.
+
+var businessType = PremiumObj.BusinessType?.Trim();
+
+if (string.Equals(businessType, "NEW BUSINESS", StringComparison.OrdinalIgnoreCase))
+{
+    businessType = "FreshBusiness";
+}
+
+bool isNewBRMS = entities.MasAddonBundlingBusinesses.Any(mbb =>
+    mbb.AgentID == UserRTOPINPOSPCRID.UserID &&
+    entities.MASVehicleBusinessTypes.Any(mvb =>
+        mvb.ID == mbb.BusinessID &&
+        mvb.Value == businessType));
+
+objQuickQuoteDetails.IsNewBRMSAPI = isNewBRMS;
+
+elow are structured UAT / SIT test cases to be shared with the GC team for validation.
 These are aligned with the latest decisions (non-mandatory fields, default values, master-driven fields, and portal sync requirements).
 
 📘 Test Case Document
@@ -11,7 +27,7 @@ TC_01 – Validate Policy Period Fields (Non-Mandatory for GC)
 Field	Test Scenario	Expected Result
 PeriodofInsuranceFrom	Pass valid DateTime	Policy generated successfully
 PeriodofInsuranceTo	Pass valid DateTime	Policy generated successfully
-Both fields blank	Leave blank	Policy should generate and sync successfully (Non-mandatory for GC)
+Bolicy should generate and sync successfully (Non-mandatory for GC)
 🔹 Section 2: Address Validation
 TC_02 – Validate Address Fields (Non-Mandatory for GC)
 Field	Scenario	Expected Result
@@ -22,7 +38,7 @@ City	Blank	Should allow
 Locality	Blank	Should allow
 Pincode	Blank	Should allow
 All address fields blank	Submit policy	Policy generation & GC sync successful
-🔹 Section 3: Risk Location Mapping (Mandatory – Product Driven)
+🔹 Section 3: Risk Locatioory – Product Driven)
 TC_03 – RiskLocation Mapping from Permanent Address
 Scenario	Expected Result
 Permanent address mapped to RiskLocation	Policy generated successfully
