@@ -1,4 +1,14 @@
+objQuickQuoteDetails.IsNewBRMSAPI = entities.MasAddonBundlingBusinesses
+    .Where(mbb => mbb.AgentID == UserRTOPINPOSPCRID.UserID)
+    .Join(entities.MASVehicleBusinessTypes,
+          mbb => mbb.BusinessID,
+          mvb => mvb.ID,
+          (mbb, mvb) => new { mbb, mvb })
+    .Where(x => x.mvb.Value == businessType)
+    .Select(x => x.mbb.IsNewBRMS)
+    .FirstOrDefault();
 
+    
 var businessType = PremiumObj.BusinessType?.Trim();
 
 if (string.Equals(businessType, "NEW BUSINESS", StringComparison.OrdinalIgnoreCase))
