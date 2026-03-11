@@ -1,159 +1,75 @@
-objQuickQuoteDetails.IsNewBRMSAPI = entities.MasAddonBundlingBusinesses
-    .Where(mbb => mbb.AgentID == UserRTOPINPOSPCRID.UserID)
-    .Join(entities.MASVehicleBusinessTypes,
-          mbb => mbb.BusinessID,
-          mvb => mvb.ID,
-          (mbb, mvb) => new { mbb, mvb })
-    .Where(x => x.mvb.Value == businessType)
-    .Select(x => x.mbb.IsNewBRMS)
-    .FirstOrDefault();
+DECLARE @AgentID NUMERIC(18,0)
+DECLARE @ProductID INT = 0
+DECLARE @businessID INT
+DECLARE @AgentCodeID NUMERIC(18,0)
 
-    
-var businessType = PremiumObj.BusinessType?.Trim();
+-- Get ProductID
+IF @ProductCode <> ''
+BEGIN
+    SELECT @ProductID = Id
+    FROM MASProduct
+    WHERE Code = @ProductCode
+END
 
-if (string.Equals(businessType, "NEW BUSINESS", StringComparison.OrdinalIgnoreCase))
-{
-    businessType = "FreshBusiness";
-}
+-- Get BusinessID
+SELECT @businessID = Id
+FROM MASVehicleBusinessType
+WHERE Value = @BusinessType
 
-bool isNewBRMS = entities.MasAddonBundlingBusinesses.Any(mbb =>
-    mbb.AgentID == UserRTOPINPOSPCRID.UserID &&
-    entities.MASVehicleBusinessTypes.Any(mvb =>
-        mvb.ID == mbb.BusinessID &&
-        mvb.Value == businessType));
+-- Get AgentCodeID
+SELECT TOP 1 @AgentCodeID = UserID
+FROM tblUserExt
+WHERE IMDCode = @IMDCode
+AND IsActive = 1
+ORDER BY UserExtID DESC
 
-objQuickQuoteDetails.IsNewBRMSAPI = isNewBRMS;
 
-elow are structured UAT / SIT test cases to be shared with the GC team for validation.
-These are aligned with the latest decisions (non-mandatory fields, default values, master-driven fields, and portal sync requirements).
+------------------------------------------
+-- Handle Multiple AgentIDs if ProductID=0
+------------------------------------------
 
-📘 Test Case Document
+DECLARE @AgentList TABLE (AgentID NUMERIC(18,0))
 
-Objective:
-To validate policy generation and successful synchronization with GC portal as per agreed data dictionary and default handling rules.
+IF @ProductID = 0
+BEGIN
+    INSERT INTO @AgentList (AgentID)
+    SELECT ID
+    FROM AgentParameters
+    WHERE AgentID = @AgentCodeID
+END
+ELSE
+BEGIN
+    INSERT INTO @AgentList (AgentID)
+    SELECT ID
+    FROM AgentParameters
+    WHERE AgentID = @AgentCodeID
+    AND ProductID = @ProductID
+END
 
-🔹 Section 1: Policy Period Validation
-TC_01 – Validate Policy Period Fields (Non-Mandatory for GC)
-Field	Test Scenario	Expected Result
-PeriodofInsuranceFrom	Pass valid DateTime	Policy generated successfully
-PeriodofInsuranceTo	Pass valid DateTime	Policy generated successfully
-Bolicy should generate and sync successfully (Non-mandatory for GC)
-🔹 Section 2: Address Validation
-TC_02 – Validate Address Fields (Non-Mandatory for GC)
-Field	Scenario	Expected Result
-Address1	Provide value	Policy generated successfully
-Address2	Blank	Should allow
-Address3	Blank	Should allow
-City	Blank	Should allow
-Locality	Blank	Should allow
-Pincode	Blank	Should allow
-All address fields blank	Submit policy	Policy generation & GC sync successful
-🔹 Section 3: Risk Locatioory – Product Driven)
-TC_03 – RiskLocation Mapping from Permanent Address
-Scenario	Expected Result
-Permanent address mapped to RiskLocation	Policy generated successfully
-RiskLocation blank	System should either auto-populate from permanent address OR fail with validation error
-RiskLocationDescription blank	Should auto-populate OR fail (as per GC master logic)
 
-✔ GC to confirm mapping logic during execution.
+------------------------------------------
+-- Update Existing Records
+------------------------------------------
 
-🔹 Section 4: Occupancy Validation (Rate Fetch Dependent)
-TC_04 – Valid OccupancyType (Master Driven)
-Scenario	Expected Result
-Valid master OccupancyType passed	Rates fetched correctly
-Invalid OccupancyType passed	System should throw validation error
-OccupancyType blank	Policy generation should fail (Mandatory)
-TC_05 – DescriptionofOccupancy (Master Driven)
-Scenario	Expected Result
-Valid master description	Policy generated
-Invalid description	Validation error
-Blank value	Policy generation fails
-🔹 Section 5: Default Value Validation (System Driven)
-TC_06 – Deductibles Default
-Scenario	Expected Result
-No value passed	System auto-sets 'Nil'
-Policy synced	GC receives value = 'Nil'
-TC_07 – PMLPercentage Default
-Scenario	Expected Result
-No value passed	Default set to 100
-Value = 50	Acceptable (0–100 validation)
-Value >100	Validation error
-Value <0	Validation error
-TC_08 – MASPercentage Default
-Scenario	Expected Result
-No value passed	Default set to 100
-Value between 0–100	Acceptable
-Invalid value	Validation error
-🔹 Section 6: Non-UI Fields Handling
-TC_09 – Fields Not Present in UI
+UPDATE M
+SET IsNewBRMS = @IsNewBRMS
+FROM MasAddonBundlingBusiness M
+JOIN @AgentList A
+    ON M.AgentID = A.AgentID
+WHERE M.BusinessID = @businessID
 
-Fields:
 
-ContentSumInsured
+------------------------------------------
+-- Insert Missing Records
+------------------------------------------
 
-GeneralContent
-
-anyiteminbasement
-
-Scenario	Expected Result
-Fields not passed in payload	Policy generated successfully
-GC sync validation	No rejection from GC
-🔹 Section 7: End-to-End Policy Generation & GC Sync
-TC_10 – Successful Policy Generation with Minimum Mandatory Data
-
-Input:
-
-Valid OccupancyType (Master)
-
-Valid DescriptionofOccupancy
-
-RiskLocation mapped
-
-Deductible blank (default applied)
-
-PML & MAS blank (default applied)
-
-Expected Result:
-
-Policy number generated.
-
-Premium calculated correctly.
-
-Policy successfully synced to GC portal.
-
-GC acknowledgement received.
-
-No rejection errors from GC.
-
-TC_11 – Policy Sync Failure Handling
-Scenario	Expected Result
-Invalid Occupancy	GC rejection message logged
-Missing RiskLocation	Sync failure
-Incorrect PML value	Validation failure before sync
-🔹 Section 8: Negative Test Cases
-TC ID	Scenario	Expected Result
-TC_12	OccupancyType invalid master	Error before policy issuance
-TC_13	RiskLocation null	Error
-TC_14	PML = 150	Validation error
-TC_15	MAS = -10	Validation error
-✅ Final Acceptance Criteria
-
-Policy should:
-
-Generate successfully with minimum mandatory fields.
-
-Apply default values:
-
-Deductibles → 'Nil'
-
-PMLPercentage → 100
-
-MASPercentage → 100
-
-Accept non-mandatory fields as blank.
-
-Fetch rates correctly based on OccupancyType.
-
-Map RiskLocation appropriately.
-
-Successfully sync to GC without rejection.
+INSERT INTO MasAddonBundlingBusiness (BusinessID, AgentID, IsNewBRMS)
+SELECT @businessID, A.AgentID, @IsNewBRMS
+FROM @AgentList A
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM MasAddonBundlingBusiness M
+    WHERE M.BusinessID = @businessID
+    AND M.AgentID = A.AgentID
+)
