@@ -1,4 +1,256 @@
-Method AddonValidation::OptInAddonCoversRenewal has a cyclomatic complexity of 10 (limit is 8)
-Remove this unused method parameter 'p'.
-Method AddonValidation::ValidateRules has a cyclomatic complexity of 11 (limit is 8)
-Add curly braces around the nested statement(s) in this 'if' block.
+public string IsValidPreviousAddon(decimal productId, TPCalculatePremium p)
+{
+    if (!RequiresValidation(p))
+    {
+        return string.Empty;
+    }
+
+    NormalizePolicyDates(p);
+
+    if (IsBreakIn(p))
+    {
+        return string.Empty;
+    }
+
+    string error = ValidateByProduct(productId, p);
+
+    if (string.IsNullOrEmpty(error) &&
+        p.IsFullQuote &&
+        p.BusinessType.Equals("RENEWAL", StringComparison.OrdinalIgnoreCase) &&
+        IsPrivateCar(p))
+    {
+        error = OptInAddonCoversRenewal(p);
+    }
+
+    return error;
+}
+
+
+private bool RequiresValidation(TPCalculatePremium p)
+{
+    if (p.NoPreviousPolicyHistory)
+    {
+        return false;
+    }
+
+    string type = p.BusinessType?.ToUpperInvariant();
+
+    return type == "ROLL OVER" ||
+           type == "RENEWAL" ||
+           type == "USED";
+}
+
+private void NormalizePolicyDates(TPCalculatePremium p)
+{
+    if (p.ProductCode == TPCrossCutting_Constants.TWSODProductCode ||
+        p.ProductCode == TPCrossCutting_Constants.PCSODProductCode)
+    {
+        p.PreviousPolicyStartDate = p.PreviousPolicyODStartDate;
+        p.PreviousPolicyEndDate = p.PreviousPolicyODEndDate;
+    }
+}
+
+private bool IsBreakIn(TPCalculatePremium p)
+{
+    DateTime curStart = Convert.ToDateTime(p.PolicyStartDate);
+    DateTime prevEnd = Convert.ToDateTime(p.PreviousPolicyEndDate);
+
+    DateTime refDate = prevEnd.Date.AddDays(1).AddSeconds(-1);
+
+    return (curStart - refDate).TotalMinutes > 3;
+}
+
+
+private string ValidateByProduct(decimal productId, TPCalculatePremium p)
+{
+    if (IsTwoWheeler(p))
+    {
+        return ValidateTwoWheeler(productId, p);
+    }
+
+    if (IsPrivateCar(p))
+    {
+        return ValidatePrivateCar(productId, p);
+    }
+
+    if (IsCommercial(p))
+    {
+        return ValidateCommercial(productId, p);
+    }
+
+    return string.Empty;
+}
+
+private bool IsTwoWheeler(TPCalculatePremium p)
+{
+    return p.ProductCode == TPCrossCutting_Constants.TWCompProductCode ||
+           p.ProductCode == TPCrossCutting_Constants.TWSODProductCode;
+}
+
+private bool IsPrivateCar(TPCalculatePremium p)
+{
+    return p.ProductCode == TPCrossCutting_Constants.PCCompProductCode ||
+           p.ProductCode == TPCrossCutting_Constants.PCSODProductCode;
+}
+
+private bool IsCommercial(TPCalculatePremium p)
+{
+    return p.ProductCode == TPCrossCutting_Constants.MDCompProductCode ||
+           p.ProductCode == TPCrossCutting_Constants.CVCompProductCode;
+}
+
+
+private string ValidateRules(TPCalculatePremium p, List<AddonRule> rules)
+{
+    bool hasSelectedRule = rules.Any(r => r.RequiresPrevious && r.IsSelected(p));
+
+    if (hasSelectedRule &&
+        (p.lstPreviousAddonDetails == null || p.lstPreviousAddonDetails.Count == 0))
+    {
+        return "Previous year Addon Cover List is mandatory if Any Add on Cover is opted.";
+    }
+
+    if (p.lstPreviousAddonDetails == null)
+    {
+        return string.Empty;
+    }
+
+    foreach (var prev in p.lstPreviousAddonDetails)
+    {
+        var failedRule = rules.FirstOrDefault(rule =>
+            rule.IsSelected(p) &&
+            rule.RequiresPrevious &&
+            !rule.WasSelectedPreviously(prev));
+
+        if (failedRule != null)
+        {
+            if (failedRule.RequiresInspection &&
+                p.IsFullQuote &&
+                !p.IsInspectionDone)
+            {
+                return "Please process the request as breakin like Agency/Self/Manual flow.";
+            }
+
+            return failedRule.ErrorMessage;
+        }
+    }
+
+    return string.Empty;
+}
+
+private string ValidateTwoWheeler(decimal productId, TPCalculatePremium p)
+{
+    var rules = new List<AddonRule>
+    {
+        Rule(productId, p.ConsumableCover, d => d.IsConsumableOptedInPrevPolicy, TPCrossCutting_Constants.ConsumableCoverTW, "Previous year Consumable Cover must be opted"),
+        Rule(productId, p.EngineSafeCover, d => d.IsEngineSafeOptedInPrevPolicy, TPCrossCutting_Constants.EngineSafeCoverTW, "Engine Safe requires previous policy", true),
+        Rule(productId, p.GAPCover, d => d.IsGAPCoverOptedInPrevPolicy, TPCrossCutting_Constants.GAPCoverTW, "GAP requires previous policy", true),
+        Rule(productId, p.DepreciationCover, d => d.IsNilDepreicationOptedInPrevPolicy, TPCrossCutting_Constants.DepreciationCoverTW, "Nil Dep requires previous policy", true),
+        Rule(productId, p.RoadSideAsstCover, d => d.IsRoadSideAsstOptedInPrevPolicy, TPCrossCutting_Constants.RoadsideAssistanceCoverTW, "Previous year Road Side Assistance Cover must be opted")
+    };
+
+    return ValidateRules(p, rules);
+}
+
+
+private string ValidatePrivateCar(decimal productId, TPCalculatePremium p)
+{
+    if (!p.IsFullQuote)
+    {
+        return string.Empty;
+    }
+
+    var rules = new List<AddonRule>
+    {
+        Rule(productId, p.ConsumableCover, d => d.IsConsumableOptedInPrevPolicy, TPCrossCutting_Constants.ConsumableCoverTW, "Consumable required"),
+        Rule(productId, p.EngineSafeCover, d => d.IsEngineSafeOptedInPrevPolicy, TPCrossCutting_Constants.EngineSafeCoverTW, "Engine Safe required", true),
+        Rule(productId, p.GAPCover, d => d.IsGAPCoverOptedInPrevPolicy, TPCrossCutting_Constants.GAPCoverTW, "GAP required", true),
+        Rule(productId, p.KeyLossCover, d => d.IsKeyLossOptedInPrevPolicy, TPCrossCutting_Constants.KeyLossCoverPC, "Key loss required"),
+        Rule(productId, p.DepreciationCover, d => d.IsNilDepreicationOptedInPrevPolicy, TPCrossCutting_Constants.DepreciationCoverTW, "Nil dep required", true),
+        Rule(productId, p.PassengerAsstCover, d => d.IsPassengerAsstOptedInPrevPolicy, TPCrossCutting_Constants.PassengerAssistanceCoverPC, "Passenger cover required"),
+        Rule(productId, p.RoadSideAsstCover, d => d.IsRoadSideAsstOptedInPrevPolicy, TPCrossCutting_Constants.RoadsideAssistanceCoverTW, "RSA required")
+    };
+
+    return ValidateRules(p, rules);
+}
+
+private string ValidateCommercial(decimal productId, TPCalculatePremium p)
+{
+    var rules = new List<AddonRule>
+    {
+        Rule(productId, p.ConsumableCover, d => d.IsConsumableOptedInPrevPolicy, TPCrossCutting_Constants.ConsumableCover, "Consumable required"),
+        Rule(productId, p.EngineSafeCover, d => d.IsEngineSafeOptedInPrevPolicy, TPCrossCutting_Constants.EngineSafeCover, "Engine Safe required", true),
+        Rule(productId, p.GAPCover, d => d.IsGAPCoverOptedInPrevPolicy, TPCrossCutting_Constants.GAPCover, "GAP required", true),
+        Rule(productId, p.DepreciationCover, d => d.IsNilDepreicationOptedInPrevPolicy, TPCrossCutting_Constants.DepreciationCover, "Nil dep required", true),
+        Rule(productId, p.RoadSideAsstCover, d => d.IsRoadSideAsstOptedInPrevPolicy, TPCrossCutting_Constants.RoadsideAssistanceCover, "RSA required"),
+        Rule(productId, p.AdditionalTowingExpense, d => d.IsTowingExpenseOptedInPrevPolicy, TPCrossCutting_Constants.TowingExpense, "Towing required"),
+        Rule(productId, p.EMIProtectionCover, d => d.IsEMICoverOptedInPrevPolicy, TPCrossCutting_Constants.EMICover, "EMI cover required")
+    };
+
+    return ValidateRules(p, rules);
+}
+
+private AddonRule Rule(
+    decimal productId,
+    string value,
+    Func<PreviousAddonDetail, bool> prevSelector,
+    string dbType,
+    string error,
+    bool requiresInspection = false)
+{
+    return new AddonRule
+    {
+        IsSelected = x => IsSelected(value),
+        WasSelectedPreviously = prevSelector,
+        RequiresPrevious = GetPreviousCheck(productId, dbType),
+        ErrorMessage = error,
+        RequiresInspection = requiresInspection
+    };
+}
+
+private bool IsSelected(string value)
+{
+    return !string.IsNullOrEmpty(value) &&
+           value.Equals(TPCrossCutting_Constants.IsCoverSelected, StringComparison.OrdinalIgnoreCase);
+}
+
+private bool GetPreviousCheck(decimal productId, string type)
+{
+    return Convert.ToBoolean(
+        _entities.MASAddOnCovers
+            .Where(a => a.ProductID == productId && a.Type == type && a.EndDate == null)
+            .Select(a => a.PreviousYearCheck)
+            .FirstOrDefault()
+    );
+}
+private string OptInAddonCoversRenewal(TPCalculatePremium p)
+{
+    var dump = _entities.RenewalDumps
+        .FirstOrDefault(a => a.Policy_Number.Substring(0, 21) ==
+                             p.PreviousPolicyNumber.Substring(0, 21));
+
+    if (dump == null || p.lstPreviousAddonDetails?.Any() != true)
+    {
+        return string.Empty;
+    }
+
+    var rules = new[]
+    {
+        new { Check = (Func<PreviousAddonDetail, bool>)(d => d.IsEngineSafeOptedInPrevPolicy), Db = dump.Engine_Safe_Cover_Ex, Msg = "EngineSafe is not present in previous policy,unselect the cover" },
+        new { Check = (Func<PreviousAddonDetail, bool>)(d => d.IsGAPCoverOptedInPrevPolicy), Db = dump.GAP_Value_Cover_EX, Msg = "Gap Cover is not present in previous policy,unselect the cover" },
+        new { Check = (Func<PreviousAddonDetail, bool>)(d => d.IsNilDepreicationOptedInPrevPolicy), Db = dump.Depreciation_Cover_EX, Msg = "Nil dep is not present in previous policy,unselect the cover" }
+    };
+
+    foreach (var d in p.lstPreviousAddonDetails)
+    {
+        var failedRule = rules.FirstOrDefault(r => r.Check(d) && r.Db == null);
+
+        if (failedRule != null)
+        {
+            return failedRule.Msg;
+        }
+    }
+
+    return string.Empty;
+}
+
