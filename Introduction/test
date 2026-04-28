@@ -1,69 +1,321 @@
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+Fix these issue
 
-public class OrderApiService
-{
-    private readonly HttpClient _httpClient;
+Method AddonValidation::IsValidPreviousAddon has 247 lines of code (limit is 50)
 
-    public OrderApiService()
-    {
-        _httpClient = new HttpClient();
-        _httpClient.Timeout = TimeSpan.FromSeconds(30);
-    }
+Method AddonValidation::IsValidPreviousAddon has a cyclomatic complexity of 256 (limit is 8)
 
-    public async Task<OrderResponse> CreateOrderAsync(OrderRequest request)
-    {
-        var url = "https://api.example.com/orders";
+Method AddonValidation::OptInAddonCoversRenewal has a cyclomatic complexity of 11 (limit is 8)
 
-        try
+
+        public string IsValidPreviousAddon(decimal ProductId, TPCalculatePremium PremiumObj)
         {
-            var json = JsonConvert.SerializeObject(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync(url, content);
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
+            string strError = string.Empty;
+            if (PremiumObj.NoPreviousPolicyHistory == false && (PremiumObj.BusinessType.ToUpper() == "ROLL OVER" || PremiumObj.BusinessType.ToUpper() == "RENEWAL" || PremiumObj.BusinessType.ToUpperInvariant() == "USED"))
             {
-                return new OrderResponse
+                if (PremiumObj.ProductCode == TPCrossCutting_Constants.TWSODProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode)
                 {
-                    Status = "Failed",
-                    Error = new ApiError
+                    PremiumObj.PreviousPolicyStartDate = PremiumObj.PreviousPolicyODStartDate;
+                    PremiumObj.PreviousPolicyEndDate = PremiumObj.PreviousPolicyODEndDate;
+                }
+                DateTime curStartDate = Convert.ToDateTime(PremiumObj.PolicyStartDate);
+                DateTime prevEndDate = Convert.ToDateTime(PremiumObj.PreviousPolicyEndDate);
+                DateTime RefDate = prevEndDate.AddHours(23 - prevEndDate.Hour).AddMinutes(59 - prevEndDate.Minute).AddSeconds(59 - prevEndDate.Second);
+                bool isBreakin = false;
+                if (((curStartDate - RefDate).TotalMinutes) > 3)
+                {
+                    isBreakin = true;
+                }
+                if (isBreakin == false)
+                {
+                    if ((PremiumObj.ProductCode == TPCrossCutting_Constants.TWCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.TWSODProductCode))
                     {
-                        Code = ((int)response.StatusCode).ToString(),
-                        Message = responseJson
+                        if ((!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                        {
+
+                            bool isPreviousConsumableCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.ConsumableCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousEngineSafeCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.EngineSafeCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousDepreciationCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.DepreciationCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousGapCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.GAPCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousRoadSideAsstCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.RoadsideAssistanceCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+
+                            if ((PremiumObj.lstPreviousAddonDetails.Count == 0) && ((isPreviousConsumableCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)) ||
+                                (isPreviousEngineSafeCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousDepreciationCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)) ||
+                                (isPreviousGapCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)) ||
+                                (isPreviousRoadSideAsstCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))))
+                            {
+                                strError = "Previous year Addon Cover List is mandatory if Any Add on Cover is opted.";
+                                return strError;
+                            }
+
+                            for (int i = 0; i < PremiumObj.lstPreviousAddonDetails.Count; i++)
+                            {
+
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsConsumableOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousConsumableCoverRequired == true)
+                                {
+                                    strError = "Previous year Consumable Cover must be opted";
+                                    return strError;
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsEngineSafeOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousEngineSafeCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsGAPCoverOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousGapCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsNilDepreicationOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousDepreciationCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsRoadSideAsstOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousRoadSideAsstCoverRequired == true)
+                                {
+                                    strError = "Previous year Road Side Assistance Cover must be opted";
+                                    return strError;
+                                }
+
+                            }
+                        }
                     }
-                };
+
+                    if (PremiumObj.IsFullQuote && (PremiumObj.ProductCode == TPCrossCutting_Constants.PCCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode))/*RCA IR2023-1309*/
+                    {
+                        if ((!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                        {
+                            bool isPreviousConsumableCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.ConsumableCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousEngineSafeCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.EngineSafeCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousDepreciationCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.DepreciationCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousGapCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.GAPCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousRoadSideAsstCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.RoadsideAssistanceCoverTW && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousPassengerAsstCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.PassengerAssistanceCoverPC && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+                            bool isPreviousKeyLossCoverRequired = Convert.ToBoolean(_entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.KeyLossCoverPC && a.EndDate == null).FirstOrDefault().PreviousYearCheck);
+
+                            if ((PremiumObj.lstPreviousAddonDetails.Count == 0) && ((isPreviousConsumableCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousEngineSafeCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousDepreciationCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                                || (isPreviousGapCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousRoadSideAsstCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousPassengerAsstCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousKeyLossCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover == TPCrossCutting_Constants.IsCoverSelected)))))
+                            {
+                                strError = "Previous year Addon Cover List is mandatory if Any Add on Cover is opted.";
+                                return strError;
+                            }
+
+                            for (int i = 0; i < PremiumObj.lstPreviousAddonDetails.Count; i++)
+                            {
+
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsConsumableOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousConsumableCoverRequired == true)
+                                {
+                                    strError = "Previous year Consumable Cover must be opted";
+                                    return strError;
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsEngineSafeOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousEngineSafeCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsGAPCoverOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousGapCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsKeyLossOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousKeyLossCoverRequired == true)
+                                {
+                                    strError = "Previous year Key loss Cover must be opted";
+                                    return strError;
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsNilDepreicationOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousDepreciationCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsPassengerAsstOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousPassengerAsstCoverRequired == true)
+                                {
+                                    strError = "Previous year Passenger Assistance Cover must be opted";
+                                    return strError;
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsRoadSideAsstOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousRoadSideAsstCoverRequired == true)
+                                {
+                                    strError = "Previous year Road Side Assistance Cover must be opted";
+                                    return strError;
+                                }
+                            }
+                        }
+
+                        if (PremiumObj.BusinessType.ToUpper() == "RENEWAL" && string.IsNullOrEmpty(strError) && PremiumObj.IsFullQuote)
+                        {
+                            strError = OptInAddonCoversRenewal(PremiumObj);
+                        }
+                    }
+
+                    if (PremiumObj.ProductCode == TPCrossCutting_Constants.MDCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.CVCompProductCode)
+                    {
+                        if ((!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.AdditionalTowingExpense) && PremiumObj.AdditionalTowingExpense.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                            || (!string.IsNullOrEmpty(PremiumObj.EMIProtectionCover) && PremiumObj.EMIProtectionCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                        {
+                            var isPreviousConsumableCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.ConsumableCover).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousEngineSafeCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && (a.Type == TPCrossCutting_Constants.EngineSafeCover || a.Type == TPCrossCutting_Constants.EngineSafeCoverTW)).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousDepreciationCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.DepreciationCover).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousGapCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && (a.Type == TPCrossCutting_Constants.GAPCover || a.Type == TPCrossCutting_Constants.GAPCoverTW)).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousRoadSideAsstCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && (a.Type == TPCrossCutting_Constants.RoadsideAssistanceCover || a.Type == TPCrossCutting_Constants.RoadsideAssistanceCoverTW)).FirstOrDefault().PreviousYearCheck;
+                            /* LCA addon 22Feb24 */
+                            //var isPreviousKeyLossCoverRequired = entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.KeyLossCover).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousAdditionTowingCoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.TowingExpense).FirstOrDefault().PreviousYearCheck;
+                            var isPreviousEMICoverRequired = _entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.EMICover).FirstOrDefault().PreviousYearCheck;
+                            /* LCA addon 22Feb24 */
+                            //var isPreviousPassengerAsstCoverRequired = entities.MASAddOnCovers.Where(a => a.ProductID == ProductId && a.Type == TPCrossCutting_Constants.PassengerAssistanceCover).FirstOrDefault().PreviousYearCheck;
+
+                            if ((PremiumObj.lstPreviousAddonDetails.Count == 0) && ((isPreviousConsumableCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousEngineSafeCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousDepreciationCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousGapCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousRoadSideAsstCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                /* LCA addon 22Feb24 */
+                                //|| (isPreviousPassengerAsstCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                //|| (isPreviousKeyLossCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousAdditionTowingCoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.AdditionalTowingExpense) && PremiumObj.AdditionalTowingExpense.ToLower() == TPCrossCutting_Constants.IsCoverSelected))
+                                || (isPreviousEMICoverRequired == true && (!string.IsNullOrEmpty(PremiumObj.EMIProtectionCover) && PremiumObj.EMIProtectionCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected))))
+
+                            {
+                                strError = "Previous year Addon Cover List is mandatory if Any Add on Cover is opted.";
+                                return strError;
+                            }
+
+                            for (int i = 0; i < PremiumObj.lstPreviousAddonDetails.Count; i++)
+                            {
+
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsConsumableOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.ConsumableCover) && PremiumObj.ConsumableCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousConsumableCoverRequired == true)
+                                {
+                                    strError = "Previous year Consumable Cover must be opted";
+                                    return strError;
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsEngineSafeOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.EngineSafeCover) && PremiumObj.EngineSafeCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousEngineSafeCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsGAPCoverOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousGapCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                /* LCA addon 22Feb24 */
+                                //if (!PremiumObj.lstPreviousAddonDetails[i].IsKeyLossOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.KeyLossCover) && PremiumObj.KeyLossCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousKeyLossCoverRequired == true)
+                                //{
+                                //    strError = "Previous year Key loss Cover must be opted";
+                                //    AuditLogObj.End();
+                                //    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                //    return strError;
+                                //}
+                                /* LCA addon 22Feb24 */
+                                if (PremiumObj.IsFullQuote && !PremiumObj.lstPreviousAddonDetails[i].IsNilDepreicationOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.DepreciationCover) && PremiumObj.DepreciationCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousDepreciationCoverRequired == true)
+                                {
+                                    if (!PremiumObj.IsInspectionDone)
+                                    {
+                                        strError = "Please process the request as breakin like Agency/Self/Manual flow.";
+                                        return strError;
+                                    }
+                                }
+                                /* LCA addon 22Feb24 */
+                                //if (!PremiumObj.lstPreviousAddonDetails[i].IsPassengerAsstOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.PassengerAsstCover) && PremiumObj.PassengerAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousPassengerAsstCoverRequired == true)
+                                //{
+                                //    strError = "Previous year Passenger Assistance Cover must be opted";
+                                //    AuditLogObj.End();
+                                //    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                //    return strError;
+                                //}
+                                /* LCA addon 22Feb24 */
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsRoadSideAsstOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousRoadSideAsstCoverRequired == true)
+                                {
+                                    strError = "Previous year Road Side Assistance Cover must be opted";
+                                    return strError;
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsTowingExpenseOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousAdditionTowingCoverRequired == true)
+                                {
+                                    strError = "Previous year Towing Expense Cover must be opted";
+                                    return strError;
+                                }
+                                if (!PremiumObj.lstPreviousAddonDetails[i].IsEMICoverOptedInPrevPolicy && !string.IsNullOrEmpty(PremiumObj.RoadSideAsstCover) && PremiumObj.RoadSideAsstCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && isPreviousEMICoverRequired == true)
+                                {
+                                    strError = "Previous year EMI Cover must be opted";
+                                    return strError;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            return JsonConvert.DeserializeObject<OrderResponse>(responseJson);
+            return strError;
         }
-        catch (TaskCanceledException)
+
+        private string OptInAddonCoversRenewal(TPCalculatePremium PremiumObj)
         {
-            return new OrderResponse
+            var dbRenewalDump = _entities.RenewalDumps.FirstOrDefault(a => a.Policy_Number.Substring(0, 21) == PremiumObj.PreviousPolicyNumber.Substring(0, 21));
+            if (dbRenewalDump != null && PremiumObj.lstPreviousAddonDetails != null && PremiumObj.lstPreviousAddonDetails.Count > 0)
             {
-                Status = "Timeout",
-                Error = new ApiError
+                for (int i = 0; i < PremiumObj.lstPreviousAddonDetails.Count; i++)
                 {
-                    Code = "TIMEOUT",
-                    Message = "Request timed out"
+                    if (PremiumObj.lstPreviousAddonDetails[i].IsEngineSafeOptedInPrevPolicy && dbRenewalDump.Engine_Safe_Cover_Ex == null)
+                    {
+                        return "EngineSafe is not present in previous policy,unselect the cover";
+                    }
+                    if (PremiumObj.lstPreviousAddonDetails[i].IsGAPCoverOptedInPrevPolicy && dbRenewalDump.GAP_Value_Cover_EX == null)
+                    {
+                        return "Gap Cover is not present in previous policy,unselect the cover";
+                    }
+                    if (PremiumObj.lstPreviousAddonDetails[i].IsNilDepreicationOptedInPrevPolicy && dbRenewalDump.Depreciation_Cover_EX == null)
+                    {
+                        return "Nil dep is not present in previous policy,unselect the cover";
+                    }
                 }
-            };
+            }
+            return string.Empty;
         }
-        catch (Exception ex)
-        {
-            return new OrderResponse
-            {
-                Status = "Error",
-                Error = new ApiError
-                {
-                    Code = "EXCEPTION",
-                    Message = ex.Message
-                }
-            };
-        }
-    }
-}
