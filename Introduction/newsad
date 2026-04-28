@@ -1,1 +1,79 @@
-Method AddonValidation::ValidateRules has a cyclomatic complexity of 12 (limit is 8)
+private string ValidateRules(TPCalculatePremium p, List<AddonRule> rules)
+{
+    string error = ValidatePreviousListRequired(p, rules);
+
+    if (!string.IsNullOrEmpty(error))
+    {
+        return error;
+    }
+
+    return ValidatePreviousSelections(p, rules);
+}
+
+private string ValidatePreviousListRequired(TPCalculatePremium p, List<AddonRule> rules)
+{
+    bool hasSelectedRule = rules.Any(r => r.RequiresPrevious && r.IsSelected(p));
+
+    if (hasSelectedRule &&
+        (p.lstPreviousAddonDetails == null || p.lstPreviousAddonDetails.Count == 0))
+    {
+        return "Previous year Addon Cover List is mandatory if Any Add on Cover is opted.";
+    }
+
+    return string.Empty;
+}
+
+private string ValidatePreviousSelections(TPCalculatePremium p, List<AddonRule> rules)
+{
+    if (p.lstPreviousAddonDetails == null)
+    {
+        return string.Empty;
+    }
+
+    foreach (var prev in p.lstPreviousAddonDetails)
+    {
+        string error = ValidateSinglePrevious(prev, p, rules);
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            return error;
+        }
+    }
+
+    return string.Empty;
+}
+
+private string ValidateSinglePrevious(
+    PreviousAddonDetail prev,
+    TPCalculatePremium p,
+    List<AddonRule> rules)
+{
+    foreach (var rule in rules)
+    {
+        if (!rule.IsSelected(p))
+        {
+            continue;
+        }
+
+        if (!rule.RequiresPrevious)
+        {
+            continue;
+        }
+
+        if (rule.WasSelectedPreviously(prev))
+        {
+            continue;
+        }
+
+        if (rule.RequiresInspection &&
+            p.IsFullQuote &&
+            !p.IsInspectionDone)
+        {
+            return "Please process the request as breakin like Agency/Self/Manual flow.";
+        }
+
+        return rule.ErrorMessage;
+    }
+
+    return string.Empty;
+}
