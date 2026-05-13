@@ -1,186 +1,112 @@
-CREATE TABLE dbo.QuoteCache
-(
-    QuoteNumber NVARCHAR(100) PRIMARY KEY,
-    CreatedDate DATETIME NOT NULL DEFAULT(GETDATE()),
-    ExpiryDate DATETIME NOT NULL
+CREATE TABLE [dbo].[CacheTable] (
+    [Id] NVARCHAR(449) NOT NULL PRIMARY KEY,
+    [Value] VARBINARY(MAX) NOT NULL,
+    [ExpiresAtTime] DATETIMEOFFSET NOT NULL,
+    [SlidingExpirationInSeconds] BIGINT NULL,
+    [AbsoluteExpiration] DATETIMEOFFSET NULL
 );
 
-using System;
-using System.Configuration;
-using System.Data.SqlClient;
-using System.Threading.Tasks;
 
-namespace MyWebApi.Services
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.SqlServer;
+using Microsoft.Extensions.DependencyInjection;
+
+public class WebApiApplication : System.Web.HttpApplication
 {
-    public class QuoteCacheService
+    public static IServiceProvider ServiceProvider { get; private set; }
+
+    protected void Application_Start()
     {
-        private readonly string _connectionString;
+        var services = new ServiceCollection();
 
-        public QuoteCacheService()
+        services.AddDistributedSqlServerCache(options =>
         {
-            _connectionString =
-                ConfigurationManager
-                .ConnectionStrings["CacheDb"]
-                .ConnectionString;
+            options.ConnectionString = "Your_SQL_Server_Connection_String";
+            options.SchemaName = "dbo";
+            options.TableName = "CacheTable";
+        });
+
+        ServiceProvider = services.BuildServiceProvider();
+        // Standard Web API config follows...
+    }
+}
+
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text;
+
+public class QuoteCacheService
+{
+    private readonly IDistributedCache _cache;
+
+    public QuoteCacheService(IDistributedCache cache)
+    {
+        _cache = cache;
+    }
+
+    public async Task<bool> IsDuplicateQuoteAsync(string quoteNumber)
+    {
+        // Try to get the quote from SQL cache
+        var cachedValue = await _cache.GetAsync(quoteNumber);
+
+        if (cachedValue != null)
+        {
+            // Quote already exists in cache
+            return true;
         }
 
-        // SAVE QUOTE NUMBER
-        public async Task SaveAsync(string quoteNumber)
-        {
-            using (SqlConnection con =
-                new SqlConnection(_connectionString))
-            {
-                string query = @"
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM QuoteCache
-    WHERE QuoteNumber = @QuoteNumber
-)
-BEGIN
-    INSERT INTO QuoteCache
-    (
-        QuoteNumber,
-        ExpiryDate
-    )
-    VALUES
-    (
-        @QuoteNumber,
-        DATEADD(HOUR, 1, GETDATE())
-    )
-END";
+        // Quote is new. Store it with an expiration time (e.g., 24 hours)
+        var options = new DistributedCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromHours(24));
 
-                SqlCommand cmd =
-                    new SqlCommand(query, con);
+        // Storing a simple "1" as a byte array to indicate presence
+        await _cache.SetAsync(quoteNumber, Encoding.UTF8.GetBytes("1"), options);
 
-                cmd.Parameters.AddWithValue(
-                    "@QuoteNumber",
-                    quoteNumber);
-
-                await con.OpenAsync();
-
-                await cmd.ExecuteNonQueryAsync();
-            }
-        }
-
-        // CHECK EXISTS
-        public async Task<bool> ExistsAsync(string quoteNumber)
-        {
-            using (SqlConnection con =
-                new SqlConnection(_connectionString))
-            {
-                string query = @"
-SELECT COUNT(1)
-FROM QuoteCache
-WHERE QuoteNumber = @QuoteNumber
-AND ExpiryDate > GETDATE()";
-
-                SqlCommand cmd =
-                    new SqlCommand(query, con);
-
-                cmd.Parameters.AddWithValue(
-                    "@QuoteNumber",
-                    quoteNumber);
-
-                await con.OpenAsync();
-
-                int count =
-                    Convert.ToInt32(
-                        await cmd.ExecuteScalarAsync());
-
-                return count > 0;
-            }
-        }
-
-        // REMOVE
-        public async Task RemoveAsync(string quoteNumber)
-        {
-            using (SqlConnection con =
-                new SqlConnection(_connectionString))
-            {
-                string query = @"
-DELETE
-FROM QuoteCache
-WHERE QuoteNumber = @QuoteNumber";
-
-                SqlCommand cmd =
-                    new SqlCommand(query, con);
-
-                cmd.Parameters.AddWithValue(
-                    "@QuoteNumber",
-                    quoteNumber);
-
-                await con.OpenAsync();
-
-                await cmd.ExecuteNonQueryAsync();
-            }
-        }
-
-        // CLEAN EXPIRED CACHE
-        public async Task RemoveExpiredAsync()
-        {
-            using (SqlConnection con =
-                new SqlConnection(_connectionString))
-            {
-                string query = @"
-DELETE
-FROM QuoteCache
-WHERE ExpiryDate < GETDATE()";
-
-                SqlCommand cmd =
-                    new SqlCommand(query, con);
-
-                await con.OpenAsync();
-
-                await cmd.ExecuteNonQueryAsync();
-            }
-        }
+        return false;
     }
 }
 
 
-using MyWebApi.Services;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace MyWebApi.Controllers
+public class QuoteController : ApiController
 {
-    [RoutePrefix("api/quote")]
-    public class QuoteController : ApiController
+    private readonly QuoteCacheService _quoteService;
+
+    public QuoteController()
     {
-        private readonly QuoteCacheService _service;
-
-        public QuoteController()
-        {
-            _service = new QuoteCacheService();
-        }
-
-        [HttpPost]
-        [Route("save/{quoteNo}")]
-        public async Task<IHttpActionResult> Save(string quoteNo)
-        {
-            await _service.SaveAsync(quoteNo);
-
-            return Ok("Saved");
-        }
-
-        [HttpGet]
-        [Route("exists/{quoteNo}")]
-        public async Task<IHttpActionResult> Exists(string quoteNo)
-        {
-            bool exists =
-                await _service.ExistsAsync(quoteNo);
-
-            return Ok(exists);
-        }
-
-        [HttpDelete]
-        [Route("remove/{quoteNo}")]
-        public async Task<IHttpActionResult> Remove(string quoteNo)
-        {
-            await _service.RemoveAsync(quoteNo);
-
-            return Ok("Removed");
-        }
+        // Resolving from our ServiceProvider defined in Global.asax
+        var cache = WebApiApplication.ServiceProvider.GetRequiredService<IDistributedCache>();
+        _quoteService = new QuoteCacheService(cache);
     }
+
+    [HttpPost]
+    [Route("api/quotes/process")]
+    public async Task<IHttpActionResult> ProcessQuote([FromBody] QuoteRequest request)
+    {
+        if (string.IsNullOrEmpty(request.QuoteNumber))
+            return BadRequest("Quote number is required.");
+
+        bool isDuplicate = await _quoteService.IsDuplicateQuoteAsync(request.QuoteNumber);
+
+        if (isDuplicate)
+        {
+            // Reject the second request
+            return Content(HttpStatusCode.Conflict, "Duplicate request: This quote number has already been processed.");
+        }
+
+        // Continue with your business logic...
+        return Ok("Quote processed successfully.");
+    }
+}
+
+public class QuoteRequest
+{
+    public string QuoteNumber { get; set; }
 }
