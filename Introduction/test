@@ -1,76 +1,186 @@
+CREATE TABLE dbo.QuoteCache
+(
+    QuoteNumber NVARCHAR(100) PRIMARY KEY,
+    CreatedDate DATETIME NOT NULL DEFAULT(GETDATE()),
+    ExpiryDate DATETIME NOT NULL
+);
+
 using System;
-using System.Runtime.Caching;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Threading.Tasks;
 
-public static class QuoteProcessingManager
+namespace MyWebApi.Services
 {
-    private static readonly MemoryCache Cache = MemoryCache.Default;
-
-    private const int ExpiryMinutes = 2;
-
-    public static bool TryStartProcessing(string quoteNumber)
+    public class QuoteCacheService
     {
-        string cacheKey = GetKey(quoteNumber);
+        private readonly string _connectionString;
 
-        var policy = new CacheItemPolicy
+        public QuoteCacheService()
         {
-            AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(ExpiryMinutes)
-        };
-
-        // Add returns false if key already exists
-        return Cache.Add(cacheKey, true, policy);
-    }
-
-    public static void FinishProcessing(string quoteNumber)
-    {
-        string cacheKey = GetKey(quoteNumber);
-
-        if (Cache.Contains(cacheKey))
-        {
-            Cache.Remove(cacheKey);
+            _connectionString =
+                ConfigurationManager
+                .ConnectionStrings["CacheDb"]
+                .ConnectionString;
         }
-    }
 
-    private static string GetKey(string quoteNumber)
-    {
-        return $"FULL_QUOTE_{quoteNumber}";
+        // SAVE QUOTE NUMBER
+        public async Task SaveAsync(string quoteNumber)
+        {
+            using (SqlConnection con =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM QuoteCache
+    WHERE QuoteNumber = @QuoteNumber
+)
+BEGIN
+    INSERT INTO QuoteCache
+    (
+        QuoteNumber,
+        ExpiryDate
+    )
+    VALUES
+    (
+        @QuoteNumber,
+        DATEADD(HOUR, 1, GETDATE())
+    )
+END";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                cmd.Parameters.AddWithValue(
+                    "@QuoteNumber",
+                    quoteNumber);
+
+                await con.OpenAsync();
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        // CHECK EXISTS
+        public async Task<bool> ExistsAsync(string quoteNumber)
+        {
+            using (SqlConnection con =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+SELECT COUNT(1)
+FROM QuoteCache
+WHERE QuoteNumber = @QuoteNumber
+AND ExpiryDate > GETDATE()";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                cmd.Parameters.AddWithValue(
+                    "@QuoteNumber",
+                    quoteNumber);
+
+                await con.OpenAsync();
+
+                int count =
+                    Convert.ToInt32(
+                        await cmd.ExecuteScalarAsync());
+
+                return count > 0;
+            }
+        }
+
+        // REMOVE
+        public async Task RemoveAsync(string quoteNumber)
+        {
+            using (SqlConnection con =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+DELETE
+FROM QuoteCache
+WHERE QuoteNumber = @QuoteNumber";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                cmd.Parameters.AddWithValue(
+                    "@QuoteNumber",
+                    quoteNumber);
+
+                await con.OpenAsync();
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        // CLEAN EXPIRED CACHE
+        public async Task RemoveExpiredAsync()
+        {
+            using (SqlConnection con =
+                new SqlConnection(_connectionString))
+            {
+                string query = @"
+DELETE
+FROM QuoteCache
+WHERE ExpiryDate < GETDATE()";
+
+                SqlCommand cmd =
+                    new SqlCommand(query, con);
+
+                await con.OpenAsync();
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
     }
 }
 
 
-[HttpPost]
-public async Task<IHttpActionResult> ProcessQuote(QuoteRequest request)
+using MyWebApi.Services;
+using System.Threading.Tasks;
+using System.Web.Http;
+
+namespace MyWebApi.Controllers
 {
-    if (!request.IsFullQuote)
+    [RoutePrefix("api/quote")]
+    public class QuoteController : ApiController
     {
-        return Ok("Normal request");
-    }
+        private readonly QuoteCacheService _service;
 
-    bool started = QuoteProcessingManager
-        .TryStartProcessing(request.QuoteNumber);
+        public QuoteController()
+        {
+            _service = new QuoteCacheService();
+        }
 
-    if (!started)
-    {
-        return Content(
-            HttpStatusCode.Conflict,
-            "Quote already processing."
-        );
-    }
+        [HttpPost]
+        [Route("save/{quoteNo}")]
+        public async Task<IHttpActionResult> Save(string quoteNo)
+        {
+            await _service.SaveAsync(quoteNo);
 
-    try
-    {
-        await ProcessFullQuote(request);
+            return Ok("Saved");
+        }
 
-        return Ok("Processed successfully");
-    }
-    catch (Exception ex)
-    {
-        return InternalServerError(ex);
-    }
-    finally
-    {
-        // Optional:
-        // remove immediately after completion
-        QuoteProcessingManager
-            .FinishProcessing(request.QuoteNumber);
+        [HttpGet]
+        [Route("exists/{quoteNo}")]
+        public async Task<IHttpActionResult> Exists(string quoteNo)
+        {
+            bool exists =
+                await _service.ExistsAsync(quoteNo);
+
+            return Ok(exists);
+        }
+
+        [HttpDelete]
+        [Route("remove/{quoteNo}")]
+        public async Task<IHttpActionResult> Remove(string quoteNo)
+        {
+            await _service.RemoveAsync(quoteNo);
+
+            return Ok("Removed");
+        }
     }
 }
