@@ -108,6 +108,58 @@ public class QuoteController : ApiController
     }
 }
 
+using System;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.SqlServer;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+
+public static class QuoteLockManager
+{
+    private static readonly IDistributedCache _cache;
+
+    static QuoteLockManager()
+    {
+        // Manual configuration without Dependency Injection
+        var options = new SqlServerCacheOptions
+        {
+            ConnectionString = "Your_SQL_Connection_String_Here",
+            SchemaName = "dbo",
+            TableName = "CacheTable"
+        };
+
+        // We wrap options in a simple Options class to satisfy the constructor
+        _cache = new SqlServerCache(Options.Create(options));
+    }
+
+    public static async Task<bool> IsDuplicateAndLock(string quoteNumber)
+    {
+        if (string.IsNullOrWhiteSpace(quoteNumber)) return false;
+
+        // 1. Try to retrieve the quote number
+        var data = await _cache.GetAsync(quoteNumber);
+
+        if (data != null)
+        {
+            // Data exists, so this is a duplicate request
+            return true; 
+        }
+
+        // 2. If it doesn't exist, save it to "lock" it
+        // Set it to expire after a certain time (e.g., 10 minutes or 24 hours)
+        var cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+        };
+
+        // Save a dummy value (like "1") to mark this quote as "in use"
+        byte[] dummyValue = Encoding.UTF8.GetBytes("1");
+        await _cache.SetAsync(quoteNumber, dummyValue, cacheOptions);
+
+        return false;
+    }
+}
 public class QuoteRequest
 {
     public string QuoteNumber { get; set; }
