@@ -1,50 +1,146 @@
+CREATE TABLE [dbo].[QuoteCache] (
+    [QuoteNumber] NVARCHAR(100) NOT NULL PRIMARY KEY,
+    [CreatedAt] DATETIME DEFAULT GETDATE()
+);
+CREATE TABLE [dbo].[QuoteCache] (
+    [QuoteNumber] NVARCHAR(100) NOT NULL PRIMARY KEY,
+    [ExpiryTime] DATETIME NOT NULL
+);
+
 using System;
-using System.Text;
+using System.Data.SqlClient;
+using System.Configuration;
 
-public static class ExceptionExtensions
+public static class QuoteManager
 {
-    public static string ToDetailedString(this Exception ex)
+    // Make sure "MyDbConn" is defined in your web.config
+    private static readonly string connectionString = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+    public static bool IsDuplicate(string quoteNumber)
     {
-        if (ex == null)
-            return string.Empty;
-
-        var sb = new StringBuilder();
-        BuildExceptionString(sb, ex, 0);
-
-        return sb.ToString();
-    }
-
-    private static void BuildExceptionString(
-        StringBuilder sb,
-        Exception ex,
-        int level)
-    {
-        if (ex == null)
-            return;
-
-        string indent = new string('>', level);
-
-        sb.AppendLine($"{indent} Exception Type: {ex.GetType().FullName}");
-        sb.AppendLine($"{indent} Message       : {ex.Message}");
-        sb.AppendLine($"{indent} Source        : {ex.Source}");
-        sb.AppendLine($"{indent} StackTrace    :");
-        sb.AppendLine(ex.StackTrace);
-
-        if (ex.Data != null && ex.Data.Count > 0)
+        using (SqlConnection conn = new SqlConnection(connectionString))
         {
-            sb.AppendLine($"{indent} Data:");
+            // We use an INSERT. If the ID exists, SQL throws an exception.
+            // This is the most reliable way to handle "distributed" locks in SQL.
+            string query = "INSERT INTO QuoteCache (QuoteNumber) VALUES (@quote)";
 
-            foreach (var key in ex.Data.Keys)
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
-                sb.AppendLine($"{indent}   {key}: {ex.Data[key]}");
+                cmd.Parameters.AddWithValue("@quote", quoteNumber);
+
+                try
+                {
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    return false; // Inserted successfully, not a duplicate
+                }
+                catch (SqlException ex)
+                {
+                    // Error 2627 is Primary Key violation (Duplicate)
+                    if (ex.Number == 2627 || ex.Number == 2601)
+                    {
+                        return true; 
+                    }
+                    throw; // Some other SQL error occurred
+                }
             }
         }
+    }
+}
 
-        if (ex.InnerException != null)
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+public class QuoteController : ApiController
+{
+    [HttpPost]
+    [Route("api/quotes/submit")]
+    public HttpResponseMessage SubmitQuote(string quoteNumber)
+    {
+        if (string.IsNullOrEmpty(quoteNumber))
         {
-            sb.AppendLine();
-            sb.AppendLine($"{indent} Inner Exception:");
-            BuildExceptionString(sb, ex.InnerException, level + 1);
+            return Request.CreateResponse(HttpStatusCode.BadRequest, "Quote number is required.");
+        }
+
+        // Check if duplicate using our SQL manager
+        bool exists = QuoteManager.IsDuplicate(quoteNumber);
+
+        if (exists)
+        {
+            // 409 Conflict is the standard response for a duplicate resource
+            return Request.CreateResponse(HttpStatusCode.Conflict, "This quote has already been processed.");
+        }
+
+        // --- Your Business Logic Here ---
+        
+        return Request.CreateResponse(HttpStatusCode.OK, "Quote submitted successfully.");
+    }
+}
+
+using System;
+using System.Data.SqlClient;
+using System.Configuration;
+
+public static class QuoteManager
+{
+    private static readonly string connectionString = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+
+    public static bool IsDuplicate(string quoteNumber)
+    {
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            conn.Open();
+            
+            // 1. Delete any records that have expired (older than 5 minutes)
+            string deleteQuery = "DELETE FROM QuoteCache WHERE ExpiryTime <= @Now";
+            using (SqlCommand delCmd = new SqlCommand(deleteQuery, conn))
+            {
+                delCmd.Parameters.AddWithValue("@Now", DateTime.Now);
+                delCmd.ExecuteNonQuery();
+            }
+
+            // 2. Attempt to insert the new quote
+            string insertQuery = "INSERT INTO QuoteCache (QuoteNumber, ExpiryTime) VALUES (@quote, @expiry)";
+            using (SqlCommand insCmd = new SqlCommand(insertQuery, conn))
+            {
+                insCmd.Parameters.AddWithValue("@quote", quoteNumber);
+                // Set expiry to 5 minutes from now
+                insCmd.Parameters.AddWithValue("@expiry", DateTime.Now.AddMinutes(5));
+
+                try
+                {
+                    insCmd.ExecuteNonQuery();
+                    return false; // Success! Not a duplicate.
+                }
+                catch (SqlException ex)
+                {
+                    // Primary Key violation means it's still in the 5-minute window
+                    if (ex.Number == 2627 || ex.Number == 2601)
+                    {
+                        return true; 
+                    }
+                    throw;
+                }
+            }
         }
     }
+}
+
+DELETE FROM [YourDatabase].[dbo].[QuoteCache] 
+WHERE ExpiryTime <= GETDATE();
+
+[HttpPost]
+[Route("api/quotes/check")]
+public HttpResponseMessage ProcessQuote(string quoteNumber)
+{
+    bool isLocked = QuoteManager.IsDuplicate(quoteNumber);
+
+    if (isLocked)
+    {
+        return Request.CreateResponse(HttpStatusCode.Conflict, 
+            "This quote is locked for 5 minutes. Please try again later.");
+    }
+
+    return Request.CreateResponse(HttpStatusCode.OK, "Quote accepted.");
 }
