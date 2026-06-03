@@ -1,166 +1,1092 @@
-CREATE TABLE [dbo].[CacheTable] (
-    [Id] NVARCHAR(449) NOT NULL PRIMARY KEY,
-    [Value] VARBINARY(MAX) NOT NULL,
-    [ExpiresAtTime] DATETIMEOFFSET NOT NULL,
-    [SlidingExpirationInSeconds] BIGINT NULL,
-    [AbsoluteExpiration] DATETIMEOFFSET NULL
-);
 
-Install-Package Microsoft.Extensions.DependencyInjection -Version 3.1.32
-Install-Package Microsoft.Extensions.Caching.SqlServer -Version 3.1.32
-
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
-
-public class WebApiApplication : System.Web.HttpApplication
-{
-    public static IServiceProvider ServiceProvider { get; private set; }
-
-    protected void Application_Start()
-    {
-        var services = new ServiceCollection();
-
-        services.AddDistributedSqlServerCache(options =>
+        public PremiumResponse PostPremiumDetails(TPCalculatePremium PremiumObj)
         {
-            options.ConnectionString = "Your_SQL_Server_Connection_String";
-            options.SchemaName = "dbo";
-            options.TableName = "CacheTable";
-        });
+            PremiumObj.QuotationNumber = string.IsNullOrEmpty(PremiumObj.QuotationNumber) ? PremiumObj.QuickQuoteNumber : PremiumObj.QuotationNumber;
+            PremiumResponse objPremiumResponse = new PremiumResponse();
+            try
+            {
+                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "PostPremiumDetails_start_1", DateTime.Now.ToString(""), DateTime.Now.ToString());
+                WriteError.WriteLog("start of the PostPremiumDetails at" + DateTime.Now, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+                sw.Start();
+                AuditLogObj.Start();
+                DomQuickQuote objQuickQuoteDetails = new DomQuickQuote();
+                AgentParameter objAgentParameter1 = new AgentParameter();/* SATP RNRO changes 11Feb25*/
+                requestXml = ToJson(PremiumObj);
+                PIIntegration PIStatus = new PIIntegration();
+                if (PremiumObj == null)
+                {
+                    objPremiumResponse.ErrorText = "Premium Object is null";
+                    AuditLogObj.End();
+                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                }
+                if (PremiumObj.IsFullQuote && !QuoteProcessingManager.TryStartProcessing(PremiumObj.QuickQuoteNumber))
+                {
+                    objPremiumResponse.ErrorText = "The same request is already processed in your system. Please try again later";
+                    AuditLogObj.End();
+                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                    return PPDResp(objPremiumResponse);
+                }
+                //correction for imdcode cannot be changed by Bhupesh 03.12.24
 
-        ServiceProvider = services.BuildServiceProvider();
-        // Standard Web API config follows...
-    }
-}
+                var dbProductsList = entities.MASProducts.FirstOrDefault(a => a.Code == PremiumObj.ProductCode && a.EndDate == null);
+                var UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
+                AgentParameter dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
 
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Distributed;
-using System.Text;
+                if (!PremiumObj.IsFullQuote)
+                {
+                    objQuickQuoteDetails.IsNewBRMSAPI = IsNewBRMS(PremiumObj.BusinessType, dbAgentParameters.ID);
+                    if (objQuickQuoteDetails.IsNewBRMSAPI)
+                    {
+                        PremiumObj.EVSecureCover = "yes";
+                        AddonValidation addon = new AddonValidation(entities);
+                        if (!addon.AddonEVSecureApplicable(PremiumObj))
+                        {
+                            PremiumObj.EVSecureCover = "no";
+                        }
+                    }
+                }
 
-public class QuoteCacheService
-{
-    private readonly IDistributedCache _cache;
+                //As Per BRD flow same as it is Roll Over
+                if (PremiumObj.BusinessType.ToUpperInvariant().Equals("USED"))
+                {
+                    PremiumObj.IsUsedVehicle = true;
+                }
+                else
+                {
+                    PremiumObj.IsUsedVehicle = false;
+                }
 
-    public QuoteCacheService(IDistributedCache cache)
-    {
-        _cache = cache;
-    }
+                if (!string.IsNullOrEmpty(PremiumObj.BusinessType))
+                {
+                    PremiumObj.MultiplicativeRating = "N";
+                    if (PremiumObj.BusinessType.Trim().ToUpperInvariant().Equals("NEW BUSINESS") || PremiumObj.BusinessType.Trim().ToUpperInvariant().Equals("ROLL OVER") || PremiumObj.BusinessType.Trim().ToUpperInvariant().Equals("USED"))
+                    {
+                        if (dbAgentParameters != null && dbAgentParameters.IsMultiplicativeRating == true && !objQuickQuoteDetails.IsNewBRMSAPI)
+                        {
+                            PremiumObj.MultiplicativeRating = IsMultiplicativeRegDate(PremiumObj.RegistrationDate) == true ? "Y" : "N";
+                        }
+                    }
+                }
+            
+                requestXml = ToJson(PremiumObj);
 
-    public async Task<bool> IsDuplicateQuoteAsync(string quoteNumber)
-    {
-        // Try to get the quote from SQL cache
-        var cachedValue = await _cache.GetAsync(quoteNumber);
+                objPremiumResponse.ErrorText = ValidateInBuiltFuel(PremiumObj);
 
-        if (cachedValue != null)
-        {
-            // Quote already exists in cache
-            return true;
+                // Validation For USED Business
+                objPremiumResponse.ErrorText = ValidateUsedCar(PremiumObj);
+
+                if (!string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                {
+                    return PPDResp(objPremiumResponse);
+                }
+
+            
+                PremiumObj.IMDNumberParent = PremiumObj.IMDNumber;
+                objQuickQuoteDetails.IMDNumberParent = PremiumObj.IMDNumber;
+                if (PremiumObj.BusinessType.ToUpper() != "RENEWAL")
+                {
+                   // var dbProductsList = entities.MASProducts.FirstOrDefault(a => a.Code == PremiumObj.ProductCode && a.EndDate == null);
+                   // var UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
+                    //try
+                    //{
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "RTO-PIN-POSP Mapping Start", DateTime.Now.ToString(""), DateTime.Now.ToString());
+                        String ChildIMDCode = String.Empty;
+                        String ParentImdCode = PremiumObj.IMDNumber;
+
+                        if (UserRTOPINPOSPCRId == null)
+                        {
+                            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
+                            if (ChildIMDCode != "1")
+                            {
+                                PremiumObj.IMDNumber = ChildIMDCode;
+                            }
+                            else
+                            {
+                                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                                AuditLogObj.End();
+                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                            }
+                            UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
+                        }
+
+                   
+                        objAgentParameter1 = dbAgentParameters;/* SATP RNRO changes 11Feb25*/
+                        if (dbAgentParameters == null)
+                        {
+                            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
+                            if (ChildIMDCode != "1")
+                            {
+                                PremiumObj.IMDNumber = ChildIMDCode;
+                            }
+                            else
+                            {
+                                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                                AuditLogObj.End();
+                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+
+                            }
+                        dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
+                    }
+                    if (dbAgentParameters != null)
+                    {
+                        if (PremiumObj.IsFullQuote)
+                        {
+                            bool RtoEnable;
+                            bool PinEnable;
+                            bool PospEnable;
+                            bool PospConfigured;
+                            bool IMDDisbaleProdcut;
+                            int ImdCount = 0;
+
+                                var UserId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
+                                var agentParameters = entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault();
+                                RtoEnable = Convert.ToBoolean(agentParameters.IsRtoMappingEnable);
+                                PinEnable = Convert.ToBoolean(agentParameters.IsPinMappingEnable);
+                                PospEnable = Convert.ToBoolean(agentParameters.IsPosMappingEnable);
+                                PospConfigured = Convert.ToBoolean(agentParameters.isPOSPConfigured);
+                                // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
+                                if (RtoEnable)
+                                {
+                                    ImdRtoMapping ImdRtoObj = entities.ImdRtoMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.RtoCodeBased == PremiumObj.RtoCode && a.IsActive == true).FirstOrDefault();
+                                    if (ImdRtoObj != null)
+                                    {
+                                        PremiumObj.IMDNumber = ImdRtoObj.BookingIMDCode;
+                                    }
+                                    ImdCount = ImdCount + 1;
+                                }
+                                if (PinEnable)
+                                {
+                                    ImdPinMapping ImdPinObj = entities.ImdPinMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PinCodeBased == PremiumObj.CustmerObj.PinCode && a.IsActive == true).FirstOrDefault();
+                                    if (ImdPinObj != null)
+                                    {
+                                        PremiumObj.IMDNumber = ImdPinObj.BookingIMDCode;
+                                    }
+                                    ImdCount = ImdCount + 1;
+                                }
+
+                                if (PospConfigured)
+                                {
+                                    if (PospEnable)
+                                    {
+                                        ImdPosMapping ImdPosObj = entities.ImdPosMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PosCodeBased == PremiumObj.POSPCode && a.IsActive == true).FirstOrDefault();
+
+                                        if (ImdPosObj != null)
+                                        {
+                                            PremiumObj.IMDNumber = ImdPosObj.BookingIMDCode;
+                                        }
+                                        ImdCount = ImdCount + 1;
+                                    }
+                                }
+                                // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
+                                if (ImdCount > 1)
+                                {
+                                    objPremiumResponse.ErrorText = "Error in Imd Configuration";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                }
+
+                                if (RtoEnable || PinEnable || PospEnable)
+                                {
+                                    var IMDDisbaleProdcutData1 = entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == PremiumObj.ProductCode).FirstOrDefault();
+                                    if (IMDDisbaleProdcutData1 == null)
+                                    {
+                                        var ChildIMDNumber = PremiumObj.IMDNumber;
+                                        decimal ProductID = Convert.ToDecimal(dbProductsList.ID);
+                                        ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
+                                        if (ChildIMDCode != "1")
+                                        {
+                                            PremiumObj.IMDNumber = ChildIMDCode;
+                                        }
+                                        else
+                                        {
+                                            objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                                            AuditLogObj.End();
+                                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                        }
+                                    }
+                                    else
+                                    {
+                                        IMDDisbaleProdcut = Convert.ToBoolean(entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == PremiumObj.ProductCode).FirstOrDefault().IsDisabled);
+                                        if (IMDDisbaleProdcut)
+                                        {
+                                            PremiumObj.IMDNumber = ParentImdCode;
+                                        }
+                                        else
+                                        {
+                                            var ChildIMDNumber = PremiumObj.IMDNumber;
+
+                                            decimal ProductID = Convert.ToDecimal(dbProductsList.ID);
+                                            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
+                                            if (ChildIMDCode != "1")
+                                            {
+                                                PremiumObj.IMDNumber = ChildIMDCode;
+                                            }
+                                            else
+                                            {
+                                                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                                                AuditLogObj.End();
+                                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                                return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "RTO-PIN-POSP Mapping End", DateTime.Now.ToString(""), DateTime.Now.ToString());
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    objPremiumResponse.ErrorText = "error in premium calculation..";
+                    //    AuditLogObj.End();
+                    //    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                    //    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                    //}
+                }
+
+                var TestTimeLogger = System.Configuration.ConfigurationManager.AppSettings["TestLogger"].ToString();
+                if (PremiumObj.IsSelfInspection)
+                {
+                    PremiumObj.IsInspectionDone = true;
+                    PremiumObj.InspectionDate = DateTime.Now.ToString();
+                    PremiumObj.ReportDate = DateTime.Now.ToString();
+                    PremiumObj.InspectionDoneByWhom = "Self";
+                    objQuickQuoteDetails.IsSelfInspection = PremiumObj.IsSelfInspection;
+                }
+                /* PCV RNRO With Short Term Policy changes 29May25*/
+                if ((!string.IsNullOrEmpty(PremiumObj.BusinessType)
+                    && (PremiumObj.BusinessType.Trim().ToLower() == "roll over" || PremiumObj.BusinessType.ToUpperInvariant() == "USED")
+                    && (objAgentParameter1 != null && objAgentParameter1.IsRNRO == true)
+                    && (PremiumObj.IsShortTermPolicy)
+                    && (PremiumObj.ProductCode == TPCrossCutting_Constants.CVCompProductCode)))
+                {
+                    GetRNDetailsPCV(PremiumObj);
+                }
+                /* PCV RNRO With Short Term Policy changes 29May25*/
+
+                /* SATP RNRO changes 4Mar25*/
+                else if (!string.IsNullOrEmpty(PremiumObj.BusinessType) && 
+                    (PremiumObj.BusinessType.Trim().ToLower() == "roll over" || PremiumObj.BusinessType.ToUpperInvariant() == "USED")
+                    && objAgentParameter1 != null && objAgentParameter1.IsRNRO == true)
+                {
+                    GetRNDetails(PremiumObj);
+                }
+                /* SATP RNRO changes 4Mar25*/
+                if (PremiumObj.NoPreviousPolicyHistory == false)
+                {
+                    if (!string.IsNullOrEmpty(PremiumObj.PreviousPolicyInsurerName))
+                    {
+                        if ((PremiumObj.PreviousPolicyInsurerName.ToUpper() == "LIBERTY VIDEOCON" || PremiumObj.PreviousPolicyInsurerName.ToUpper() == "LIBERTY GENERAL") || PremiumObj.BusinessType == "Renewal")
+                        {
+                            if (PremiumObj.IsFullQuote == false)
+                            {
+                                objPremiumResponse.ErrorText = IsValidRenewalAccessories(PremiumObj);
+                                if (!string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                                {
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return PPDResp(objPremiumResponse);
+                                }
+                                IQueryable<AVOGIModel.Models.RenewalDump> policyRenewalData = null;
+                                /* SATP RNRO changes 11Feb25*/
+                                if (objRNROdump != null)
+                                {
+                                    ValidateServiceSATPInput(ref PremiumObj, ref objPremiumResponse);
+                                }
+                                else
+                                {
+                                    PremiumObj.BusinessType = "Renewal";
+                                    policyRenewalData = entities.RenewalDumps.Where(a => a.Policy_Number.Substring(0, 21) == PremiumObj.PreviousPolicyNumber.Substring(0, 21)).OrderByDescending(a => a.Policy_Number); //&& (a.Category == "Preferred")
+
+                                    if (policyRenewalData != null && policyRenewalData.Count() > 0)
+                                    {
+                                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                        objPremiumResponse.ErrorText = ValidateServiceInput(PremiumObj);
+                                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                    }
+                                    else
+                                    {
+                                        objPremiumResponse.ErrorText = "Please Enter Valid Previous Policy Number";
+                                        AuditLogObj.End();
+                                        AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                        return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                    }
+                                }
+                                /* SATP RNRO changes 11Feb25*/
+                            }
+                            /* SATP RNRO changes 11Feb25*/
+                            else if (objRNROdump != null)
+                            {
+                                ValidateServiceSATPInput(ref PremiumObj, ref objPremiumResponse);
+                            }
+                            /* SATP RNRO changes 11Feb25*/
+                            else
+                            {
+                                PremiumObj.BusinessType = "Renewal";
+                                string strPlanName = string.Empty;/* LCA addon 8Mar24 */
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateRenewalServiceInput_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                objPremiumResponse.ErrorText = ValidateRenewalServiceInput(PremiumObj,out strPlanName);
+                                PremiumObj.CKYC_No = strPlanName;/* LCA addon 8Mar24 */
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateRenewalServiceInput_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            }
+                      //      objPremiumResponse.ErrorText = IsValidRenewalAccessories(PremiumObj);
+                        }
+                        /* SATP RNRO changes 03Mar25*/
+                        else if (objRNROdump != null)
+                        {
+                            ValidateServiceSATPInput(ref PremiumObj, ref objPremiumResponse);
+                        }
+                        /* SATP RNRO changes 03Mar25*/
+                        else
+                        {
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            objPremiumResponse.ErrorText = ValidateServiceInput(PremiumObj);
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        }
+                    }
+                    /* SATP RNRO changes 03Mar25*/
+                    else if (objRNROdump != null)
+                    {
+                        ValidateServiceSATPInput(ref PremiumObj, ref objPremiumResponse);
+                    }
+                    /* SATP RNRO changes 03Mar25*/
+                    else
+                    {
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        objPremiumResponse.ErrorText = ValidateServiceInput(PremiumObj);
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                    }
+                }
+                /* SATP RNRO changes 03Mar25*/
+                else if (objRNROdump != null)
+                {
+                    ValidateServiceSATPInput(ref PremiumObj, ref objPremiumResponse);
+                }
+                /* SATP RNRO changes 03Mar25*/
+                else
+                {
+                    TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                    objPremiumResponse.ErrorText = ValidateServiceInput(PremiumObj);
+                    TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "ValidateServiceInput_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                }
+                if (!string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                {
+                    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                }
+                else if (string.IsNullOrEmpty(PremiumObj.IDVFlag))
+                {
+                    var UserId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
+                    decimal ProductId = entities.MASProducts.FirstOrDefault(a => a.Code == PremiumObj.ProductCode && a.EndDate == null) != null ? entities.MASProducts.FirstOrDefault(a => a.Code == PremiumObj.ProductCode).ID : 0;
+                    string IDVFlag = GetIDVFlagFromDB(UserId, ProductId);
+                    if (!string.IsNullOrEmpty(IDVFlag))
+                    {
+                        if (IDVFlag.ToUpper() == "MAX")
+                            PremiumObj.IDVFlag = "MAX";
+                        else if (IDVFlag.ToUpper() == "MIN")
+                            PremiumObj.IDVFlag = "MIN";
+                        else if (IDVFlag.ToUpper() == "STD")
+                            PremiumObj.IDVFlag = "STD";
+                    }
+                    requestXml = ToJson(PremiumObj);
+                }
+
+                RegistrationValidation registrationValidation = new RegistrationValidation();
+                GCDuplicateValidationRequest gCDuplicateValidation = new GCDuplicateValidationRequest();
+                gCDuplicateValidation.EngineNumber = PremiumObj.EngineNo;
+                gCDuplicateValidation.ChassisNumber = PremiumObj.ChassisNo;
+                if (PremiumObj.IsBHSeries)
+                {
+                    gCDuplicateValidation.RegistrationNumber = PremiumObj.BHSeriesNumber;
+                }
+                else
+                {
+                    gCDuplicateValidation.RegistrationNumber = PremiumObj.RegNo1 + PremiumObj.RegNo2 + PremiumObj.RegNo3 + PremiumObj.RegNo4;
+                }
+                if (new[] { "3151", "3152", "3140", "3141", "3555", "3556", "3153", "3154" }.Contains(PremiumObj.ProductCode))
+                {
+                    if (PremiumObj.PolicyStartDate != null)
+                    {
+                        gCDuplicateValidation.ODStartDate = Convert.ToDateTime(PremiumObj.PolicyStartDate);
+                    }
+                    if (PremiumObj.PolicyEndDate != null)
+                    {
+                        gCDuplicateValidation.ODEndDate = Convert.ToDateTime(PremiumObj.PolicyEndDate);
+                    }
+                }
+                if ((!PremiumObj.IsShortTermPolicy && new[] { "3151", "3152", "3555", "3556" }.Contains(PremiumObj.ProductCode) && PremiumObj.BusinessType.Trim().ToUpperInvariant().Equals("NEW BUSINESS") && PremiumObj.PolicyTenure>1 ) || new[] { "3157", "3155", "3158", "3156" }.Contains(PremiumObj.ProductCode))
+                {
+                    if (PremiumObj.PolicyStartDate != null)
+                    {
+                        gCDuplicateValidation.TPStartDate = Convert.ToDateTime(PremiumObj.PolicyStartDate);
+                    }
+                    if (PremiumObj.PolicyEndDate != null)
+                    {
+                        gCDuplicateValidation.TPEndDate = Convert.ToDateTime(PremiumObj.PolicyEndDate);
+                    }
+                }
+                gCDuplicateValidation.ProductCode = PremiumObj.ProductCode;
+                if (PremiumObj.IsFullQuote && !registrationValidation.isDuplicateReg(PremiumObj.QuickQuoteNumber, gCDuplicateValidation))
+                {
+                    objPremiumResponse.ErrorText = "Policy already exists for given Engine No/Chassis No/Registration No.";
+                    return PPDResp(objPremiumResponse);
+                }
+
+                bool IsAuthenticated = false;
+                DomQuickQuote ObjQucikQuoteDetailsResponse = new DomQuickQuote();
+                IsAuthenticated = true;  //(String.Compare(TPSourceName, "PolicyBazaar") == 0) ? true : false;
+                if (IsAuthenticated)
+                {
+                    string elapsedTime = string.Empty;
+                    //try
+                    //{
+                        WriteError.WriteLog("Calling xml Reading Method " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                        objQuickQuoteDetails.IsFullQuote = PremiumObj.IsFullQuote;
+                        objQuickQuoteDetails.ISTPService = true;
+                        objQuickQuoteDetails.SystemIdentifier = PremiumObj.TPSourceName;
+                        objQuickQuoteDetails.QuickQuoteNumber = PremiumObj.QuickQuoteNumber;
+                        objQuickQuoteDetails.MethodName = "PostPremiumDetails";
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindVehicleDetails_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        BindVehicleDetails(PremiumObj, objQuickQuoteDetails);
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindVehicleDetails_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+                        if (objQuickQuoteDetails.VehicleVariantID == 0)
+                        {
+                            objPremiumResponse.ErrorText = "This Make Model Combination does not exist in our system";
+                            AuditLogObj.End();
+                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+                        if (objQuickQuoteDetails.RegistrationRegionID == 0)
+                        {
+                            objPremiumResponse.ErrorText = "This RTO does not exist in our system";
+                            AuditLogObj.End();
+                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+                        if (!string.IsNullOrEmpty(PremiumObj.GAPCover) && PremiumObj.GAPCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected)
+                        {
+                            decimal Exshowroomprice = 0;
+                            if (PremiumObj.ProductCode == TPCrossCutting_Constants.TWCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.TWSODProductCode)
+                            {
+                                Exshowroomprice = GetTWExShowRoomPrice(objQuickQuoteDetails.RegistrationRegionID, objQuickQuoteDetails.VehicleVariantID);
+                            }
+                            else
+                            {
+                                Exshowroomprice = GetExShowRoomPrice(objQuickQuoteDetails.RegistrationRegionID, objQuickQuoteDetails.VehicleVariantID);
+                            }
+                            decimal ActualGAPSI = Exshowroomprice - (Exshowroomprice * 10 / 100);
+                            PremiumObj.GAPCoverSI = ActualGAPSI;
+                        }
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+                        decimal? ClientID = null;
+                        if (PremiumObj.IsFullQuote)
+                        {
+                            objQuickQuoteDetails.Aggregator_KYC_Req_No = PremiumObj.Aggregator_KYC_Req_No;
+                            objQuickQuoteDetails.IC_KYC_No = PremiumObj.IC_KYC_No;
+                            objQuickQuoteDetails.CKYC_No = PremiumObj.CKYC_No;
+                            CustomerResponse resObj = new CustomerResponse();
+                            if (PremiumObj.CustmerObj != null)
+                            {
+                                PremiumObj.CustmerObj.IMDCode = PremiumObj.IMDNumber;//Avoid Fetching UserId from PolicyDetails table
+
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "SaveBasicDetails_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                resObj = SaveBasicDetails(PremiumObj.CustmerObj);
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "SaveBasicDetails_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+                                if (!String.IsNullOrEmpty(resObj.ErrorText))
+                                {
+                                    objPremiumResponse.ErrorText = "Customer Creation Failed : " + resObj.ErrorText;
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                                    if (objPremiumResponse.ErrorText.Contains("Exception"))
+                                    {
+                                        objPremiumResponse.ErrorText = "Error in customer creation.";
+                                    }
+                                    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                }
+                                else
+                                {
+                                    objQuickQuoteDetails.ClientID = Convert.ToDecimal(resObj.CustomerId);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            objQuickQuoteDetails.BQACustomerName = CustomerID;
+                            ClientID = Convert.ToDecimal(objQuickQuoteDetails.BQACustomerName);
+
+                        }
+                        if (PremiumObj.BusinessType == "Renewal" && PremiumObj.IsFullQuote)
+                        {
+                            var policydum = entities.RenewalDumps.FirstOrDefault(a => a.Customer_ID == PremiumObj.CustmerObj.GCCustomerID);//4104418940
+                            if (CustomerID != policydum.Customer_ID)
+                            {
+                                objQuickQuoteDetails.BQACustomerName = policydum.Customer_ID;
+                            }
+                            ClientID = Convert.ToDecimal(objQuickQuoteDetails.BQACustomerName);
+                        }
+
+                        var dbPolicyDetails = entities.PolicyDetails.FirstOrDefault(a => a.CoverNoteNumber == PremiumObj.QuickQuoteNumber);
+                        if (dbPolicyDetails != null)
+                        {
+                            objQuickQuoteDetails.SavedQuickQuoteID = dbPolicyDetails.ID;
+                        }
+
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindPolicyDetails_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        BindPolicyDetails(PremiumObj, objQuickQuoteDetails);
+                        TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindPolicyDetails_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+
+                        if (!string.IsNullOrEmpty(PremiumObj.ParentIMDCode))
+                        {
+                            var ParentUserID = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.ParentIMDCode).FirstOrDefault().UserID;
+                            var ParentIMDDetails = entities.IMDBasicDetails.Where(p => p.UserID == ParentUserID).FirstOrDefault();
+                            objQuickQuoteDetails.ParentIMDCode = PremiumObj.ParentIMDCode;
+                            objQuickQuoteDetails.ParentFirstName = ParentIMDDetails.FirstName;
+                            objQuickQuoteDetails.ParentLastName = ParentIMDDetails.LastName;
+                            objQuickQuoteDetails.ParentContactNo = ParentIMDDetails.Phone;
+                            objQuickQuoteDetails.POSPType = (PremiumObj.POSPType == null) ? false : true;
+                        }
+
+                        if (PremiumObj.ProductCode == TPCrossCutting_Constants.MDCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.MDLiabilityProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.CVCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.CVLiabilityProductCode)
+                        {
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindCoverDetailsMiscdorCV_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            BindCoverDetailsMiscdorCV(PremiumObj, objQuickQuoteDetails);
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindCoverDetailsMiscdorCV_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        }
+                        else
+                        {
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindCoverDetails_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            BindCoverDetails(PremiumObj, objQuickQuoteDetails);
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindCoverDetails_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        }
+
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+                        if (PremiumObj.ProductCode == TPCrossCutting_Constants.MDCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.CVCompProductCode)
+                        {
+                            BindDiscountDetailsMiscdorCV(PremiumObj, objQuickQuoteDetails);
+                        }
+                        else
+                        { 
+                            Guid userID = new Guid();
+                            var dbUserDetails = entities.tblUserExts.FirstOrDefault(a => a.UserName == PremiumObj.IMDNumber);
+                            userID = dbUserDetails.UserID;
+                            decimal ProdID = dbProductsList.ID;
+                            var dbAgentDiscountAccessDetails = entities.AgentDiscountAccessMappings.Where(a => a.AgentID == userID && a.EndDate == null && a.ProductID == ProdID);
+
+                            List<decimal> lstDiscounts = new List<decimal>();
+                            foreach (var coverdetails in dbAgentDiscountAccessDetails)
+                            {
+                                lstDiscounts.Add(coverdetails.DiscountID);
+                            }
+
+                            if (lstDiscounts.Count > 0)
+                            {
+                                if (PremiumObj.ProductCode == TPCrossCutting_Constants.TWCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.TWSODProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode)
+                                {
+                                    BindDiscountDetails(PremiumObj, objQuickQuoteDetails);
+                                }
+                                if (PremiumObj.ProductCode == TPCrossCutting_Constants.TWLiabilityProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCLiabilityProductCode)
+                                {
+                                    BindDiscountDetailsTPOnly(PremiumObj, objQuickQuoteDetails);
+                                }
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+
+                        if (PremiumObj.ProductCode == TPCrossCutting_Constants.MDCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.CVCompProductCode)
+                        {
+                            BindAddOnCoversDetailsMiscdorCV(PremiumObj, objQuickQuoteDetails);
+                        }
+                        else
+                        {
+                            #region B2B-AddonPlan Start                       
+
+                            if (PremiumObj.ProductCode == TPCrossCutting_Constants.TWCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.TWSODProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode)
+                            {
+                                //code added for renewal business visibility issue ny nisha
+                                // if (PremiumObj.BusinessType.ToUpper() != "RENEWAL")
+                                //{
+
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "GetTotalAddonCovers_Start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                if(objQuickQuoteDetails.VehicleSegmentID==null)
+                                {
+                                    objQuickQuoteDetails.VehicleSegmentID = 0;
+                                }
+                                //Renewal Flexibility Change
+                                List<AddonCover> AddonCovers = null;
+                                PremiumObj = GetTotalAddonCovers(PremiumObj, objQuickQuoteDetails.VehicleSegmentID, ref AddonCovers);
+                                //if (PremiumObj.ProductCode == TPCrossCutting_Constants.PCCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode)
+                                //{
+                                //    objQuickQuoteDetails.ErrorMsg = ValidateAddonwithAge(PremiumObj);
+                                //}
+                                if (AddonCovers.Count > 0)
+                                {
+                                    objQuickQuoteDetails.AddonCovers = AddonCovers;
+                                }
+                                AddonValidation addonValidation = new AddonValidation(entities);
+                                if (string.IsNullOrEmpty(PremiumObj.ErrorText) && !string.IsNullOrEmpty(PremiumObj.LibertyBatterySecureCover) && !addonValidation.AddonLibertyBatterySecureApplicable(PremiumObj, AddonCovers))
+                                {
+                                    string strError = "Liberty Battery Secure cover is not valid for this Vehicle, Please reverify details.";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    PremiumObj.ErrorText = strError;
+                                }
+                                if (!string.IsNullOrEmpty(PremiumObj.ErrorText))
+                                {
+                                    objPremiumResponse.ErrorText = PremiumObj.ErrorText;
+                                    return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                }
+                            
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "GetTotalAddonCovers_End", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+                            }
+
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindAddOnCoversBeforeBundel_S", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            BindAddOnCoversBeforeBundel(PremiumObj, objQuickQuoteDetails); // handeled to compare bundeled cover added  by harish
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindAddOnCoversBeforeBundel_E", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+
+                            #endregion B2B-AddonPlan End
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindAddOnCoversDetails_Start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                            BindAddOnCoversDetails(PremiumObj, objQuickQuoteDetails);
+                            TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "BindAddOnCoversDetails_End", DateTime.Now.ToString(), DateTime.Now.ToString());
+                        }
+
+                        var UserId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
+                        dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == objQuickQuoteDetails.ProductId && a.EndDate == null).FirstOrDefault();
+                        if ((PremiumObj.IsSelfInspection == false && PremiumObj.IsFullQuote == true 
+                            && (PremiumObj.BusinessType.ToUpper() == "ROLL OVER" || PremiumObj.BusinessType.ToUpperInvariant() == "USED") && dbAgentParameters.BreakInLimit > 0 
+                            && (PremiumObj.ProductCode != TPCrossCutting_Constants.TWCompProductCode 
+                            && PremiumObj.ProductCode != TPCrossCutting_Constants.TWLiabilityProductCode 
+                            && PremiumObj.ProductCode != TPCrossCutting_Constants.TWSODProductCode 
+                            && PremiumObj.ProductCode != TPCrossCutting_Constants.PCLiabilityProductCode 
+                           // && PremiumObj.ProductCode != TPCrossCutting_Constants.CVLiabilityProductCode 
+                            && PremiumObj.ProductCode != TPCrossCutting_Constants.MDLiabilityProductCode))
+                            || (PremiumObj.IsSelfInspection == true && !string.IsNullOrEmpty(PremiumObj.InspectionReferenceNo)))
+                        {
+                            bool PIStatusDB = GetPIStatusCheckFromDB(UserId, objQuickQuoteDetails.ProductId);
+                            if (PIStatusDB == true)
+                            {
+                                if (PremiumObj.IsInspectionDone == true)
+                                {
+                                    if ((PremiumObj.ProposalId == null || PremiumObj.ProposalId == string.Empty) && (PremiumObj.InspectionReferenceNo == null || PremiumObj.InspectionReferenceNo == string.Empty))
+                                    {
+                                        objPremiumResponse.ErrorText = "Please enter ProposalId or InspectionReferenceNo";
+                                        AuditLogObj.End();
+                                        AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false);
+                                        return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                    }
+                                    PIStatus = GetPIStatus(PremiumObj);
+
+                                    if (!string.IsNullOrEmpty(PIStatus.ErrorMsg))
+                                    {
+                                        objPremiumResponse.ErrorText = PIStatus.ErrorMsg;
+                                        return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                    }
+
+                                    if (!string.IsNullOrEmpty(PIStatus.Lead_Status))
+                                    {
+                                        bool validateLeadStatus = ValidateLeadStatus(PIStatus.Lead_Status,dbAgentParameters.IsRecommendCustomerDeclaration);
+                                        if(!validateLeadStatus)
+                                        {
+                                            objPremiumResponse.ErrorText = PIStatus.Lead_Status;
+                                            AuditLogObj.End();
+                                            AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                                        }
+                                    }
+                                
+                                    if (PIStatus != null)
+                                    {                                   
+                                        objQuickQuoteDetails.domInspection.InspectionDate = Convert.ToDateTime(PIStatus.RecommendedDate);
+                                        objQuickQuoteDetails.domInspection.ReportDate = Convert.ToDateTime(PIStatus.RecommendedDate);
+                                    }
+                                }
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                        {
+                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                            return PPDResp(objPremiumResponse);/*IR2023-1434 Error Categorization 27jun25*/
+                        }
+
+                        if(string.IsNullOrEmpty(PremiumObj.IDVFlag) &&  PremiumObj.VehicleIDV == 0)
+                        {
+                            objQuickQuoteDetails.IDVFlag = "MIN";
+                        }
+                        else
+                        {
+                            objQuickQuoteDetails.IDVFlag = PremiumObj.IDVFlag;
+                        }
+                        if (PremiumObj.CustmerObj != null)
+                        {
+                            objQuickQuoteDetails.PANNumber = PremiumObj.CustmerObj.PanNo;
+                            if (!string.IsNullOrWhiteSpace(PremiumObj.CustmerObj.DOB))
+                            {
+                                objQuickQuoteDetails.DataOfBirth = Convert.ToDateTime(String.Format("{0:dd/MM/yyyy}", PremiumObj.CustmerObj.DOB));
+                        }
+                        }
+                        objQuickQuoteDetails.AgentID = UserId;
+
+                        // BH Series
+                        if (PremiumObj.IsBHSeries && (PremiumObj.ProductCode == "3151" || PremiumObj.ProductCode == "3155" || PremiumObj.ProductCode == "3140" ||
+                          PremiumObj.ProductCode == "3152" || PremiumObj.ProductCode == "3158" || PremiumObj.ProductCode == "3141"))
+                        {
+                            objQuickQuoteDetails.IsBHSeries = PremiumObj.IsBHSeries;
+                            objQuickQuoteDetails.BHSeriesNumber = PremiumObj.BHSeriesNumber;
+                            objQuickQuoteDetails.BHRtoCode = PremiumObj.RtoCode;
+                        }
+                        // InspectionWaiver Changes
+                        if (PremiumObj.ProductCode == "3153" || PremiumObj.ProductCode == "3157" || PremiumObj.ProductCode == "3154" || PremiumObj.ProductCode == "3156")
+                        {
+                            objQuickQuoteDetails.IsInspectionDoneWaiver = PremiumObj.IsInspectionDone;
+                        }
+                        //Tyre Protection
+                        if ((PremiumObj.ProductCode == TPCrossCutting_Constants.PCCompProductCode || PremiumObj.ProductCode == TPCrossCutting_Constants.PCSODProductCode) && !string.IsNullOrEmpty(PremiumObj.TyreProtectionCover) && PremiumObj.TyreProtectionCover.ToLower() == TPCrossCutting_Constants.IsCoverSelected && objQuickQuoteDetails.VehicleSegmentID == 2)
+                        {
+                            objQuickQuoteDetails.TyreSerialNo1 = PremiumObj.TyreSerialNo1;
+                            objQuickQuoteDetails.TyreSerialNo2 = PremiumObj.TyreSerialNo2;
+                            objQuickQuoteDetails.TyreSerialNo3 = PremiumObj.TyreSerialNo3;
+                            objQuickQuoteDetails.TyreSerialNo4 = PremiumObj.TyreSerialNo4;
+                            objQuickQuoteDetails.TyreSerialNo5 = PremiumObj.TyreSerialNo5;
+                        }
+                   
+                        objQuickQuoteDetails.PolicyTransEndorsType = PremiumObj.PolicyTransEndorsType;/* transfer endorse type 25Feb25 */
+                        objQuickQuoteDetails.IsShortTermPolicy = PremiumObj.IsShortTermPolicy;
+                        /*RO TO RN 27jun25*/
+                        //if (objRNROdump != null)
+                        //{
+                        //    PremiumObj.BusinessType = "Renewal";
+                        //    objQuickQuoteDetails.BusinessType = "3";
+                        //    objQuickQuoteDetails.PolicyBusinessType = "3";
+                        //}
+                        /*RO TO RN 27jun25*/
+
+                        /* PAYD changes 26062025*/
+                        if (PremiumObj.AddonIsPayAsYouDrive)
+                        {
+                            if (PremiumObj.IsFullQuote)
+                            {
+                                Regex regNumOnly = new Regex("^[0-9]+$");
+                                string odometerReading = Convert.ToString(PremiumObj.OdometerReading);
+                                if (!string.IsNullOrEmpty(odometerReading) && !regNumOnly.IsMatch(odometerReading))
+                                {
+                                    objPremiumResponse.ErrorText = "Please enter Odometer Reading value in numeric";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return objPremiumResponse;
+                                }
+                                else if ((Convert.ToString(PremiumObj.OdometerReading) == "0")
+                                    || string.IsNullOrEmpty(PremiumObj.PAYDKilometre) || string.IsNullOrEmpty(PremiumObj.PayAsYouDriveBasePlan))
+                                {
+                                    objPremiumResponse.ErrorText = "Odometer Reading and PAYD Kilometer details mandatory when opted Pay As You Driver Cover!";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return objPremiumResponse;
+                                }
+                                else if ((PremiumObj.OdometerReading.Length < 1 || PremiumObj.OdometerReading.Length > 9))
+                                {
+                                    objPremiumResponse.ErrorText = "Odometer Reading must contain 1 or 9 digits only.!";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return objPremiumResponse;
+                                }
+                                if (!PremiumObj.IsInspectionDone
+                                    || (string.IsNullOrEmpty(PremiumObj.InspectionDate) || string.IsNullOrEmpty(PremiumObj.ReportDate)))
+                                {
+                                    objPremiumResponse.ErrorText = "Inspection mandatory when opted Pay As You Driver Cover!";
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                    return objPremiumResponse;
+                                }
+                                else
+                                {
+                                    objQuickQuoteDetails.domInspection = new DomInspectionDetails();
+                                    objQuickQuoteDetails.dompreInspection = new DomPreInspectionDetails();
+                                    var UserID = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
+                                    if (UserID != null)
+                                    {
+                                        var dbImdDetails = entities.IMDBasicDetails.Where(p => p.UserID == UserID).FirstOrDefault();
+                                        if (dbImdDetails != null)
+                                        {
+                                            objQuickQuoteDetails.dompreInspection.InitiatorName = dbImdDetails.FirstName + " " + dbImdDetails.LastName;
+                                            objQuickQuoteDetails.dompreInspection.InitiatorPhoneNo = dbImdDetails.Phone;
+                                            objQuickQuoteDetails.dompreInspection.InitiatorEmailID = dbImdDetails.Email;
+                                            objQuickQuoteDetails.dompreInspection.InsuranceCompany = "Liberty General Insurance Limited.";
+                                            // RCA Change Break-in text from Valuation
+                                            // objQuickQuoteDetails.dompreInspection.PurposeOfInspection = "Break-In";
+                                            objQuickQuoteDetails.dompreInspection.PurposeOfInspection = "Valuation";
+                                            objQuickQuoteDetails.dompreInspection.InspectionType = "Preinspection";
+                                            objQuickQuoteDetails.dompreInspection.IntimationDate = Convert.ToDateTime(PremiumObj.InspectionDate);
+                                            objQuickQuoteDetails.dompreInspection.IntimationTime = Convert.ToDateTime(PremiumObj.InspectionDate);
+                                            objQuickQuoteDetails.dompreInspection.SMName = dbImdDetails.SMname;
+                                        }
+                                    }
+                                    objQuickQuoteDetails.domInspection.InspectionDate = Convert.ToDateTime(PremiumObj.InspectionDate);
+                                    objQuickQuoteDetails.domInspection.ReportDate = Convert.ToDateTime(PremiumObj.ReportDate);
+                                    objQuickQuoteDetails.domInspection.InspectionDoneBy = PremiumObj.InspectionDoneByWhom;
+                                    objQuickQuoteDetails.domInspection.ReportReferenceNumber = PremiumObj.InspectionReferenceNo;
+                                }
+                            }
+                            // else
+                            // {
+                            objQuickQuoteDetails.AddonIsPayAsYouDrive = PremiumObj.AddonIsPayAsYouDrive;
+                            objQuickQuoteDetails.OdometerReading = PremiumObj.OdometerReading;
+                            objQuickQuoteDetails.PayAsYouDriveBasePlan = PremiumObj.PayAsYouDriveBasePlan;
+                            objQuickQuoteDetails.PAYDKilometre = PremiumObj.PAYDKilometre;
+                            // }
+                        }
+                        /* PAYD changes 26062025*/
+
+                        /* Inspection Based Pricing (IBP) changes 26062025*/
+                        if (PremiumObj.IBP)
+                        {
+                            LeadValidation leadValidation = new LeadValidation();
+                            LeadModel leadModel = new LeadModel();
+                            leadModel.PolicyStartDate = PremiumObj.PolicyStartDate;
+                            if (PremiumObj.NoPreviousPolicyHistory)
+                            {
+                                leadModel.PreviousPolicyEndDate = PremiumObj.PreviousPolicyEndDate;
+                                leadModel.PreviousPolicyType = PremiumObj.PreviousPolicyType;
+                            }
+                            leadModel.NoPreviousPolicyHistory = PremiumObj.NoPreviousPolicyHistory;
+                            leadModel.BusinessType = PremiumObj.BusinessType;
+                            if (PremiumObj.lstPreviousAddonDetails != null && PremiumObj.lstPreviousAddonDetails.Count() > 0)
+                            {
+                                leadModel.PrevNilDepCover = PremiumObj.lstPreviousAddonDetails[0].IsNilDepreicationOptedInPrevPolicy;
+                                leadModel.PrevEngineCover = PremiumObj.lstPreviousAddonDetails[0].IsEngineSafeOptedInPrevPolicy;
+                                leadModel.PrevGAPCover = PremiumObj.lstPreviousAddonDetails[0].IsGAPCoverOptedInPrevPolicy;
+                            }
+                            leadModel.GAPCover = PremiumObj.GAPCover;
+                            leadModel.EngineCover = PremiumObj.EngineSafeCover;
+                            leadModel.NilDepCover = PremiumObj.DepreciationCover;
+
+                            bool IBPCheck = leadValidation.leadValidationCheck(leadModel);
+                        }
+                        /* Inspection Based Pricing (IBP) changes 26062025*/
+                        if (PremiumObj.BusinessType.ToUpper() == "RENEWAL")
+                        {
+                            objQuickQuoteDetails.requestStage = PremiumObj.requestStage;
+                        }
+                        System.Diagnostics.Stopwatch st = new System.Diagnostics.Stopwatch();
+                        st.Start();
+                        //try
+                        //{
+                            string requestData = Newtonsoft.Json.JsonConvert.SerializeObject(objQuickQuoteDetails);
+                            using (var client = new WebClient())
+                            {
+                                var myClient = new WebClientEx();
+                                myClient.Timeout = 9000000; //Daft timeout period
+                                myClient.Headers[HttpRequestHeader.ContentType] = "application/json";
+                                WriteError.WriteLog("Calling PostNewTPCalculateQuickQuotePremiumDetails Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                                var strMasUWDataUrl = System.Configuration.ConfigurationManager.AppSettings["twdataservicesurl"].ToString();
+                                WriteError.WriteLog("URL:" + strMasUWDataUrl, objQuickQuoteDetails.QuickQuoteNumber);
+
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "PostNewTPCalculate_start", DateTime.Now.ToString(), DateTime.Now.ToString());
+                                var result = myClient.UploadData(strMasUWDataUrl + "api/TPServiceData/PostNewTPCalculateQuickQuotePremiumDetails", Encoding.UTF8.GetBytes(requestData));
+                                TimeSpan ts = st.Elapsed;
+                                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+                                st.Stop();
+                                objPremiumResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<PremiumResponse>(Encoding.UTF8.GetString(result));
+                                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "PostNewTPCalculate_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+                                objQuickQuoteDetails.SavedQuickQuoteID = objPremiumResponse.PolicyID;
+                                WriteError.WriteLog("After PostTPCalculateQuickQuotePremiumDetails Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                                if (string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                                {
+                                    objPremiumResponse = BindAddonCovers(objPremiumResponse);
+                                    AuditLogObj.End();
+                                    objPremiumResponse.ResultXML = ToJsonResultXML(objPremiumResponse);
+                                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(objQuickQuoteDetails.ClientID), "Premium Calculated successfully.Total Premium =" + objPremiumResponse.TotalPremiumValueWithTax, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+
+                                    objPremiumResponse.MultiplicativeUsed = null;
+                                    objPremiumResponse.MultiplicativeLdRateYr1 = 0;
+                                    objPremiumResponse.MultiplicativeNetODPremiumYr1 = 0;
+                                    objPremiumResponse.MultiplicativeNetPremium = 0;
+                                    objPremiumResponse.LegacyLdRateYr1 = 0;
+                                    objPremiumResponse.LegacyNetODPremiumYr1 = 0;
+                                    objPremiumResponse.LegacyNetPremium = 0;
+                                    objPremiumResponse.LegacyTotalOfTotalAddOnCoverPremium = 0;
+                                    objPremiumResponse.NetODPremiumYr1 = 0;
+                                    objPremiumResponse.TotalOfTotalAddOnCoverPremium = 0;
+                                    objPremiumResponse.TotalPremiumPayable = 0;
+                                    objPremiumResponse.LdRateYr1 = 0;
+                                    objPremiumResponse.TotalOfTotalTPPremium = 0;
+                                    objPremiumResponse.TotalPaCoverToOwnerDriverTPPremium = 0;
+
+                                    objPremiumResponse.ResultXML = string.Empty;
+                                    objPremiumResponse.ModifiedRequestXML = string.Empty;
+                                    objPremiumResponse.CustomerID = System.Configuration.ConfigurationManager.AppSettings["CustomerID"].ToString();
+                                    if (PremiumObj.BusinessType == "Renewal")
+                                    {
+                                        objPremiumResponse.CustomerID = objQuickQuoteDetails.BQACustomerName;
+                                    }
+                                    objPremiumResponse.ProposalNumber = objQuickQuoteDetails.QuickQuoteNumber;
+                                    if (PremiumObj.IsSelfInspection && (objPremiumResponse.PolicyStartDate != Convert.ToString(objQuickQuoteDetails.InsuranceStartdate)))
+                                    {
+                                        objPremiumResponse.PolicyStartDate = objPremiumResponse.PolicyStartDate;//Binding renewal policy startdate and enddate
+                                        objPremiumResponse.PolicyEndDate = objPremiumResponse.PolicyEndDate;
+                                    }
+                                    else if (string.IsNullOrEmpty(objPremiumResponse.InspectionRequired) && PremiumObj.BusinessType == "Renewal" && objRNROdump==null)/*IDM2024-574 T+Hrs Logic*/
+                                    {
+                                        objPremiumResponse.PolicyStartDate = Convert.ToString(objQuickQuoteDetails.InsuranceStartdate);//Binding renewal policy startdate and enddate
+                                        objPremiumResponse.PolicyEndDate = Convert.ToString(objQuickQuoteDetails.InsuranceEndDate);//Binding renewal policy for premiumresponse to change the input request
+                                    }
+                                }
+                                else
+                                {
+                                    AuditLogObj.End();
+                                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(ClientID), objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                                    objPremiumResponse.ResultXML = string.Empty;
+                                    objPremiumResponse.ModifiedRequestXML = string.Empty;
+                                    objPremiumResponse.CustomerID = objQuickQuoteDetails.BQACustomerName;
+                                    if (objPremiumResponse.ErrorText.Contains("Exception"))
+                                    {
+                                        objPremiumResponse.ErrorText = "Error in Premium calculation";
+                                    }
+                                }
+
+                                ////Save TyreSerial No
+                                //if (string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                                //{
+                                //    if (objQuickQuoteDetails.SavedQuickQuoteID > 0)
+                                //    {
+                                //AddonValidation addonValidation = new AddonValidation(entities);
+                                //Task.Run(() => addonValidation.saveTyreSerialNo(objQuickQuoteDetails.SavedQuickQuoteID, PremiumObj));
+                                //    }                                
+                                //}
+                                
+
+                                //PI Phase II
+                                if (objQuickQuoteDetails.domInspection != null)
+                                {
+                                    if (objQuickQuoteDetails.domInspection.InspectionDoneBy.ToUpper() == "INSURER" && !string.IsNullOrEmpty(objPremiumResponse.LeadNumber))
+                                    {
+                                        HomeController HomeObj = new HomeController();
+                                        Task.Run(() => HomeObj.SendVideoslinktoMobileNo(objPremiumResponse.LeadNumber, PremiumObj.CustmerObj.MobileNumber));
+                                    }
+                                    if (!string.IsNullOrEmpty(objPremiumResponse.LeadNumber) && PremiumObj.IsSelfInspection)
+                                    {
+                                        LeadValidation leadValidation = new LeadValidation();
+                                        LeadModel leadModel = new LeadModel();
+                                        leadModel.QuoteNumber = PremiumObj.QuickQuoteNumber;
+                                        leadModel.LeadID = objPremiumResponse.LeadNumber;
+                                        leadModel.Mobile = PremiumObj.CustmerObj.MobileNumber;
+                                        leadModel.EmailId = PremiumObj.CustmerObj.EmailID;
+                                        leadModel.PreviousPolicyNumber = PremiumObj.PreviousPolicyNumber;
+                                        leadModel.BusinessType = PremiumObj.BusinessType;
+                                        leadModel.ProductCode = PremiumObj.ProductCode;
+                                        leadModel.GAPCover = objQuickQuoteDetails.GAPCover;
+                                        leadModel.NilDepCover = objQuickQuoteDetails.NilDepCover;
+                                        leadModel.EngineCover = objQuickQuoteDetails.EngineCover;
+                                        leadModel.NoPreviousPolicyHistory = PremiumObj.NoPreviousPolicyHistory;
+                                        leadModel.PreviousPolicyType = PremiumObj.PreviousPolicyType;
+                                        leadModel.PolicyStartDate = PremiumObj.PolicyStartDate;
+                                        leadModel.PreviousPolicyEndDate = PremiumObj.PreviousPolicyEndDate;
+                                        if (leadModel.BusinessType.ToUpper() == "ROLL OVER" || leadModel.BusinessType.ToUpperInvariant() == "USED")
+                                        {
+                                            if (PremiumObj.lstPreviousAddonDetails!=null && PremiumObj.lstPreviousAddonDetails.Count() > 0)
+                                            {
+                                                leadModel.PrevNilDepCover = PremiumObj.lstPreviousAddonDetails[0].IsNilDepreicationOptedInPrevPolicy;
+                                                leadModel.PrevEngineCover = PremiumObj.lstPreviousAddonDetails[0].IsEngineSafeOptedInPrevPolicy;
+                                                leadModel.PrevGAPCover = PremiumObj.lstPreviousAddonDetails[0].IsGAPCoverOptedInPrevPolicy;
+                                            }
+                                        }
+                                        Task.Run(() => leadValidation.verifySelfInspection(leadModel));
+                                    }
+                                }
+                                if (string.IsNullOrEmpty(objPremiumResponse.ErrorText) && PremiumObj.IsFullQuote && Convert.ToInt32(objPremiumResponse.PolicyID) > 0)
+                                {
+                                    var otpConfigured = entities.MASTPSourceNames.FirstOrDefault(a => a.Name == PremiumObj.TPSourceName).IsOTPConfigured;
+                                    if (Convert.ToBoolean(otpConfigured))
+                                    {
+                                        VCController varifyCustomer = new VCController();
+                                        Task.Run(() => varifyCustomer.GetCustomerVerificationStatus(objPremiumResponse.ProposalNumber));
+                                    }
+                                }
+                                WriteError.WriteLog("Error from GCcalculatePremium:" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
+                            }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    objPremiumResponse.ErrorText = Convert.ToString(ex);
+                        //    AuditLogObj.End();
+                        //    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(ClientID), objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                        //    objPremiumResponse.ResultXML = string.Empty;
+                        //    objPremiumResponse.ModifiedRequestXML = string.Empty;
+                        //    WriteError.WriteLog("Exception from GCcalculatePremium:" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
+                        //    objPremiumResponse.ErrorText = "Error in Premium calculation";
+                        //}
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    objPremiumResponse.ErrorText = Convert.ToString(ex);
+                    //    AuditLogObj.End();
+                    //    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                    //    objPremiumResponse.ErrorText = "Error in Premium calculation";
+                    //}
+
+                        }
+                else
+                {
+                    objPremiumResponse.ErrorText = "Authentication failed";
+                    WriteError.WriteLog("Error from GeCcalculatePremium:Authentication failed" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
+                    AuditLogObj.End();
+                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                }
+                WriteError.WriteLog("Time elapsed at the End of PostPremiumDetails " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                sw.Stop();
+                TestTimeLoggerUAT.AddTestLoggerTimeUAT(PremiumObj.QuotationNumber, "PostPremiumDetails_end", DateTime.Now.ToString(), DateTime.Now.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                objPremiumResponse.ErrorText = "error in premium calculation.";
+                AuditLogObj.End();
+                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj?.QuickQuoteNumber, PremiumObj?.IsFullQuote, "PostPremiumDetails", null, PremiumObj?.TPSourceName, null, $"Exception : {ExceptionService.ToDetailedString(ex)}", null, null, null, null, null);
+                return PPDResp(objPremiumResponse);
+            }
+            finally
+            {
+                if(PremiumObj.IsFullQuote)
+                {
+                    Task.Run(() => QuoteProcessingManager.FinishProcessing(PremiumObj?.QuickQuoteNumber));
+                }
+                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj?.QuickQuoteNumber, PremiumObj?.IsFullQuote, "PostPremiumDetails", null, PremiumObj?.TPSourceName, null, $"PostPremiumDetails completed Successfully.", null, null, null, null, null);
+            }
+            return PPDResp(objPremiumResponse);
         }
 
-        // Quote is new. Store it with an expiration time (e.g., 24 hours)
-        var options = new DistributedCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromHours(24));
-
-        // Storing a simple "1" as a byte array to indicate presence
-        await _cache.SetAsync(quoteNumber, Encoding.UTF8.GetBytes("1"), options);
-
-        return false;
-    }
-}
-
-
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
-
-public class QuoteController : ApiController
-{
-    private readonly QuoteCacheService _quoteService;
-
-    public QuoteController()
-    {
-        // Resolving from our ServiceProvider defined in Global.asax
-        var cache = WebApiApplication.ServiceProvider.GetRequiredService<IDistributedCache>();
-        _quoteService = new QuoteCacheService(cache);
-    }
-
-    [HttpPost]
-    [Route("api/quotes/process")]
-    public async Task<IHttpActionResult> ProcessQuote([FromBody] QuoteRequest request)
-    {
-        if (string.IsNullOrEmpty(request.QuoteNumber))
-            return BadRequest("Quote number is required.");
-
-        bool isDuplicate = await _quoteService.IsDuplicateQuoteAsync(request.QuoteNumber);
-
-        if (isDuplicate)
-        {
-            // Reject the second request
-            return Content(HttpStatusCode.Conflict, "Duplicate request: This quote number has already been processed.");
-        }
-
-        // Continue with your business logic...
-        return Ok("Quote processed successfully.");
-    }
-}
-
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.SqlServer;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-
-public static class QuoteLockManager
-{
-    private static readonly IDistributedCache _cache;
-
-    static QuoteLockManager()
-    {
-        // Manual configuration without Dependency Injection
-        var options = new SqlServerCacheOptions
-        {
-            ConnectionString = "Your_SQL_Connection_String_Here",
-            SchemaName = "dbo",
-            TableName = "CacheTable"
-        };
-
-        // We wrap options in a simple Options class to satisfy the constructor
-        _cache = new SqlServerCache(Options.Create(options));
-    }
-
-    public static async Task<bool> IsDuplicateAndLock(string quoteNumber)
-    {
-        if (string.IsNullOrWhiteSpace(quoteNumber)) return false;
-
-        // 1. Try to retrieve the quote number
-        var data = await _cache.GetAsync(quoteNumber);
-
-        if (data != null)
-        {
-            // Data exists, so this is a duplicate request
-            return true; 
-        }
-
-        // 2. If it doesn't exist, save it to "lock" it
-        // Set it to expire after a certain time (e.g., 10 minutes or 24 hours)
-        var cacheOptions = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
-        };
-
-        // Save a dummy value (like "1") to mark this quote as "in use"
-        byte[] dummyValue = Encoding.UTF8.GetBytes("1");
-        await _cache.SetAsync(quoteNumber, dummyValue, cacheOptions);
-
-        return false;
-    }
-}
-public class QuoteRequest
-{
-    public string QuoteNumber { get; set; }
-}
+      
