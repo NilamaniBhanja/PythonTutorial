@@ -1,376 +1,351 @@
+public PremiumResponse PostPremiumDetailsForSCPA(TPCalculatePremium PremiumObj)
+{
+    WriteError.WriteLog("start of the PostPremiumDetails at" + DateTime.Now, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+    System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+    sw.Start();
+    AuditLogObj.Start();
+    //Response to be sent back to TP after premium calculation
+    PremiumResponse objPremiumResponse = new PremiumResponse();
+    // Quick quote object
+    DomQuickQuote objQuickQuoteDetails = new DomQuickQuote();
+    requestXml = ToJson(PremiumObj);
+    PIIntegration PIStatus = new PIIntegration();
+    if (PremiumObj == null)
+    {
+        objPremiumResponse.ErrorText = "Premium Object is null";
+        AuditLogObj.End();
+        AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+        return objPremiumResponse;
+    }
 
-        public PremiumResponse PostPremiumDetailsForSCPA(TPCalculatePremium PremiumObj)
+    // Main processing wrapped in a single top-level try-catch
+    try
+    {
+        //CODE ADDED FOR RTO PINCODE POSP MAPPING CR (removed inner try-catch)
+        String ChildIMDCode = String.Empty;
+        String ParentImdCode = PremiumObj.IMDNumber;
+        objQuickQuoteDetails.IMDNumberParent = PremiumObj.IMDNumber;
+        var dbProductsList = entities.MASProducts.FirstOrDefault(a => a.Code == "3101" && a.EndDate == null);
+        var UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
+        if (UserRTOPINPOSPCRId == null)
         {
-            WriteError.WriteLog("start of the PostPremiumDetails at" + DateTime.Now, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            AuditLogObj.Start();
-            //Response to be sent back to TP after premium calculation
-            PremiumResponse objPremiumResponse = new PremiumResponse();
-            // Quick quote object
-            DomQuickQuote objQuickQuoteDetails = new DomQuickQuote();
-            requestXml = ToJson(PremiumObj);
-            PIIntegration PIStatus = new PIIntegration();
-            if (PremiumObj == null)
+            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
+            if (ChildIMDCode != "1")
             {
-                objPremiumResponse.ErrorText = "Premium Object is null";
-                AuditLogObj.End();
-                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
-                return objPremiumResponse;
+                PremiumObj.IMDNumber = ChildIMDCode;
             }
             else
             {
-                //CODE ADDED FOR RTO PINCODE POSP MAPPING CR
-                try
-                {
-                    String ChildIMDCode = String.Empty;
-                    String ParentImdCode = PremiumObj.IMDNumber;
-                    objQuickQuoteDetails.IMDNumberParent = PremiumObj.IMDNumber;
-                    var dbProductsList = entities.MASProducts.FirstOrDefault(a => a.Code == "3101" && a.EndDate == null);
-                    var UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
-                    if (UserRTOPINPOSPCRId == null)
-                    {
-                        ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
-                        if (ChildIMDCode != "1")
-                        {
-                            PremiumObj.IMDNumber = ChildIMDCode;
-                        }
-                        else
-                        {
-                            objPremiumResponse.ErrorText = "error while configuring IMDCode.";
-                            AuditLogObj.End();
-                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                            return objPremiumResponse;
-                        }
-                        UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
-                    }
-                    var dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
-                    if (dbAgentParameters == null)
-                    {
-                        ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
-                        if (ChildIMDCode != "1")
-                        {
-                            PremiumObj.IMDNumber = ChildIMDCode;
-                        }
-                        else
-                        {
-                            objPremiumResponse.ErrorText = "error while configuring IMDCode.";
-                            AuditLogObj.End();
-                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                            return objPremiumResponse;
-
-                        }
-                        dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
-                    }
-                    if (dbAgentParameters != null)
-                    {
-                        if (PremiumObj.IsFullQuote)
-                        {
-                            bool RtoEnable;
-                            bool PinEnable;
-                            bool PospEnable;
-                            bool PospConfigured;
-                            bool IMDDisbaleProdcut;
-                            int ImdCount = 0;
-
-                            var UserId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
-                            RtoEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsRtoMappingEnable);
-                            PinEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsPinMappingEnable);
-                            PospEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsPosMappingEnable);
-                            PospConfigured = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().isPOSPConfigured);
-
-                            // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
-                            if (RtoEnable)
-                            {
-                                ImdRtoMapping ImdRtoObj = entities.ImdRtoMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.RtoCodeBased == PremiumObj.RtoCode && a.IsActive == true).FirstOrDefault();
-                                if (ImdRtoObj != null)
-                                {
-                                    PremiumObj.IMDNumber = ImdRtoObj.BookingIMDCode;
-                                }
-                                ImdCount = ImdCount + 1;
-                            }
-                            if (PinEnable)
-                            {
-                                ImdPinMapping ImdPinObj = entities.ImdPinMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PinCodeBased == PremiumObj.CustmerObj.PinCode && a.IsActive == true).FirstOrDefault();
-                                if (ImdPinObj != null)
-                                {
-                                    PremiumObj.IMDNumber = ImdPinObj.BookingIMDCode;
-                                }
-                                ImdCount = ImdCount + 1;
-                            }
-
-                            if (PospConfigured)
-                            {
-                                if (PospEnable)
-                                {
-                                    ImdPosMapping ImdPosObj = entities.ImdPosMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PosCodeBased == PremiumObj.POSPCode && a.IsActive == true).FirstOrDefault();
-
-                                    if (ImdPosObj != null)
-                                    {
-                                        PremiumObj.IMDNumber = ImdPosObj.BookingIMDCode;
-                                    }
-                                    ImdCount = ImdCount + 1;
-                                }
-                            }
-                            // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
-
-                            if (ImdCount > 1)
-                            {
-                                objPremiumResponse.ErrorText = "Errot in Imd Configuration";
-                                AuditLogObj.End();
-                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                                return objPremiumResponse;
-                            }
-
-                            if (RtoEnable || PinEnable || PospEnable)
-                            {
-                                var IMDDisbaleProdcutData = entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == "3101").FirstOrDefault();
-                                if (IMDDisbaleProdcutData == null)
-                                {
-                                    var ChildIMDNumber = PremiumObj.IMDNumber;
-                                    var dbMasProducts = entities.MASProducts.FirstOrDefault(a => a.Code == "3101");
-                                    decimal ProductID = Convert.ToDecimal(dbMasProducts.ID);
-                                    ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
-
-                                    if (ChildIMDCode != "1")
-                                    {
-                                        PremiumObj.IMDNumber = ChildIMDCode;
-                                    }
-                                    else
-                                    {
-                                        objPremiumResponse.ErrorText = "error while configuring IMDCode.";
-                                        AuditLogObj.End();
-                                        AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                                        return objPremiumResponse;
-
-                                    }
-                                }
-                                else
-                                {
-                                    IMDDisbaleProdcut = Convert.ToBoolean(entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == "3101").FirstOrDefault().IsDisabled);
-                                    if (IMDDisbaleProdcut)
-                                    {
-                                        PremiumObj.IMDNumber = ParentImdCode;
-                                    }
-                                    else
-                                    {
-                                        var ChildIMDNumber = PremiumObj.IMDNumber;
-                                        var dbMasProducts = entities.MASProducts.FirstOrDefault(a => a.Code == "3101");
-                                        decimal ProductID = Convert.ToDecimal(dbMasProducts.ID);
-                                        ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
-
-                                        if (ChildIMDCode != "1")
-                                        {
-                                            PremiumObj.IMDNumber = ChildIMDCode;
-                                        }
-                                        else
-                                        {
-                                            objPremiumResponse.ErrorText = "error while configuring IMDCode.";
-                                            AuditLogObj.End();
-                                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                                            return objPremiumResponse;
-
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    objPremiumResponse.ErrorText = "error in premium calculation..";
-                    AuditLogObj.End();
-                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                    return objPremiumResponse;
-
-
-                }
-                objPremiumResponse.ErrorText = ValidateServiceInputForSCPA(PremiumObj);
-            }
-
-            if (!string.IsNullOrEmpty(objPremiumResponse.ErrorText))
-            {
+                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                AuditLogObj.End();
+                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
                 return objPremiumResponse;
             }
-
-            //Is TP authenticated
-            bool IsAuthenticated = false;
-            IsAuthenticated = true;
-
-            if (IsAuthenticated)
+            UserRTOPINPOSPCRId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault();
+        }
+        var dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
+        if (dbAgentParameters == null)
+        {
+            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(PremiumObj.IMDNumber, dbProductsList.ID, ParentImdCode);
+            if (ChildIMDCode != "1")
             {
-                string elapsedTime = string.Empty;
-                try
+                PremiumObj.IMDNumber = ChildIMDCode;
+            }
+            else
+            {
+                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                AuditLogObj.End();
+                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                return objPremiumResponse;
+
+            }
+            dbAgentParameters = entities.AgentParameters.Where(a => a.AgentID == UserRTOPINPOSPCRId.UserID && a.ProductID == dbProductsList.ID && a.EndDate == null).FirstOrDefault();
+        }
+        if (dbAgentParameters != null)
+        {
+            if (PremiumObj.IsFullQuote)
+            {
+                bool RtoEnable;
+                bool PinEnable;
+                bool PospEnable;
+                bool PospConfigured;
+                bool IMDDisbaleProdcut;
+                int ImdCount = 0;
+
+                var UserId = entities.tblUserExts.Where(a => a.IMDCode == PremiumObj.IMDNumber).FirstOrDefault().UserID;
+                RtoEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsRtoMappingEnable);
+                PinEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsPinMappingEnable);
+                PospEnable = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().IsPosMappingEnable);
+                PospConfigured = Convert.ToBoolean(entities.AgentParameters.Where(a => a.AgentID == UserId && a.ProductID == dbProductsList.ID).FirstOrDefault().isPOSPConfigured);
+
+                // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
+                if (RtoEnable)
                 {
-                    WriteError.WriteLog("Calling xml Reading Method " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
-                    objQuickQuoteDetails.IsFullQuote = PremiumObj.IsFullQuote;
-                    objQuickQuoteDetails.ISTPService = true;
-                    objQuickQuoteDetails.SystemIdentifier = PremiumObj.TPSourceName;
-                    objQuickQuoteDetails.QuickQuoteNumber = PremiumObj.QuickQuoteNumber;
-                    objQuickQuoteDetails.MethodName = "PostPremiumDetailsForSCPA";
-
-                    decimal? ClientID = null;
-                    if (PremiumObj.IsFullQuote)
+                    ImdRtoMapping ImdRtoObj = entities.ImdRtoMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.RtoCodeBased == PremiumObj.RtoCode && a.IsActive == true).FirstOrDefault();
+                    if (ImdRtoObj != null)
                     {
-                        if (PremiumObj.CustmerObj != null)
-                        {
-                            PremiumObj.CustmerObj.IMDCode = PremiumObj.IMDNumber;//Avoid Fetching UserId from PolicyDetails table
-                            PremiumObj.CustmerObj.TPSourceName = PremiumObj.TPSourceName;
-                            CustomerResponse resObj = SaveBasicDetailsForSCPA(PremiumObj.CustmerObj);
+                        PremiumObj.IMDNumber = ImdRtoObj.BookingIMDCode;
+                    }
+                    ImdCount = ImdCount + 1;
+                }
+                if (PinEnable)
+                {
+                    ImdPinMapping ImdPinObj = entities.ImdPinMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PinCodeBased == PremiumObj.CustmerObj.PinCode && a.IsActive == true).FirstOrDefault();
+                    if (ImdPinObj != null)
+                    {
+                        PremiumObj.IMDNumber = ImdPinObj.BookingIMDCode;
+                    }
+                    ImdCount = ImdCount + 1;
+                }
 
-                            if (!String.IsNullOrEmpty(resObj.ErrorText))
-                            {
-                                objPremiumResponse.ErrorText = "Customer Creation Failed : " + resObj.ErrorText;
-                                AuditLogObj.End();
-                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
-                                if (objPremiumResponse.ErrorText.Contains("Exception"))
-                                {
-                                    objPremiumResponse.ErrorText = "Error in customer creation.";
-                                }
-                                return objPremiumResponse;
-                            }
-                            else
-                            {
-                                objQuickQuoteDetails.ClientID = Convert.ToDecimal(resObj.CustomerId);
-                            }
+                if (PospConfigured)
+                {
+                    if (PospEnable)
+                    {
+                        ImdPosMapping ImdPosObj = entities.ImdPosMappings.Where(a => a.IMDCode == PremiumObj.IMDNumber && a.PosCodeBased == PremiumObj.POSPCode && a.IsActive == true).FirstOrDefault();
+
+                        if (ImdPosObj != null)
+                        {
+                            PremiumObj.IMDNumber = ImdPosObj.BookingIMDCode;
+                        }
+                        ImdCount = ImdCount + 1;
+                    }
+                }
+                // correction in logic for IMD_RTO_PIN_POSP by Bhupesh
+
+                if (ImdCount > 1)
+                {
+                    objPremiumResponse.ErrorText = "Errot in Imd Configuration";
+                    AuditLogObj.End();
+                    AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                    return objPremiumResponse;
+                }
+
+                if (RtoEnable || PinEnable || PospEnable)
+                {
+                    var IMDDisbaleProdcutData = entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == "3101").FirstOrDefault();
+                    if (IMDDisbaleProdcutData == null)
+                    {
+                        var ChildIMDNumber = PremiumObj.IMDNumber;
+                        var dbMasProducts = entities.MASProducts.FirstOrDefault(a => a.Code == "3101");
+                        decimal ProductID = Convert.ToDecimal(dbMasProducts.ID);
+                        ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
+
+                        if (ChildIMDCode != "1")
+                        {
+                            PremiumObj.IMDNumber = ChildIMDCode;
+                        }
+                        else
+                        {
+                            objPremiumResponse.ErrorText = "error while configuring IMDCode.";
+                            AuditLogObj.End();
+                            AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                            return objPremiumResponse;
+
                         }
                     }
                     else
                     {
-                        //customer id should be there always else we have to use any existing dummy customer id
-                        objQuickQuoteDetails.BQACustomerName = CustomerID;
-                        ClientID = Convert.ToDecimal(objQuickQuoteDetails.BQACustomerName);
-
-                    }
-
-                    var dbPolicyDetails = entities.PolicyDetails.FirstOrDefault(a => a.CoverNoteNumber == PremiumObj.QuickQuoteNumber);
-                    if (dbPolicyDetails != null)
-                    {
-                        objQuickQuoteDetails.SavedQuickQuoteID = dbPolicyDetails.ID;
-                    }
-
-                    //Policy Details
-                    BindPolicyDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
-                    if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
-                    {
-                        objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
-                        return objPremiumResponse;
-                    }
-
-                    //Cover Details
-                    BindCoverDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
-                    if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
-                    {
-                        objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
-                        return objPremiumResponse;
-                    }
-
-                    if (PremiumObj.IsFullQuote)
-                    {
-                        //Vehicle Details
-                        if (PremiumObj.IsVehicleDetails == true)
+                        IMDDisbaleProdcut = Convert.ToBoolean(entities.IMDRPPDisableProducts.Where(a => a.IMDCode == PremiumObj.IMDNumberParent && a.ProductDisable == "3101").FirstOrDefault().IsDisabled);
+                        if (IMDDisbaleProdcut)
                         {
-                            if (PremiumObj.lstVehicleObj.Count > 0)
+                            PremiumObj.IMDNumber = ParentImdCode;
+                        }
+                        else
+                        {
+                            var ChildIMDNumber = PremiumObj.IMDNumber;
+                            var dbMasProducts = entities.MASProducts.FirstOrDefault(a => a.Code == "3101");
+                            decimal ProductID = Convert.ToDecimal(dbMasProducts.ID);
+                            ChildIMDCode = CheckAndInsertIMDCodeForRtoPincodePospMapping(ChildIMDNumber, ProductID, ParentImdCode);
+
+                            if (ChildIMDCode != "1")
                             {
-                                BindVehicleDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
-                        {
-                            objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
-                            return objPremiumResponse;
-                        }
-
-                        if (PremiumObj.CustmerObj != null)
-                        {
-                            objQuickQuoteDetails.PANNumber = PremiumObj.CustmerObj.PanNo;
-                        }
-                    }
-
-                    if (PremiumObj.SumInsured != Convert.ToDecimal(0))
-                    {
-                        objQuickQuoteDetails.SumInsured = PremiumObj.SumInsured;
-                    }
-
-                    System.Diagnostics.Stopwatch st = new System.Diagnostics.Stopwatch();
-                    st.Start();
-                    try
-                    {
-                        string requestData = Newtonsoft.Json.JsonConvert.SerializeObject(objQuickQuoteDetails);
-                        using (var client = new WebClient())
-                        {
-                            var myClient = new WebClientEx();
-                            myClient.Timeout = 9000000; //Daft timeout period
-                            myClient.Headers[HttpRequestHeader.ContentType] = "application/json";
-                            WriteError.WriteLog("Calling PostNewTPCalculateQuickQuotePremiumDetailsForSCPA Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
-                            var strMasUWDataUrl = System.Configuration.ConfigurationManager.AppSettings["twdataservicesurl"].ToString();
-                            WriteError.WriteLog("URL:" + strMasUWDataUrl, objQuickQuoteDetails.QuickQuoteNumber);
-                            var result = myClient.UploadData(strMasUWDataUrl + "api/TPServiceData/PostNewTPCalculateQuickQuotePremiumDetailsForSCPA", Encoding.UTF8.GetBytes(requestData));
-                            //Get the elapsed time as a TimeSpan value.
-                            TimeSpan ts = st.Elapsed;
-                            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-                            st.Stop();
-                            objPremiumResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<PremiumResponse>(Encoding.UTF8.GetString(result));
-                            objQuickQuoteDetails.SavedQuickQuoteID = objPremiumResponse.PolicyID;
-                            WriteError.WriteLog("After PostNewTPCalculateQuickQuotePremiumDetailsForSCPA Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
-                            if (string.IsNullOrEmpty(objPremiumResponse.ErrorText))
-                            {
-                                AuditLogObj.End();
-                                objPremiumResponse.ResultXML = ToJsonResultXML(objPremiumResponse);
-                                AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(objQuickQuoteDetails.ClientID), "Premium Calculated successfully.Total Premium =" + objPremiumResponse.TotalPremiumValueWithTax, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
-                                objPremiumResponse.ResultXML = string.Empty;
-                                objPremiumResponse.ModifiedRequestXML = string.Empty;
-                                objPremiumResponse.CustomerID = System.Configuration.ConfigurationManager.AppSettings["CustomerID"].ToString();
-
-                                objPremiumResponse.ProposalNumber = objQuickQuoteDetails.QuickQuoteNumber;
-                                objPremiumResponse.PolicyStartDate = Convert.ToString(objQuickQuoteDetails.InsuranceStartdate);//Binding renewal policy startdate and enddate
-                                objPremiumResponse.PolicyEndDate = Convert.ToString(objQuickQuoteDetails.InsuranceEndDate);//Binding renewal policy for premiumresponse to change the input request
+                                PremiumObj.IMDNumber = ChildIMDCode;
                             }
                             else
                             {
+                                objPremiumResponse.ErrorText = "error while configuring IMDCode.";
                                 AuditLogObj.End();
-                                AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(ClientID), objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
-                                objPremiumResponse.ResultXML = string.Empty;
-                                objPremiumResponse.ModifiedRequestXML = string.Empty;
-                                objPremiumResponse.CustomerID = objQuickQuoteDetails.BQACustomerName;
-                                if (objPremiumResponse.ErrorText.Contains("Exception"))
-                                {
-                                    objPremiumResponse.ErrorText = "Error in Premium calculation";
-                                }
+                                AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "CheckAndInsertIMDCodeForRtoPincodePospMapping", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                                return objPremiumResponse;
+
                             }
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        objPremiumResponse.ErrorText = Convert.ToString(ex);
-                        AuditLogObj.End();
-                        AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(ClientID), objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
-                        objPremiumResponse.ResultXML = string.Empty;
-                        objPremiumResponse.ModifiedRequestXML = string.Empty;
-                        WriteError.WriteLog("Exception from GCcalculatePremium:" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
-                        objPremiumResponse.ErrorText = "Error in Premium calculation";
-                    }
                 }
-                catch (Exception ex)
+            }
+        }
+
+        objPremiumResponse.ErrorText = ValidateServiceInputForSCPA(PremiumObj);
+
+        if (!string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+        {
+            return objPremiumResponse;
+        }
+
+        //Is TP authenticated
+        bool IsAuthenticated = false;
+        IsAuthenticated = true;
+
+        if (IsAuthenticated)
+        {
+            string elapsedTime = string.Empty;
+            WriteError.WriteLog("Calling xml Reading Method " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+            objQuickQuoteDetails.IsFullQuote = PremiumObj.IsFullQuote;
+            objQuickQuoteDetails.ISTPService = true;
+            objQuickQuoteDetails.SystemIdentifier = PremiumObj.TPSourceName;
+            objQuickQuoteDetails.QuickQuoteNumber = PremiumObj.QuickQuoteNumber;
+            objQuickQuoteDetails.MethodName = "PostPremiumDetailsForSCPA";
+
+            decimal? ClientID = null;
+            if (PremiumObj.IsFullQuote)
+            {
+                if (PremiumObj.CustmerObj != null)
                 {
-                    //Activity for saving logs into database
-                    objPremiumResponse.ErrorText = Convert.ToString(ex);
-                    AuditLogObj.End();
-                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
-                    objPremiumResponse.ErrorText = "Error in Premium calculation";
+                    PremiumObj.CustmerObj.IMDCode = PremiumObj.IMDNumber;//Avoid Fetching UserId from PolicyDetails table
+                    PremiumObj.CustmerObj.TPSourceName = PremiumObj.TPSourceName;
+                    CustomerResponse resObj = SaveBasicDetailsForSCPA(PremiumObj.CustmerObj);
+
+                    if (!String.IsNullOrEmpty(resObj.ErrorText))
+                    {
+                        objPremiumResponse.ErrorText = "Customer Creation Failed : " + resObj.ErrorText;
+                        AuditLogObj.End();
+                        AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", null, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, null, null, null, null, false);
+                        if (objPremiumResponse.ErrorText.Contains("Exception"))
+                        {
+                            objPremiumResponse.ErrorText = "Error in customer creation.";
+                        }
+                        return objPremiumResponse;
+                    }
+                    else
+                    {
+                        objQuickQuoteDetails.ClientID = Convert.ToDecimal(resObj.CustomerId);
+                    }
                 }
             }
             else
             {
-                objPremiumResponse.ErrorText = "Authentication failed";
-                WriteError.WriteLog("Error from GeCcalculatePremium:Authentication failed" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
-                AuditLogObj.End();
-                AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                //customer id should be there always else we have to use any existing dummy customer id
+                objQuickQuoteDetails.BQACustomerName = CustomerID;
+                ClientID = Convert.ToDecimal(objQuickQuoteDetails.BQACustomerName);
             }
-            // return the object in the same format as in the existing TP service method call
-            WriteError.WriteLog("Time elapsed at the End of PostPremiumDetails " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
-            sw.Stop();
-            return objPremiumResponse;
+
+            var dbPolicyDetails = entities.PolicyDetails.FirstOrDefault(a => a.CoverNoteNumber == PremiumObj.QuickQuoteNumber);
+            if (dbPolicyDetails != null)
+            {
+                objQuickQuoteDetails.SavedQuickQuoteID = dbPolicyDetails.ID;
+            }
+
+            //Policy Details
+            BindPolicyDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
+            if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+            {
+                objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                return objPremiumResponse;
+            }
+
+            //Cover Details
+            BindCoverDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
+            if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+            {
+                objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                return objPremiumResponse;
+            }
+
+            if (PremiumObj.IsFullQuote)
+            {
+                //Vehicle Details
+                if (PremiumObj.IsVehicleDetails == true)
+                {
+                    if (PremiumObj.lstVehicleObj.Count > 0)
+                    {
+                        BindVehicleDetailsForSCPA(PremiumObj, objQuickQuoteDetails);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(objQuickQuoteDetails.ErrorMsg))
+                {
+                    objPremiumResponse.ErrorText = objQuickQuoteDetails.ErrorMsg;
+                    return objPremiumResponse;
+                }
+
+                if (PremiumObj.CustmerObj != null)
+                {
+                    objQuickQuoteDetails.PANNumber = PremiumObj.CustmerObj.PanNo;
+                }
+            }
+
+            if (PremiumObj.SumInsured != Convert.ToDecimal(0))
+            {
+                objQuickQuoteDetails.SumInsured = PremiumObj.SumInsured;
+            }
+
+            System.Diagnostics.Stopwatch st = new System.Diagnostics.Stopwatch();
+            st.Start();
+            // Removed inner try-catch for WebClient upload
+            string requestData = Newtonsoft.Json.JsonConvert.SerializeObject(objQuickQuoteDetails);
+            using (var client = new WebClient())
+            {
+                var myClient = new WebClientEx();
+                myClient.Timeout = 9000000; //Daft timeout period
+                myClient.Headers[HttpRequestHeader.ContentType] = "application/json";
+                WriteError.WriteLog("Calling PostNewTPCalculateQuickQuotePremiumDetailsForSCPA Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                var strMasUWDataUrl = System.Configuration.ConfigurationManager.AppSettings["twdataservicesurl"].ToString();
+                WriteError.WriteLog("URL:" + strMasUWDataUrl, objQuickQuoteDetails.QuickQuoteNumber);
+                var result = myClient.UploadData(strMasUWDataUrl + "api/TPServiceData/PostNewTPCalculateQuickQuotePremiumDetailsForSCPA", Encoding.UTF8.GetBytes(requestData));
+                //Get the elapsed time as a TimeSpan value.
+                TimeSpan ts = st.Elapsed;
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+                st.Stop();
+                objPremiumResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<PremiumResponse>(Encoding.UTF8.GetString(result));
+                objQuickQuoteDetails.SavedQuickQuoteID = objPremiumResponse.PolicyID;
+                WriteError.WriteLog("After PostNewTPCalculateQuickQuotePremiumDetailsForSCPA Method  " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+                if (string.IsNullOrEmpty(objPremiumResponse.ErrorText))
+                {
+                    AuditLogObj.End();
+                    objPremiumResponse.ResultXML = ToJsonResultXML(objPremiumResponse);
+                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetails", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(objQuickQuoteDetails.ClientID), "Premium Calculated successfully.Total Premium =" + objPremiumResponse.TotalPremiumValueWithTax, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                    objPremiumResponse.ResultXML = string.Empty;
+                    objPremiumResponse.ModifiedRequestXML = string.Empty;
+                    objPremiumResponse.CustomerID = System.Configuration.ConfigurationManager.AppSettings["CustomerID"].ToString();
+
+                    objPremiumResponse.ProposalNumber = objQuickQuoteDetails.QuickQuoteNumber;
+                    objPremiumResponse.PolicyStartDate = Convert.ToString(objQuickQuoteDetails.InsuranceStartdate);//Binding renewal policy startdate and enddate
+                    objPremiumResponse.PolicyEndDate = Convert.ToString(objQuickQuoteDetails.InsuranceEndDate);//Binding renewal policy for premiumresponse to change the input request
+                }
+                else
+                {
+                    AuditLogObj.End();
+                    AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, Convert.ToString(ClientID), objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+                    objPremiumResponse.ResultXML = string.Empty;
+                    objPremiumResponse.ModifiedRequestXML = string.Empty;
+                    objPremiumResponse.CustomerID = objQuickQuoteDetails.BQACustomerName;
+                    if (objPremiumResponse.ErrorText.Contains("Exception"))
+                    {
+                        objPremiumResponse.ErrorText = "Error in Premium calculation";
+                    }
+                }
+            }
         }
+        else
+        {
+            objPremiumResponse.ErrorText = "Authentication failed";
+            WriteError.WriteLog("Error from GeCcalculatePremium:Authentication failed" + objPremiumResponse.ErrorText, objQuickQuoteDetails.QuickQuoteNumber);
+            AuditLogObj.End();
+            AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails.SavedQuickQuoteID, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus.Lead_Status);
+        }
+        // return the object in the same format as in the existing TP service method call
+        WriteError.WriteLog("Time elapsed at the End of PostPremiumDetails " + sw.Elapsed, PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+        sw.Stop();
+        return objPremiumResponse;
+    }
+    catch (Exception ex)
+    {
+        // Top-level exception handling: any unhandled exception from the main logic will be caught here
+        objPremiumResponse.ErrorText = "Error in Premium calculation";
+        AuditLogObj.End();
+        AuditLogObj.InsertTPServiceAuditLog(objQuickQuoteDetails?.SavedQuickQuoteID ?? 0, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "PostPremiumDetailsForSCPA", objPremiumResponse.ResultXML, PremiumObj.TPSourceName, null, objPremiumResponse.ErrorText, objPremiumResponse.ModifiedRequestXML, null, null, null, false, PIStatus?.Lead_Status);
+        WriteError.WriteLog("Top-level Exception in PostPremiumDetailsForSCPA: " + ex.ToString(), PremiumObj.QuickQuoteNumber + "TestWebAPILogs");
+        return objPremiumResponse;
+    }
+}
