@@ -1,146 +1,145 @@
-CREATE TABLE [dbo].[QuoteCache] (
-    [QuoteNumber] NVARCHAR(100) NOT NULL PRIMARY KEY,
-    [CreatedAt] DATETIME DEFAULT GETDATE()
-);
-CREATE TABLE [dbo].[QuoteCache] (
-    [QuoteNumber] NVARCHAR(100) NOT NULL PRIMARY KEY,
-    [ExpiryTime] DATETIME NOT NULL
-);
+ if (PremiumObj.IsFullQuote)
+ {
+     //Checking start MASTPSourceNames for KYCStageStep 5Jan2022
+     string KYCStageStep = string.Empty;
+     if (PremiumObj.BusinessType.ToUpper() == "RENEWAL")
+     {
+         KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCRenewalStageStep).FirstOrDefault().ToString();
+     }
+     else
+     {
+         KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCStageStep).FirstOrDefault().ToString();
+     }
+     //Checking end MASTPSourceNames for KYCStageStep 5Jan2022
+     #region Only TPSourceName KYC Validation allowed
+     if (Convert.ToString(KYCStageStep) != "4")
+     {
+         #region For Normal Aggregator
+         //Start Normal Aggregator FullQuote request (30Dec2022)
+         if ((string.IsNullOrEmpty(PremiumObj.KYCStage) || Convert.ToString(PremiumObj.KYCStage) == "0"))
+         {
+             if (string.IsNullOrEmpty(PremiumObj.Aggregator_KYC_Req_No))
+             {
+                 strError = "Please enter Aggregator KYC Request Number.";
+                 AuditLogObj.End();
+                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                 return strError;
+             }
+             if (string.IsNullOrEmpty(PremiumObj.IC_KYC_No))
+             {
+                 strError = "Please enter IC KYC Number.";
+                 AuditLogObj.End();
+                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                 return strError;
+             }
+             //Start Checking from Middle Ware (30Dec2022)
+             KYCValidationDAL kYCValidation = new KYCValidationDAL();
+             if (!kYCValidation.CKYCValidationMiddelWare(PremiumObj.Aggregator_KYC_Req_No, PremiumObj.IC_KYC_No))
+             {
+                 strError = "Please enter the valid KYC details.";
+                 AuditLogObj.End();
+                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                 return strError;
+             }
+             //Start Checking from Middle Ware (30Dec2022)
+         }
+         //End Normal Aggregator FullQuote request (30Dec2022)
+         #endregion
+         else
+         {
+             if ((Convert.ToString(PremiumObj.KYCStage) == "1" || Convert.ToString(PremiumObj.KYCStage) == "2" || Convert.ToString(PremiumObj.KYCStage) == "3"))
+             {
 
-using System;
-using System.Data.SqlClient;
-using System.Configuration;
+                 //var KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCStageStep).FirstOrDefault();
 
-public static class QuoteManager
-{
-    // Make sure "MyDbConn" is defined in your web.config
-    private static readonly string connectionString = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
+                 #region PolicyBazaar FullQuote request KYCStage 2
+                 //Start PolicyBazaar FullQuote request (30Dec2022)
+                 if (Convert.ToString(KYCStageStep) == Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "2")
+                 {
+                     if (string.IsNullOrEmpty(PremiumObj.Aggregator_KYC_Req_No))
+                     {
+                         strError = "Please enter Aggregator KYC Request Number.";
+                         AuditLogObj.End();
+                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                         return strError;
+                     }
+                     if (string.IsNullOrEmpty(PremiumObj.IC_KYC_No))
+                     {
+                         strError = "Please enter IC KYC Number.";
+                         AuditLogObj.End();
+                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                         return strError;
+                     }
+                     var result = entities.PolicyDetails.Where(a => a.CoverNoteNumber == PremiumObj.QuickQuoteNumber && a.PolicyNumber != null && a.PolicyNumber != "NA").Select(a => a.ID).Take(1);
+                     if (result.Any())
+                     {
+                         strError = "The policy already been generated.";
+                         AuditLogObj.End();
+                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                         return strError;
+                     }
+                     KYCValidationDAL kYCValidation = new KYCValidationDAL();
+                     if (!kYCValidation.CKYCValidationMiddelWare(PremiumObj.Aggregator_KYC_Req_No, PremiumObj.IC_KYC_No))
+                     {
+                         strError = "Please enter the valid KYC details.";
+                         AuditLogObj.End();
+                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                         return strError;
+                     }
 
-    public static bool IsDuplicate(string quoteNumber)
-    {
-        using (SqlConnection conn = new SqlConnection(connectionString))
-        {
-            // We use an INSERT. If the ID exists, SQL throws an exception.
-            // This is the most reliable way to handle "distributed" locks in SQL.
-            string query = "INSERT INTO QuoteCache (QuoteNumber) VALUES (@quote)";
+                 }
+                 else if (Convert.ToString(KYCStageStep) == "2" && Convert.ToString(PremiumObj.KYCStage) != "1")
+                 {
+                     strError = "Please enter the correct KYC stage sequence.";
+                     AuditLogObj.End();
+                     AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                     return strError;
+                 }
+                 //End PolicyBazaar FullQuote request (30Dec2022)
+                 #endregion
 
-            using (SqlCommand cmd = new SqlCommand(query, conn))
-            {
-                cmd.Parameters.AddWithValue("@quote", quoteNumber);
+                 #region Coverfox,Policybazar b2b FullQuote request KYCStage 3
+                 //Start Coverfox,Policybazar b2b FullQuote request (30Dec2022)
+                 if (Convert.ToString(KYCStageStep) == Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "3")
+                 {
+                     if (string.IsNullOrEmpty(PremiumObj.CKYC_No))
+                     {
+                         strError = "Please enter CKYC Number.";
+                         AuditLogObj.End();
+                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                         return strError;
+                     }
 
-                try
-                {
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                    return false; // Inserted successfully, not a duplicate
-                }
-                catch (SqlException ex)
-                {
-                    // Error 2627 is Primary Key violation (Duplicate)
-                    if (ex.Number == 2627 || ex.Number == 2601)
-                    {
-                        return true; 
-                    }
-                    throw; // Some other SQL error occurred
-                }
-            }
-        }
-    }
-}
+                 }
+                 else if (Convert.ToString(KYCStageStep) == "3")
+                 {
+                     strError = "Please enter the correct KYC stage sequence.";
+                     AuditLogObj.End();
+                     AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                     return strError;
+                 }
+                 //End Coverfox,Policybazar b2b FullQuote request (30Dec2022)
+                 #endregion
 
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+                 #region For KYCStage 1
+                 //Start Policybazar first time FullQuote request (30Dec2022)
+                 //if (Convert.ToString(KYCStageStep) != Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "1")
+                 //{
 
-public class QuoteController : ApiController
-{
-    [HttpPost]
-    [Route("api/quotes/submit")]
-    public HttpResponseMessage SubmitQuote(string quoteNumber)
-    {
-        if (string.IsNullOrEmpty(quoteNumber))
-        {
-            return Request.CreateResponse(HttpStatusCode.BadRequest, "Quote number is required.");
-        }
-
-        // Check if duplicate using our SQL manager
-        bool exists = QuoteManager.IsDuplicate(quoteNumber);
-
-        if (exists)
-        {
-            // 409 Conflict is the standard response for a duplicate resource
-            return Request.CreateResponse(HttpStatusCode.Conflict, "This quote has already been processed.");
-        }
-
-        // --- Your Business Logic Here ---
-        
-        return Request.CreateResponse(HttpStatusCode.OK, "Quote submitted successfully.");
-    }
-}
-
-using System;
-using System.Data.SqlClient;
-using System.Configuration;
-
-public static class QuoteManager
-{
-    private static readonly string connectionString = ConfigurationManager.ConnectionStrings["MyDbConn"].ConnectionString;
-
-    public static bool IsDuplicate(string quoteNumber)
-    {
-        using (SqlConnection conn = new SqlConnection(connectionString))
-        {
-            conn.Open();
-            
-            // 1. Delete any records that have expired (older than 5 minutes)
-            string deleteQuery = "DELETE FROM QuoteCache WHERE ExpiryTime <= @Now";
-            using (SqlCommand delCmd = new SqlCommand(deleteQuery, conn))
-            {
-                delCmd.Parameters.AddWithValue("@Now", DateTime.Now);
-                delCmd.ExecuteNonQuery();
-            }
-
-            // 2. Attempt to insert the new quote
-            string insertQuery = "INSERT INTO QuoteCache (QuoteNumber, ExpiryTime) VALUES (@quote, @expiry)";
-            using (SqlCommand insCmd = new SqlCommand(insertQuery, conn))
-            {
-                insCmd.Parameters.AddWithValue("@quote", quoteNumber);
-                // Set expiry to 5 minutes from now
-                insCmd.Parameters.AddWithValue("@expiry", DateTime.Now.AddMinutes(5));
-
-                try
-                {
-                    insCmd.ExecuteNonQuery();
-                    return false; // Success! Not a duplicate.
-                }
-                catch (SqlException ex)
-                {
-                    // Primary Key violation means it's still in the 5-minute window
-                    if (ex.Number == 2627 || ex.Number == 2601)
-                    {
-                        return true; 
-                    }
-                    throw;
-                }
-            }
-        }
-    }
-}
-
-DELETE FROM [YourDatabase].[dbo].[QuoteCache] 
-WHERE ExpiryTime <= GETDATE();
-
-[HttpPost]
-[Route("api/quotes/check")]
-public HttpResponseMessage ProcessQuote(string quoteNumber)
-{
-    bool isLocked = QuoteManager.IsDuplicate(quoteNumber);
-
-    if (isLocked)
-    {
-        return Request.CreateResponse(HttpStatusCode.Conflict, 
-            "This quote is locked for 5 minutes. Please try again later.");
-    }
-
-    return Request.CreateResponse(HttpStatusCode.OK, "Quote accepted.");
-}
+                 //}
+                 //End Policybazar first time FullQuote request (30Dec2022)
+                 #endregion
+             }
+             else
+             {
+                 strError = "Please enter the correct KYC stage sequence.";
+                 AuditLogObj.End();
+                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
+                 return strError;
+             }
+         }
+     }
+     #endregion
+     
+ }
+               
