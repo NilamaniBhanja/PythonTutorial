@@ -1,145 +1,195 @@
- if (PremiumObj.IsFullQuote)
- {
-     //Checking start MASTPSourceNames for KYCStageStep 5Jan2022
-     string KYCStageStep = string.Empty;
-     if (PremiumObj.BusinessType.ToUpper() == "RENEWAL")
-     {
-         KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCRenewalStageStep).FirstOrDefault().ToString();
-     }
-     else
-     {
-         KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCStageStep).FirstOrDefault().ToString();
-     }
-     //Checking end MASTPSourceNames for KYCStageStep 5Jan2022
-     #region Only TPSourceName KYC Validation allowed
-     if (Convert.ToString(KYCStageStep) != "4")
-     {
-         #region For Normal Aggregator
-         //Start Normal Aggregator FullQuote request (30Dec2022)
-         if ((string.IsNullOrEmpty(PremiumObj.KYCStage) || Convert.ToString(PremiumObj.KYCStage) == "0"))
-         {
-             if (string.IsNullOrEmpty(PremiumObj.Aggregator_KYC_Req_No))
-             {
-                 strError = "Please enter Aggregator KYC Request Number.";
-                 AuditLogObj.End();
-                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                 return strError;
-             }
-             if (string.IsNullOrEmpty(PremiumObj.IC_KYC_No))
-             {
-                 strError = "Please enter IC KYC Number.";
-                 AuditLogObj.End();
-                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                 return strError;
-             }
-             //Start Checking from Middle Ware (30Dec2022)
-             KYCValidationDAL kYCValidation = new KYCValidationDAL();
-             if (!kYCValidation.CKYCValidationMiddelWare(PremiumObj.Aggregator_KYC_Req_No, PremiumObj.IC_KYC_No))
-             {
-                 strError = "Please enter the valid KYC details.";
-                 AuditLogObj.End();
-                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                 return strError;
-             }
-             //Start Checking from Middle Ware (30Dec2022)
-         }
-         //End Normal Aggregator FullQuote request (30Dec2022)
-         #endregion
-         else
-         {
-             if ((Convert.ToString(PremiumObj.KYCStage) == "1" || Convert.ToString(PremiumObj.KYCStage) == "2" || Convert.ToString(PremiumObj.KYCStage) == "3"))
-             {
+public class KYCValidationService
+{
+    private readonly YourDbContext entities;
+    private readonly AuditLog AuditLogObj;
+    private readonly string requestXml;
+    private readonly PremiumObject PremiumObj;
 
-                 //var KYCStageStep = entities.MASTPSourceNames.Where(c => c.Name == PremiumObj.TPSourceName).Select(a => a.KYCStageStep).FirstOrDefault();
+    public KYCValidationService(
+        YourDbContext entities,
+        AuditLog auditLogObj,
+        string requestXml,
+        PremiumObject premiumObj)
+    {
+        this.entities = entities;
+        this.AuditLogObj = auditLogObj;
+        this.requestXml = requestXml;
+        this.PremiumObj = premiumObj;
+    }
 
-                 #region PolicyBazaar FullQuote request KYCStage 2
-                 //Start PolicyBazaar FullQuote request (30Dec2022)
-                 if (Convert.ToString(KYCStageStep) == Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "2")
-                 {
-                     if (string.IsNullOrEmpty(PremiumObj.Aggregator_KYC_Req_No))
-                     {
-                         strError = "Please enter Aggregator KYC Request Number.";
-                         AuditLogObj.End();
-                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                         return strError;
-                     }
-                     if (string.IsNullOrEmpty(PremiumObj.IC_KYC_No))
-                     {
-                         strError = "Please enter IC KYC Number.";
-                         AuditLogObj.End();
-                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                         return strError;
-                     }
-                     var result = entities.PolicyDetails.Where(a => a.CoverNoteNumber == PremiumObj.QuickQuoteNumber && a.PolicyNumber != null && a.PolicyNumber != "NA").Select(a => a.ID).Take(1);
-                     if (result.Any())
-                     {
-                         strError = "The policy already been generated.";
-                         AuditLogObj.End();
-                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                         return strError;
-                     }
-                     KYCValidationDAL kYCValidation = new KYCValidationDAL();
-                     if (!kYCValidation.CKYCValidationMiddelWare(PremiumObj.Aggregator_KYC_Req_No, PremiumObj.IC_KYC_No))
-                     {
-                         strError = "Please enter the valid KYC details.";
-                         AuditLogObj.End();
-                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                         return strError;
-                     }
+    public string ValidateFullQuoteKYC()
+    {
+        if (!PremiumObj.IsFullQuote)
+        {
+            return string.Empty;
+        }
 
-                 }
-                 else if (Convert.ToString(KYCStageStep) == "2" && Convert.ToString(PremiumObj.KYCStage) != "1")
-                 {
-                     strError = "Please enter the correct KYC stage sequence.";
-                     AuditLogObj.End();
-                     AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                     return strError;
-                 }
-                 //End PolicyBazaar FullQuote request (30Dec2022)
-                 #endregion
+        string kycStageStep = GetKYCStageStep();
 
-                 #region Coverfox,Policybazar b2b FullQuote request KYCStage 3
-                 //Start Coverfox,Policybazar b2b FullQuote request (30Dec2022)
-                 if (Convert.ToString(KYCStageStep) == Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "3")
-                 {
-                     if (string.IsNullOrEmpty(PremiumObj.CKYC_No))
-                     {
-                         strError = "Please enter CKYC Number.";
-                         AuditLogObj.End();
-                         AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                         return strError;
-                     }
+        // Skip KYC validation
+        if (kycStageStep == "4")
+        {
+            return string.Empty;
+        }
 
-                 }
-                 else if (Convert.ToString(KYCStageStep) == "3")
-                 {
-                     strError = "Please enter the correct KYC stage sequence.";
-                     AuditLogObj.End();
-                     AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                     return strError;
-                 }
-                 //End Coverfox,Policybazar b2b FullQuote request (30Dec2022)
-                 #endregion
+        // Normal Aggregator Flow
+        if (string.IsNullOrWhiteSpace(PremiumObj.KYCStage) ||
+            PremiumObj.KYCStage == "0")
+        {
+            return ValidateAggregatorKYC();
+        }
 
-                 #region For KYCStage 1
-                 //Start Policybazar first time FullQuote request (30Dec2022)
-                 //if (Convert.ToString(KYCStageStep) != Convert.ToString(PremiumObj.KYCStage) && Convert.ToString(PremiumObj.KYCStage) == "1")
-                 //{
+        // Valid stages
+        if (!new[] { "1", "2", "3" }.Contains(PremiumObj.KYCStage))
+        {
+            return ReturnValidationError("Please enter the correct KYC stage sequence.");
+        }
 
-                 //}
-                 //End Policybazar first time FullQuote request (30Dec2022)
-                 #endregion
-             }
-             else
-             {
-                 strError = "Please enter the correct KYC stage sequence.";
-                 AuditLogObj.End();
-                 AuditLogObj.InsertTPServiceAuditLog(null, requestXml, PremiumObj.QuickQuoteNumber, PremiumObj.IsFullQuote, "ValidateServiceInput", null, PremiumObj.TPSourceName, null, strError, null, null, null, null, PremiumObj.IsNilDepOptedInPrevPolicy);
-                 return strError;
-             }
-         }
-     }
-     #endregion
-     
- }
-               
+        switch (kycStageStep)
+        {
+            case "2":
+                return ValidateStage2KYC();
+
+            case "3":
+                return ValidateStage3KYC();
+
+            default:
+                return string.Empty;
+        }
+    }
+
+    private string GetKYCStageStep()
+    {
+        var source = entities.MASTPSourceNames
+                             .FirstOrDefault(x => x.Name == PremiumObj.TPSourceName);
+
+        if (source == null)
+        {
+            return string.Empty;
+        }
+
+        return PremiumObj.BusinessType.Equals(
+                    "RENEWAL",
+                    StringComparison.OrdinalIgnoreCase)
+            ? Convert.ToString(source.KYCRenewalStageStep)
+            : Convert.ToString(source.KYCStageStep);
+    }
+
+    private string ValidateAggregatorKYC()
+    {
+        if (string.IsNullOrWhiteSpace(PremiumObj.Aggregator_KYC_Req_No))
+        {
+            return ReturnValidationError(
+                "Please enter Aggregator KYC Request Number.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PremiumObj.IC_KYC_No))
+        {
+            return ReturnValidationError(
+                "Please enter IC KYC Number.");
+        }
+
+        if (!ValidateKYCWithMiddleware(
+                PremiumObj.Aggregator_KYC_Req_No,
+                PremiumObj.IC_KYC_No))
+        {
+            return ReturnValidationError(
+                "Please enter the valid KYC details.");
+        }
+
+        return string.Empty;
+    }
+
+    private string ValidateStage2KYC()
+    {
+        if (PremiumObj.KYCStage != "2")
+        {
+            return ReturnValidationError(
+                "Please enter the correct KYC stage sequence.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PremiumObj.Aggregator_KYC_Req_No))
+        {
+            return ReturnValidationError(
+                "Please enter Aggregator KYC Request Number.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PremiumObj.IC_KYC_No))
+        {
+            return ReturnValidationError(
+                "Please enter IC KYC Number.");
+        }
+
+        bool policyExists = entities.PolicyDetails.Any(x =>
+            x.CoverNoteNumber == PremiumObj.QuickQuoteNumber &&
+            !string.IsNullOrEmpty(x.PolicyNumber) &&
+            x.PolicyNumber != "NA");
+
+        if (policyExists)
+        {
+            return ReturnValidationError(
+                "The policy has already been generated.");
+        }
+
+        if (!ValidateKYCWithMiddleware(
+                PremiumObj.Aggregator_KYC_Req_No,
+                PremiumObj.IC_KYC_No))
+        {
+            return ReturnValidationError(
+                "Please enter the valid KYC details.");
+        }
+
+        return string.Empty;
+    }
+
+    private string ValidateStage3KYC()
+    {
+        if (PremiumObj.KYCStage != "3")
+        {
+            return ReturnValidationError(
+                "Please enter the correct KYC stage sequence.");
+        }
+
+        if (string.IsNullOrWhiteSpace(PremiumObj.CKYC_No))
+        {
+            return ReturnValidationError(
+                "Please enter CKYC Number.");
+        }
+
+        return string.Empty;
+    }
+
+    private bool ValidateKYCWithMiddleware(
+        string aggregatorKycReqNo,
+        string icKycNo)
+    {
+        KYCValidationDAL validation = new KYCValidationDAL();
+
+        return validation.CKYCValidationMiddelWare(
+            aggregatorKycReqNo,
+            icKycNo);
+    }
+
+    private string ReturnValidationError(string errorMessage)
+    {
+        AuditLogObj.End();
+
+        AuditLogObj.InsertTPServiceAuditLog(
+            null,
+            requestXml,
+            PremiumObj.QuickQuoteNumber,
+            PremiumObj.IsFullQuote,
+            "ValidateServiceInput",
+            null,
+            PremiumObj.TPSourceName,
+            null,
+            errorMessage,
+            null,
+            null,
+            null,
+            null,
+            PremiumObj.IsNilDepOptedInPrevPolicy);
+
+        return errorMessage;
+    }
+}
