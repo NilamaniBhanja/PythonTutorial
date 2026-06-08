@@ -1,195 +1,24 @@
-public class KYCValidationService
+<add name="Content-Security-Policy"
+     value="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+	 
+<system.webServer>
+  <httpProtocol>
+    <customHeaders>
+      <add name="Content-Security-Policy"
+           value="default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';" />
+    </customHeaders>
+  </httpProtocol>
+</system.webServer>
+
+protected void Application_BeginRequest()
 {
-    private readonly YourDbContext entities;
-    private readonly AuditLog AuditLogObj;
-    private readonly string requestXml;
-    private readonly PremiumObject PremiumObj;
+    HttpContext.Current.Response.Headers.Remove("Content-Security-Policy");
 
-    public KYCValidationService(
-        YourDbContext entities,
-        AuditLog auditLogObj,
-        string requestXml,
-        PremiumObject premiumObj)
-    {
-        this.entities = entities;
-        this.AuditLogObj = auditLogObj;
-        this.requestXml = requestXml;
-        this.PremiumObj = premiumObj;
-    }
-
-    public string ValidateFullQuoteKYC()
-    {
-        if (!PremiumObj.IsFullQuote)
-        {
-            return string.Empty;
-        }
-
-        string kycStageStep = GetKYCStageStep();
-
-        // Skip KYC validation
-        if (kycStageStep == "4")
-        {
-            return string.Empty;
-        }
-
-        // Normal Aggregator Flow
-        if (string.IsNullOrWhiteSpace(PremiumObj.KYCStage) ||
-            PremiumObj.KYCStage == "0")
-        {
-            return ValidateAggregatorKYC();
-        }
-
-        // Valid stages
-        if (!new[] { "1", "2", "3" }.Contains(PremiumObj.KYCStage))
-        {
-            return ReturnValidationError("Please enter the correct KYC stage sequence.");
-        }
-
-        switch (kycStageStep)
-        {
-            case "2":
-                return ValidateStage2KYC();
-
-            case "3":
-                return ValidateStage3KYC();
-
-            default:
-                return string.Empty;
-        }
-    }
-
-    private string GetKYCStageStep()
-    {
-        var source = entities.MASTPSourceNames
-                             .FirstOrDefault(x => x.Name == PremiumObj.TPSourceName);
-
-        if (source == null)
-        {
-            return string.Empty;
-        }
-
-        return PremiumObj.BusinessType.Equals(
-                    "RENEWAL",
-                    StringComparison.OrdinalIgnoreCase)
-            ? Convert.ToString(source.KYCRenewalStageStep)
-            : Convert.ToString(source.KYCStageStep);
-    }
-
-    private string ValidateAggregatorKYC()
-    {
-        if (string.IsNullOrWhiteSpace(PremiumObj.Aggregator_KYC_Req_No))
-        {
-            return ReturnValidationError(
-                "Please enter Aggregator KYC Request Number.");
-        }
-
-        if (string.IsNullOrWhiteSpace(PremiumObj.IC_KYC_No))
-        {
-            return ReturnValidationError(
-                "Please enter IC KYC Number.");
-        }
-
-        if (!ValidateKYCWithMiddleware(
-                PremiumObj.Aggregator_KYC_Req_No,
-                PremiumObj.IC_KYC_No))
-        {
-            return ReturnValidationError(
-                "Please enter the valid KYC details.");
-        }
-
-        return string.Empty;
-    }
-
-    private string ValidateStage2KYC()
-    {
-        if (PremiumObj.KYCStage != "2")
-        {
-            return ReturnValidationError(
-                "Please enter the correct KYC stage sequence.");
-        }
-
-        if (string.IsNullOrWhiteSpace(PremiumObj.Aggregator_KYC_Req_No))
-        {
-            return ReturnValidationError(
-                "Please enter Aggregator KYC Request Number.");
-        }
-
-        if (string.IsNullOrWhiteSpace(PremiumObj.IC_KYC_No))
-        {
-            return ReturnValidationError(
-                "Please enter IC KYC Number.");
-        }
-
-        bool policyExists = entities.PolicyDetails.Any(x =>
-            x.CoverNoteNumber == PremiumObj.QuickQuoteNumber &&
-            !string.IsNullOrEmpty(x.PolicyNumber) &&
-            x.PolicyNumber != "NA");
-
-        if (policyExists)
-        {
-            return ReturnValidationError(
-                "The policy has already been generated.");
-        }
-
-        if (!ValidateKYCWithMiddleware(
-                PremiumObj.Aggregator_KYC_Req_No,
-                PremiumObj.IC_KYC_No))
-        {
-            return ReturnValidationError(
-                "Please enter the valid KYC details.");
-        }
-
-        return string.Empty;
-    }
-
-    private string ValidateStage3KYC()
-    {
-        if (PremiumObj.KYCStage != "3")
-        {
-            return ReturnValidationError(
-                "Please enter the correct KYC stage sequence.");
-        }
-
-        if (string.IsNullOrWhiteSpace(PremiumObj.CKYC_No))
-        {
-            return ReturnValidationError(
-                "Please enter CKYC Number.");
-        }
-
-        return string.Empty;
-    }
-
-    private bool ValidateKYCWithMiddleware(
-        string aggregatorKycReqNo,
-        string icKycNo)
-    {
-        KYCValidationDAL validation = new KYCValidationDAL();
-
-        return validation.CKYCValidationMiddelWare(
-            aggregatorKycReqNo,
-            icKycNo);
-    }
-
-    private string ReturnValidationError(string errorMessage)
-    {
-        AuditLogObj.End();
-
-        AuditLogObj.InsertTPServiceAuditLog(
-            null,
-            requestXml,
-            PremiumObj.QuickQuoteNumber,
-            PremiumObj.IsFullQuote,
-            "ValidateServiceInput",
-            null,
-            PremiumObj.TPSourceName,
-            null,
-            errorMessage,
-            null,
-            null,
-            null,
-            null,
-            PremiumObj.IsNilDepOptedInPrevPolicy);
-
-        return errorMessage;
-    }
+    HttpContext.Current.Response.Headers.Add(
+        "Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "object-src 'none'; " +
+        "base-uri 'self'; " +
+        "frame-ancestors 'none';");
 }
