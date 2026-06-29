@@ -1,13 +1,27 @@
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+Detected a formatted string in a SQL statement.
 
-<!-- Bootstrap 3.4.1 -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+EFileScheduler/DAL/
+DatabaseAccess.cs
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+34
+            using (SqlConnection con = new SqlConnection(connectionString))
+35
+            {
+36
+                using (SqlCommand cmd = new SqlCommand(SPName, con))
+37
+                {
+38
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-<!-- jQuery Validation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js"></script>
+Introduced by Ramaiah, Sivakumar, 2 years ago
+Time to fix: 15 minutes
 
-<!-- jQuery Unobtrusive -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+Create Jira ticket
+About this pattern
+Opengrep's documentation
+Why this is a problem
+Using formatted strings in SQL queries can allow attackers to inject malicious SQL code if the variables are not properly sanitized, leading to potential data breaches or data loss.
+
+How to fix it
+Use prepared statements with parameterized queries, such as using 'SqlCommand' and 'SqlParameter' in C#, to safely include variables in SQL statements and prevent SQL injection.
