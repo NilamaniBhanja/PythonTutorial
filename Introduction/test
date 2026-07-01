@@ -45,3 +45,19 @@ public class RedshiftRepository
         return employees;
     }
 }
+
+
+
+Compilation Error
+Description: An error occurred during the compilation of a resource required to service this request. Please review the following specific error details and modify your source code appropriately.
+
+Compiler Error Message: CS0012: The type 'System.Object' is defined in an assembly that is not referenced. You must add a reference to assembly 'netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51'.
+
+Source Error:
+
+
+Line 16:                     <span class="icon-bar"></span>
+Line 17:                 </button>
+Line 18:                 @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+Line 19:             </div>
+Line 20:             <div class="navbar-collapse collapse">
