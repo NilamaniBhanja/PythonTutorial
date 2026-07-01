@@ -1,27 +1,47 @@
-Detected a formatted string in a SQL statement.
+<connectionStrings>
+  <add name="RedshiftConnection"
+       connectionString="Host=your-redshift-cluster.xxxxxx.us-east-1.redshift.amazonaws.com;
+                         Port=5439;
+                         Database=dev;
+                         Username=awsuser;
+                         Password=YourPassword;
+                         SSL Mode=Require;"
+       providerName="Npgsql" />
+</connectionStrings>
 
-EFileScheduler/DAL/
-DatabaseAccess.cs
+using Npgsql;
+using System.Collections.Generic;
+using System.Configuration;
 
-34
-            using (SqlConnection con = new SqlConnection(connectionString))
-35
+public class RedshiftRepository
+{
+    private readonly string _connectionString =
+        ConfigurationManager.ConnectionStrings["RedshiftConnection"].ConnectionString;
+
+    public List<Employee> GetEmployees()
+    {
+        var employees = new List<Employee>();
+
+        using (var conn = new NpgsqlConnection(_connectionString))
+        {
+            conn.Open();
+
+            string sql = "SELECT id, name FROM employee";
+
+            using (var cmd = new NpgsqlCommand(sql, conn))
+            using (var reader = cmd.ExecuteReader())
             {
-36
-                using (SqlCommand cmd = new SqlCommand(SPName, con))
-37
+                while (reader.Read())
                 {
-38
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    employees.Add(new Employee
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1)
+                    });
+                }
+            }
+        }
 
-Introduced by Ramaiah, Sivakumar, 2 years ago
-Time to fix: 15 minutes
-
-Create Jira ticket
-About this pattern
-Opengrep's documentation
-Why this is a problem
-Using formatted strings in SQL queries can allow attackers to inject malicious SQL code if the variables are not properly sanitized, leading to potential data breaches or data loss.
-
-How to fix it
-Use prepared statements with parameterized queries, such as using 'SqlCommand' and 'SqlParameter' in C#, to safely include variables in SQL statements and prevent SQL injection.
+        return employees;
+    }
+}
