@@ -1,1 +1,5 @@
 Install-Package Npgsql -Version 4.1.14 -DependencyVersion Highest
+
+
+Uninstall-Package Npgsql
+Install-Package Npgsql -Version 3.2.7
