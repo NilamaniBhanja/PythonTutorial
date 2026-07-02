@@ -1,63 +1,38 @@
-<connectionStrings>
-  <add name="RedshiftConnection"
-       connectionString="Host=your-redshift-cluster.xxxxxx.us-east-1.redshift.amazonaws.com;
-                         Port=5439;
-                         Database=dev;
-                         Username=awsuser;
-                         Password=YourPassword;
-                         SSL Mode=Require;"
-       providerName="Npgsql" />
-</connectionStrings>
-
-using Npgsql;
-using System.Collections.Generic;
-using System.Configuration;
-
-public class RedshiftRepository
-{
-    private readonly string _connectionString =
-        ConfigurationManager.ConnectionStrings["RedshiftConnection"].ConnectionString;
-
-    public List<Employee> GetEmployees()
-    {
-        var employees = new List<Employee>();
-
-        using (var conn = new NpgsqlConnection(_connectionString))
-        {
-            conn.Open();
-
-            string sql = "SELECT id, name FROM employee";
-
-            using (var cmd = new NpgsqlCommand(sql, conn))
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    employees.Add(new Employee
-                    {
-                        Id = reader.GetInt32(0),
-                        Name = reader.GetString(1)
-                    });
-                }
-            }
-        }
-
-        return employees;
-    }
-}
-
-
-
-Compilation Error
-Description: An error occurred during the compilation of a resource required to service this request. Please review the following specific error details and modify your source code appropriately.
-
-Compiler Error Message: CS0012: The type 'System.Object' is defined in an assembly that is not referenced. You must add a reference to assembly 'netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51'.
-
-Source Error:
-
-
-Line 16:                     <span class="icon-bar"></span>
-Line 17:                 </button>
-Line 18:                 @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-Line 19:             </div>
-Line 20:             <div class="navbar-collapse collapse">
+<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="Antlr" version="3.4.1.9004" targetFramework="net45" />
+  <package id="EntityFramework" version="6.1.2" targetFramework="net45" />
+  <package id="Google.DataTable.Net.Wrapper" version="3.1.2.0" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Cors" version="5.2.2" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Identity.Core" version="2.1.0" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Identity.EntityFramework" version="2.1.0" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Identity.Owin" version="2.1.0" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Mvc" version="5.2.2" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Razor" version="3.2.2" targetFramework="net45" />
+  <package id="Microsoft.AspNet.Web.Optimization" version="1.1.3" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi" version="5.2.3" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi.Client" version="5.2.3" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi.Core" version="5.2.3" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi.HelpPage" version="5.2.2" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi.Owin" version="5.2.2" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3" targetFramework="net45" />
+  <package id="Microsoft.AspNet.WebPages" version="3.2.2" targetFramework="net45" />
+  <package id="Microsoft.Net.Http" version="2.0.20710.0" targetFramework="net45" />
+  <package id="Microsoft.Owin" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.Cookies" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.Facebook" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.Google" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.MicrosoftAccount" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.OAuth" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Owin.Security.Twitter" version="3.0.0" targetFramework="net45" />
+  <package id="Microsoft.Web.Infrastructure" version="1.0.0.0" targetFramework="net45" />
+  <package id="Modernizr" version="2.6.2" targetFramework="net45" />
+  <package id="Newtonsoft.Json" version="6.0.4" targetFramework="net45" />
+  <package id="Owin" version="1.0" targetFramework="net45" />
+  <package id="Respond" version="1.2.0" targetFramework="net45" />
+  <package id="Strathweb.CacheOutput.WebApi2" version="0.10.0" targetFramework="net45" />
+  <package id="WebApiContrib.Formatting.Jsonp" version="3.0.0.0" targetFramework="net45" />
+  <package id="WebGrease" version="1.5.2" targetFramework="net45" />
+</packages>
