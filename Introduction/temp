@@ -1,6 +1,45 @@
-MERGE INTO YourTable AS Target
-USING (SELECT @YourId AS id, @Value1 AS column1, @Value2 AS column2) AS Source
-    ON Target.id = Source.id
-WHEN NOT MATCHED THEN
-    INSERT (id, column1, column2)
-    VALUES (Source.id, Source.column1, Source.column2);
+using System;
+using System.Linq;
+using System.Xml.Linq;
+
+public string GetValueFromXML(string strRequestXML, string fieldName, string refNo)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(strRequestXML))
+            return string.Empty;
+
+        XDocument doc = XDocument.Parse(strRequestXML);
+
+        XElement element;
+
+        if (fieldName.Equals("ROOT", StringComparison.OrdinalIgnoreCase))
+        {
+            element = doc.Root;
+        }
+        else
+        {
+            element = doc.Descendants()
+                         .FirstOrDefault(e => e.Name.LocalName.Equals(
+                             fieldName,
+                             StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (element == null)
+        {
+            throw new Exception($"{fieldName} not found in the Request XML");
+        }
+
+        if (fieldName.Equals("ROOT", StringComparison.OrdinalIgnoreCase))
+        {
+            return element.Attribute("Code")?.Value ?? string.Empty;
+        }
+
+        return element.Attribute("Value")?.Value ?? string.Empty;
+    }
+    catch (Exception ex)
+    {
+        WriteError.WriteLog("Exception from GetValueFromXML " + ex, refNo);
+        return string.Empty;
+    }
+}
