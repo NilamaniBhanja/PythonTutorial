@@ -1,24 +1,923 @@
-<add name="Content-Security-Policy"
-     value="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
-	 
-<system.webServer>
-  <httpProtocol>
-    <customHeaders>
-      <add name="Content-Security-Policy"
-           value="default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';" />
-    </customHeaders>
-  </httpProtocol>
-</system.webServer>
+post /motor/fetch_vehicle_details
 
-protected void Application_BeginRequest()
 {
-    HttpContext.Current.Response.Headers.Remove("Content-Security-Policy");
+  "registration_number": "KA01MK1234"
+}
 
-    HttpContext.Current.Response.Headers.Add(
-        "Content-Security-Policy",
-        "default-src 'self'; " +
-        "script-src 'self'; " +
-        "object-src 'none'; " +
-        "base-uri 'self'; " +
-        "frame-ancestors 'none';");
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "vehicle": {
+      "owned_by": "INDIVIDUAL",
+      "owner_name": "Arun Kumar",
+      "type": "PRIVATE_CAR",
+      "fuel_type": "PETROL",
+      "make": "Toyota",
+      "model": "City",
+      "variant": "VXi",
+      "registration_number": "KA01MK1234",
+      "rto_code": "KA01",
+      "vehicle_code": "30231",
+      "registration_date": "2025-06-23",
+      "manufacturing_month_year": "2025-01",
+      "chassis_number": "MALCU41ULLM123456",
+      "engine_number": "1KRFE1234567",
+      "is_ownership_transferred": false
+    },
+    "previous_policy": {
+      "ncb": 15,
+      "claim_taken": true,
+      "no_of_claims": 2,
+      "policy_type": "COMPREHENSIVE",
+      "policy_number": "POLICY_1234",
+      "start_date": "2026-01-01",
+      "expiry_date": "2026-01-01",
+      "insurer": "HDFC",
+      "tp_policy_number": "TP_POLICY_1234",
+      "tp_start_date": "2026-01-01",
+      "tp_expiry_date": "2026-01-01",
+      "tp_insurer": "HDFC"
+    }
+  }
+}
+
+
+post /motor/get_quotes
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "lead_id": "LEAD_1234",
+  "quote_number": "",
+  "product_code": "PROD1230011",
+  "uin_code": "UIN1230011",
+  "product_type": "PRIVATE_CAR",
+  "quote_type": "THIRD_PARTY",
+  "business_type": "NEW",
+  "cover_type": "0OD3TP",
+  "policy_start_date": "2026-01-01",
+  "agent_code": "",
+  "cpa_opted": false,
+  "cpa_not_opt_reason": "HAS_EXISTING_PA_COVER",
+  "vehicle_validated": true,
+  "proposer": {
+    "salutation": "Mr",
+    "kyc_status": "VERIFIED",
+    "kyc_done_at": "2025-08-06T14:30:00+05:30",
+    "kyc_expiry_at": "2028-08-06T14:30:00+05:30",
+    "ckyc_no": "12345678912345",
+    "first_name": "John",
+    "last_name": "Doe",
+    "middle_name": "Chris",
+    "full_name": "John Chris Doe",
+    "dob": "1998-12-24",
+    "gender": "MALE"
+  },
+  "vehicle": {
+    "vehicle_owned_by": "INDIVIDUAL",
+    "registration_number": "KA01MK1234",
+    "rto_code": "KA01",
+    "vehicle_code": "MMV1234",
+    "registration_date": "2025-06-23",
+    "manufacturing_month_year": "2025-01",
+    "chassis_number": "",
+    "engine_number": "",
+    "ex_showroom_price": 100000,
+    "is_ownership_transferred": false
+  },
+  "previous_policy": {
+    "claim_taken": true,
+    "policy_type": "COMPREHENSIVE",
+    "policy_number": "",
+    "expiry_date": "2026-01-01",
+    "insurer": "HDFC"
+  },
+  "addons": [
+    {
+      "code": "CPA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": []
+    },
+    {
+      "code": "LL_DRIVER_EMP",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_DRIVERS",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "code": "DRIVER_PA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_DRIVERS",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "code": "PASSENGER_PA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_PASSENGERS",
+          "value": "2"
+        }
+      ]
+    }
+  ]
+}
+
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "quote_number": "QUOTE_12345",
+    "valid_till": "2025-08-06T14:30:00+05:30",
+    "base_premium": 31911,
+    "tax": 5744,
+    "total_premium": 37655,
+    "product_code": "PROD1230011",
+    "uin_code": "UIN1230011",
+    "product_type": "PRIVATE_CAR",
+    "quote_type": "THIRD_PARTY",
+    "business_type": "EXISTING",
+    "cover_type": "0OD3TP",
+    "is_nstp": false,
+    "nstp_reason": "",
+    "covers": [
+      {
+        "code": "THIRD_PARTY",
+        "term": 3,
+        "term_unit": "YEARS",
+        "base_premium": 10640,
+        "tax": 150,
+        "total_premium": 10490
+      }
+    ],
+    "addons": [
+      {
+        "code": "CPA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 1,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "LL_DRIVER_EMP",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": null,
+        "term_unit": "",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "DRIVER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": null,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "PASSENGER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 1,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      }
+    ]
+  }
+}
+
+
+post /motor/proposal
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "lead_id": "LEAD_1234",
+  "quote_number": "QUOTE_12345",
+  "product_code": "PROD1230011",
+  "uin_code": "UIN1230011",
+  "product_type": "PRIVATE_CAR",
+  "quote_type": "THIRD_PARTY",
+  "business_type": "EXISTING",
+  "cover_type": "0OD3TP",
+  "policy_start_date": "2026-01-01",
+  "agent_code": "",
+  "cpa_opted": false,
+  "cpa_not_opt_reason": "HAS_EXISTING_PA_COVER",
+  "consent_given": true,
+  "consent_expiry_date": "2026-09-20",
+  "vehicle_validated": true,
+  "base_premium": 31911,
+  "tax": 5744,
+  "total_premium": 37655,
+  "is_puc_available": true,
+  "gstin": "2XXXXXXXXXXXX",
+  "resume_url": "https://bsif.example.com/resume/1234567890",
+  "proposer": {
+    "salutation": "Mr",
+    "kyc_status": "VERIFIED",
+    "kyc_done_at": "2025-08-06T14:30:00+05:30",
+    "kyc_expiry_at": "2028-08-06T14:30:00+05:30",
+    "ckyc_no": "12345678912345",
+    "first_name": "John",
+    "last_name": "Doe",
+    "middle_name": "Chris",
+    "full_name": "John Chris Doe",
+    "dob": "1998-12-24",
+    "gender": "MALE",
+    "phone_number": "9000000000",
+    "email": "john.doe@somemail.com",
+    "documents": [
+      {
+        "id_type": "FORM60",
+        "id_no": "XXXX",
+        "file": {
+          "file_content": "dGVzdA==",
+          "file_content_type": "application/pdf",
+          "file_name": "form60.pdf"
+        }
+      },
+      {
+        "id_type": "FORM97",
+        "id_no": "XXXX",
+        "file": {
+          "file_content": "dGVzdA==",
+          "file_content_type": "application/pdf",
+          "file_name": "form97.pdf"
+        }
+      }
+    ],
+    "pan": "HSBJ546372"
+  },
+  "primary_address": {
+    "co": "C/O Rajesh Sharma",
+    "house": "221B",
+    "street": "Baker Street",
+    "lm": "Near City Mall",
+    "loc": "MG Road",
+    "vtc": "Bangalore",
+    "subdist": "Bangalore South",
+    "dist": "Bangalore Urban",
+    "state": "Karnataka",
+    "country": "India",
+    "pc": 560001,
+    "po": "MG Road Post Office"
+  },
+  "correspondence_address": {
+    "co": "C/O Rajesh Sharma",
+    "house": "221B",
+    "street": "Baker Street",
+    "lm": "Near City Mall",
+    "loc": "MG Road",
+    "vtc": "Bangalore",
+    "subdist": "Bangalore South",
+    "dist": "Bangalore Urban",
+    "state": "Karnataka",
+    "country": "India",
+    "pc": 560001,
+    "po": "MG Road Post Office"
+  },
+  "vehicle": {
+    "vehicle_owned_by": "COMPANY",
+    "org_type": "",
+    "darpan_id": "",
+    "registration_number": "KA01MK1234",
+    "rto_code": "KA01",
+    "vehicle_code": "MMV1234",
+    "registration_date": "2025-06-23",
+    "manufacturing_month_year": "2025-01",
+    "chassis_number": "XXXXXXXXXXXXXXXXX",
+    "engine_number": "XXXXXXXXXXXXXXXXX",
+    "is_ownership_transferred": false,
+    "ex_showroom_price": 100000,
+    "financier_type": "HYPOTHECATION",
+    "financier_name": "X BANK LTD"
+  },
+  "previous_policy": {
+    "claim_taken": true,
+    "expiry_date": "2026-01-01",
+    "insurer": "HDFC",
+    "policy_number": "POLICY_1234",
+    "policy_type": "COMPREHENSIVE"
+  },
+  "nominee": [
+    {
+      "first_name": "John",
+      "last_name": "Doe",
+      "middle_name": "Chris",
+      "full_name": "John Chris Doe",
+      "dob": "1998-12-24",
+      "gender": "MALE",
+      "relation_with_primary_member": "SPOUSE",
+      "share": 100,
+      "phone_number": "8989898989",
+      "email_id": "abc@gmail.com",
+      "appointee": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "middle_name": "Chris",
+        "full_name": "John Chris Doe",
+        "dob": "1998-12-24",
+        "gender": "MALE",
+        "relation_with_nominee": "UNCLE",
+        "phone_number": "8989898912",
+        "email_id": "abcdef@gmail.com"
+      },
+      "primary_address": {
+        "co": "C/O Rajesh Sharma",
+        "house": "221B",
+        "street": "Baker Street",
+        "lm": "Near City Mall",
+        "loc": "MG Road",
+        "vtc": "Bangalore",
+        "subdist": "Bangalore South",
+        "dist": "Bangalore Urban",
+        "state": "Karnataka",
+        "country": "India",
+        "pc": 560001,
+        "po": "MG Road Post Office"
+      },
+      "correspondence_address": {
+        "co": "C/O Rajesh Sharma",
+        "house": "221B",
+        "street": "Baker Street",
+        "lm": "Near City Mall",
+        "loc": "MG Road",
+        "vtc": "Bangalore",
+        "subdist": "Bangalore South",
+        "dist": "Bangalore Urban",
+        "state": "Karnataka",
+        "country": "India",
+        "pc": 560001,
+        "po": "MG Road Post Office"
+      },
+      "bank_detail": {
+        "account_number": "11111111111",
+        "ifsc_code": "IFSC1234",
+        "bank_name": "BANK A",
+        "account_type": "SAVING",
+        "account_holder_name": "John Doe"
+      }
+    }
+  ],
+  "addons": [
+    {
+      "code": "CPA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": []
+    },
+    {
+      "code": "LL_DRIVER_EMP",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_DRIVERS",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "code": "DRIVER_PA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_DRIVERS",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "code": "PASSENGER_PA",
+      "uin": "UNI1234",
+      "sum_insured": null,
+      "term_unit": "YEARS",
+      "term": 3,
+      "is_selected": false,
+      "prev_policy_opted": false,
+      "attributes": [
+        {
+          "key": "NO_OF_PASSENGERS",
+          "value": "2"
+        }
+      ]
+    }
+  ]
+}
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "proposal_status": "ACCEPTED",
+    "quote_number": "QUOTE_12345",
+    "proposal_number": "PROPOSAL_12345",
+    "valid_till": "2025-08-06T14:30:00+05:30",
+    "base_premium": 31911,
+    "tax": 5744,
+    "total_premium": 37655,
+    "product_code": "PROD1230011",
+    "uin_code": "UIN1230011",
+    "product_type": "PRIVATE_CAR",
+    "quote_type": "THIRD_PARTY",
+    "business_type": "EXISTING",
+    "tp_start_date": "2026-01-05",
+    "tp_expiry_date": "2029-01-04",
+    "cover_type": "0OD3TP",
+    "is_nstp": false,
+    "nstp_reason": "",
+    "covers": [
+      {
+        "code": "THIRD_PARTY",
+        "term": 3,
+        "term_unit": "YEARS",
+        "base_premium": 10640,
+        "tax": 150,
+        "total_premium": 10490
+      }
+    ],
+    "addons": [
+      {
+        "code": "CPA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 1,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "LL_DRIVER_EMP",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": null,
+        "term_unit": "",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "DRIVER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": null,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "PASSENGER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 1,
+        "term_unit": "YEARS",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      }
+    ]
+  }
+}
+
+post /motor/proposal_details
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "proposal_number": "PROPOSAL_1234"
+}
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "proposal_status": "ACCEPTED",
+    "quote_number": "QUOTE_12345",
+    "proposal_number": "PROPOSAL_12345",
+    "new_proposal_number": "PROPOSAL_6789",
+    "valid_till": "2025-08-06T14:30:00+05:30",
+    "base_premium": 31911,
+    "tax": 5744,
+    "total_premium": 37655,
+    "product_code": "PROD1230011",
+    "product_type": "PRIVATE_CAR",
+    "quote_type": "THIRD_PARTY",
+    "business_type": "EXISTING",
+    "cover_type": "0OD3TP",
+    "tp_start_date": "2026-01-05",
+    "tp_expiry_date": "2029-01-04",
+    "is_nstp": false,
+    "nstp_reason": "",
+    "application_status": "UNDER_PROCESS",
+    "application_description": "Application Pending",
+    "sub_status": [
+      {
+        "type": "KYC",
+        "status": "SUCCESS",
+        "remarks": "KYC Verified",
+        "attributes": {
+          "type": "CKYC",
+          "completed_at": "2026-01-01T14:30:00+05:30",
+          "reference_id": "KYC_1223113"
+        }
+      },
+      {
+        "type": "PAYMENT",
+        "status": "SUCCESS",
+        "remarks": "Payment Successful",
+        "attributes": {
+          "gateway_reference": "raz_101112244",
+          "completed_at": "2026-01-01T14:30:00+05:30",
+          "paid_amount": 11300.56
+        }
+      },
+      {
+        "type": "NSTP",
+        "status": "SUCCESS",
+        "remarks": "NSTP Successful",
+        "attributes": {
+          "breakin_id": "BREAKIN_1234"
+        }
+      }
+    ],
+    "covers": [
+      {
+        "code": "THIRD_PARTY",
+        "term": 3,
+        "term_unit": "YEARS",
+        "base_premium": 10640,
+        "tax": 150,
+        "total_premium": 10490
+      }
+    ],
+    "addons": [
+      {
+        "code": "CPA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "LL_DRIVER_EMP",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "DRIVER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "PASSENGER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      }
+    ]
+  }
+}
+
+/policy/Details
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "policy_number": "POLICY_12345",
+  "proposer": {
+    "salutation": "Mr",
+    "kyc_status": "VERIFIED",
+    "kyc_done_at": "2025-08-06T14:30:00+05:30",
+    "kyc_expiry_at": "2028-08-06T14:30:00+05:30",
+    "ckyc_no": "12345678912345",
+    "first_name": "John",
+    "last_name": "Doe",
+    "middle_name": "Chris",
+    "full_name": "John Chris Doe",
+    "dob": "1998-12-24",
+    "gender": "MALE"
+  }
+}
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "policy_number": "POLICY_12345",
+    "is_policy_active": true,
+    "policy_status": "ACTIVE",
+    "sum_insured": 500000,
+    "base_premium": 2000,
+    "tax": 360,
+    "total_premium": 2360,
+    "product_code": "PROD1230011",
+    "product_type": "PRIVATE_CAR",
+    "agent_code": "",
+    "gstin": "2XXXXXXXXXXXX",
+    "policy_start_date": "2025-06-20",
+    "policy_end_date": "2065-06-19",
+    "tp_start_date": "2025-06-20",
+    "tp_expiry_date": "2065-06-19",
+    "quote_type": "THIRD_PARTY",
+    "business_type": "EXISTING",
+    "cover_type": "0OD3TP",
+    "proposer": {
+      "salutation": "Mr",
+      "kyc_status": "VERIFIED",
+      "kyc_done_at": "2025-08-06T14:30:00+05:30",
+      "kyc_expiry_at": "2028-08-06T14:30:00+05:30",
+      "ckyc_no": "12345678912345",
+      "first_name": "John",
+      "last_name": "Doe",
+      "middle_name": "Chris",
+      "full_name": "John Chris Doe",
+      "dob": "1998-12-24",
+      "gender": "MALE",
+      "phone_number": "9000000000",
+      "email": "john.doe@somemail.com"
+    },
+    "primary_address": {
+      "co": "C/O Rajesh Sharma",
+      "house": "221B",
+      "street": "Baker Street",
+      "lm": "Near City Mall",
+      "loc": "MG Road",
+      "vtc": "Bangalore",
+      "subdist": "Bangalore South",
+      "dist": "Bangalore Urban",
+      "state": "Karnataka",
+      "country": "India",
+      "pc": 560001,
+      "po": "MG Road Post Office"
+    },
+    "correspondence_address": {
+      "co": "C/O Rajesh Sharma",
+      "house": "221B",
+      "street": "Baker Street",
+      "lm": "Near City Mall",
+      "loc": "MG Road",
+      "vtc": "Bangalore",
+      "subdist": "Bangalore South",
+      "dist": "Bangalore Urban",
+      "state": "Karnataka",
+      "country": "India",
+      "pc": 560001,
+      "po": "MG Road Post Office"
+    },
+    "nominee": [
+      {
+        "first_name": "John",
+        "last_name": "Doe",
+        "middle_name": "Chris",
+        "full_name": "John Chris Doe",
+        "dob": "1998-12-24",
+        "gender": "MALE",
+        "relation_with_primary_member": "SPOUSE",
+        "share": 100,
+        "phone_number": "8989898989",
+        "email_id": "abc@gmail.com",
+        "appointee": {
+          "first_name": "John",
+          "last_name": "Doe",
+          "middle_name": "Chris",
+          "full_name": "John Chris Doe",
+          "dob": "1998-12-24",
+          "gender": "MALE",
+          "relation_with_nominee": "UNCLE",
+          "phone_number": "8989898912",
+          "email_id": "abcdef@gmail.com"
+        },
+        "primary_address": {
+          "co": "C/O Rajesh Sharma",
+          "house": "221B",
+          "street": "Baker Street",
+          "lm": "Near City Mall",
+          "loc": "MG Road",
+          "vtc": "Bangalore",
+          "subdist": "Bangalore South",
+          "dist": "Bangalore Urban",
+          "state": "Karnataka",
+          "country": "India",
+          "pc": 560001,
+          "po": "MG Road Post Office"
+        },
+        "correspondence_address": {
+          "co": "C/O Rajesh Sharma",
+          "house": "221B",
+          "street": "Baker Street",
+          "lm": "Near City Mall",
+          "loc": "MG Road",
+          "vtc": "Bangalore",
+          "subdist": "Bangalore South",
+          "dist": "Bangalore Urban",
+          "state": "Karnataka",
+          "country": "India",
+          "pc": 560001,
+          "po": "MG Road Post Office"
+        },
+        "bank_detail": {
+          "account_number": "11111111111",
+          "ifsc_code": "IFSC1234",
+          "bank_name": "BANK A",
+          "account_type": "SAVING",
+          "account_holder_name": "John Doe"
+        }
+      }
+    ],
+    "covers": [
+      {
+        "code": "THIRD_PARTY",
+        "term": 3,
+        "term_unit": "YEARS",
+        "base_premium": 10640,
+        "tax": 150,
+        "total_premium": 10490
+      }
+    ],
+    "addons": [
+      {
+        "code": "CPA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "LL_DRIVER_EMP",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "DRIVER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      },
+      {
+        "code": "PASSENGER_PA",
+        "uin": "UNI1234",
+        "sum_insured": null,
+        "term": 3,
+        "term_unit": "year",
+        "base_premium": 254.23,
+        "tax": 45.76,
+        "total_premium": 300,
+        "is_selected": false
+      }
+    ],
+    "vehicle": {
+      "vehicle_owned_by": "INDIVIDUAL",
+      "registration_number": "KA01MK1234",
+      "rto_location_code": "KA01",
+      "vehicle_code": "MMV1234",
+      "registration_date": "2025-06-23",
+      "manufacturing_month_year": "2025-01",
+      "chassis_number": "",
+      "engine_number": "",
+      "make": "Toyota",
+      "model": "City",
+      "variant": "VXi",
+      "is_ownership_transferred": false
+    }
+  }
+}
+
+post /motor/document_upload
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "reference_type": "QUOTE",
+  "reference_number": "QUOTE_1234",
+  "document_key": "RC_CARD",
+  "file": {
+    "file_content": "iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAV0lEQVRIS+2TsQkAIAhD/f+nc0OgBZV6ByWcK2XkSUsvMjk/qxMEUP8JhT3EheCF1zVNUFvxMZJGupFJwFPG4eypFpc75bDQ+joN5KkPuIu36SPP8yJYvTQi+fZlGgAAAABJRU5ErkJggg==",
+    "file_content_type": "image/jpeg",
+    "file_name": "endorsement_doc.jpeg"
+  }
+}
+
+{
+  "uuid": "c75f7c66-e858-47d6-bb82-7ea5547c800c",
+  "status_code": "200",
+  "error": {
+    "code": "",
+    "message": ""
+  },
+  "data": {
+    "success": true
+  }
 }
