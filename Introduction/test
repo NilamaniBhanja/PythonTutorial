@@ -1,85 +1,27 @@
-XPath injection is a vulnerability that can allow an adversary to inject or modify how an XML query is structured.
+Hi Team,
 
-AVOGI/AVOGIModel/Models/TPServices/
-BindXMLValues.cs
+The security scan has reported a **Critical SQL Injection** issue for the `FetchDataFromGC` method in `LGI.DAL/Ports/DatabaseAccess.cs`.
 
-1378
-                {
-1379
-                    xDoc.LoadXml(strRequestXML);
-1380
-                    XmlNode xNodeProductCode = xDoc.SelectSingleNode(FieldName);
-1381
-                    if (xNodeProductCode != null)
-1382
-                    {
+After reviewing the implementation, the method itself accepts a SQL query string and executes it against the Oracle database:
 
-Introduced by n1524994, 8 minutes ago
-Time to fix: 15 minutes
+```csharp
+cmd.CommandText = strGCQuery;
+```
 
-Create Jira ticket
-About this pattern
-Opengrep's documentation
-Why this is a problem
-XPath injection allows attackers to alter the structure of XML queries, which can lead to unauthorized data access or security bypasses. Preventing this protects the integrity and confidentiality of XML data processing.
+The scanner flags this pattern because it identifies the execution of a dynamically supplied SQL statement. However, in our implementation, this method is **not exposed to external or direct user input**. It is called only from internal components within the application, where the SQL statements are predefined and controlled by the application logic.
 
-How to fix it
-Use LINQ to XML instead of XPath queries, and avoid passing unsanitized user input directly into XPath functions such as XPathEvaluate, XPathSelectElement, and XPathSelectElements. When using LINQ to XML, ensure that user input is safely handled and not concatenated directly into queries.
+Based on the current implementation:
 
-Examples
-Good examples
-Console.WriteLine(user.FirstName + " " + user.LastName);
-               }).Where(u => u.LastName == userInput).FirstOrDefault();
-                  LastName = (string)u.Element(ns + "last-name")
-string userInput = "LastName";
-XNamespace ns = "urn:users-schema";
-                  FirstName = (string)u.Element(ns + "first-name"),
-               .Select(u => new {
-var user = doc.Descendants(ns + "user")
-XDocument doc = XDocument.Load("users.xml");
-Bad examples\
+* The method is used only by internal solution components.
+* The SQL passed to the method is generated from trusted application code.
+* No direct user input is passed into `strGCQuery`.
+* Therefore, there is no externally exploitable SQL injection path in the current usage.
 
+The finding appears to be a **static analysis false positive**, where the scanner has identified a generic dynamic SQL execution pattern without considering the trusted data flow.
 
+That said, if this method is ever modified to accept SQL containing untrusted or user-controlled input, it should be updated to use parameterized queries (`OracleParameter`) to mitigate SQL injection risks.
 
-   public String GetValueFromXML(string strRequestXML, string FieldName, string RefNo)
-   {
-       //WriteError.WriteLog("inside GetValueFromXML =", RefNo);
+Please review and let us know if any additional evidence is required to close or downgrade this finding.
 
-       try
-       {
-           string value = String.Empty;
-           XmlDocument xDoc = new XmlDocument();
-           if (!String.IsNullOrEmpty(strRequestXML))
-           {
-               xDoc.LoadXml(strRequestXML);
-               XmlNode xNodeProductCode = xDoc.SelectSingleNode(FieldName);
-               if (xNodeProductCode != null)
-               {
-                   if (FieldName.ToUpper() == "ROOT")
-                   {
-                       value = xNodeProductCode.Attributes["Code"].Value;
-                   }
-                   else
-                   {
-                       if (xNodeProductCode.Attributes["Value"] != null)
-                       {
-                           value = xNodeProductCode.Attributes["Value"].Value;
-                       }
-                   }
-               }
-               else
-               {
-                   //WriteError.WriteLog("Exception from GetValueFromXML Method:FieldName = " + FieldName, RefNo);
-                   throw new Exception(string.Format("Method:CalculatePremium() - {0} not found in the Request Xml", FieldName));
-               }
-           }
-           return value;
-       }
-       catch (Exception ex)
-       {
-           WriteError.WriteLog("Exception from GetValueFromXML  " + ex.ToString(), RefNo);
-           return "";
-       }
-
-   }
-     
+Thanks,
+[Your Name]
