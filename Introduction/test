@@ -1,27 +1,33 @@
-Hi Team,
+Dear Team,
 
-The security scan has reported a **Critical SQL Injection** issue for the `FetchDataFromGC` method in `LGI.DAL/Ports/DatabaseAccess.cs`.
+We have reviewed the BRD and the current integration flow for Bima Sugam. During our analysis, we identified a few gaps and differences between the proposed APIs and our existing service architecture. To proceed with the integration, we require additional clarification on the following points:
 
-After reviewing the implementation, the method itself accepts a SQL query string and executes it against the Oracle database:
+* **Process Flow:** Our current flow is:
+  **Quote (Approx. Premium) → Proposal (Premium Calculation) → Payment → Policy Generation → Policy Download**
 
-```csharp
-cmd.CommandText = strGCQuery;
-```
+  However, the Bima Sugam flow is:
+  **Quote (Premium Calculation) → Proposal → Policy Generation**
 
-The scanner flags this pattern because it identifies the execution of a dynamically supplied SQL statement. However, in our implementation, this method is **not exposed to external or direct user input**. It is called only from internal components within the application, where the SQL statements are predefined and controlled by the application logic.
+* **Payment Step:** The payment process is not part of the Bima Sugam flow. Please clarify how premium collection is expected to be handled before policy issuance.
 
-Based on the current implementation:
+* **Proposal Integration:** Integrating the proposal API is challenging because the premium is already calculated during the quote stage, and the proposal request expects the same premium amount. Please confirm the expected behavior and validation logic.
 
-* The method is used only by internal solution components.
-* The SQL passed to the method is generated from trusted application code.
-* No direct user input is passed into `strGCQuery`.
-* Therefore, there is no externally exploitable SQL injection path in the current usage.
+* **Policy Generation:** The request payload for policy generation is significantly different from our existing service. We need detailed mapping and guidelines for implementing this API.
 
-The finding appears to be a **static analysis false positive**, where the scanner has identified a generic dynamic SQL execution pattern without considering the trusted data flow.
+* **Break-in Journey:** We could not find the required tags or information related to the break-in process. Please share the expected flow and required request parameters.
 
-That said, if this method is ever modified to accept SQL containing untrusted or user-controlled input, it should be updated to use parameterized queries (`OracleParameter`) to mitigate SQL injection risks.
+* **Business Implementation:** Kindly confirm which business lines/products are expected to be implemented as part of this integration.
 
-Please review and let us know if any additional evidence is required to close or downgrade this finding.
+* **Master Data Mapping:** There are several request and response fields that do not align with our master data, such as Product Code, Owner Type, and other master values. Please provide the complete mapping document or the expected master data values.
 
-Thanks,
+To ensure smooth integration, we request you to share the complete BRD, API specifications, field mappings, sample requests/responses, and any additional implementation guidelines.
+
+Alternatively, we would appreciate the opportunity to schedule a discussion at your convenience to clarify the above points and gain a better understanding of the integration requirements.
+
+We look forward to your response.
+
+Thanks & Regards,
+
 [Your Name]
+[Your Designation]
+[Your Company]
