@@ -1,0 +1,7 @@
+var errorMessages = string.Join(" | ",
+    ModelState.Values
+        .SelectMany(v => v.Errors)
+        .Select(e => !string.IsNullOrWhiteSpace(e.ErrorMessage)
+            ? e.ErrorMessage
+            : e.Exception?.Message)
+        .Where(m => !string.IsNullOrWhiteSpace(m)));
