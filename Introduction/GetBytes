@@ -1,0 +1,131 @@
+  public class AESCryptography
+  {
+      readonly UTF8Encoding _enc;
+      readonly RijndaelManaged _rcipher;
+      readonly byte[] _key, _iv;       
+      /***
+       * Encryption mode enumeration
+       */
+      private enum EncryptMode { ENCRYPT, DECRYPT };
+
+      static readonly char[] CharacterMatrixForRandomIVStringGeneration = {
+          'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+          'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+          'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+          'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+          '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
+      };
+     
+      public AESCryptography()
+      {
+          _enc = new UTF8Encoding();
+          _rcipher = new RijndaelManaged();
+          _rcipher.Mode = CipherMode.CBC;
+          _rcipher.Padding = PaddingMode.PKCS7;
+          _rcipher.KeySize = 256;
+          _rcipher.BlockSize = 128;
+          _key = new byte[32];
+          _iv = new byte[_rcipher.BlockSize / 8]; 
+      }
+
+      /**
+       * 
+       * @param _inputText
+       *            Text to be encrypted or decrypted
+       * @param _encryptionKey
+       *            Encryption key to used for encryption / decryption
+       * @param _mode
+       *            specify the mode encryption / decryption
+       * @param _initVector
+       *            initialization vector
+       * @return encrypted or decrypted string based on the mode
+      */
+      private String encryptDecrypt(string _inputText, string _encryptionKey, EncryptMode _mode, string _initVector)
+      {
+          byte[] _ivBytes = new byte[16];
+          string _out = "";// output string
+          byte[]  _pwd = Encoding.UTF8.GetBytes(_encryptionKey);
+          _ivBytes = Encoding.UTF8.GetBytes(_initVector);
+
+          int len = _pwd.Length;
+          if (len > _key.Length)
+          {
+              len = _key.Length;
+          }
+          int ivLenth = _ivBytes.Length;
+          if (ivLenth > _iv.Length)
+          {
+              ivLenth = _iv.Length;
+          }
+
+          Array.Copy(_pwd, _key, len);
+          Array.Copy(_ivBytes, _iv, ivLenth);
+          _rcipher.Key = _key;
+          _rcipher.IV = _iv;
+
+          if (_mode.Equals(EncryptMode.ENCRYPT))
+          {
+              //encrypt
+              byte[] plainText = _rcipher.CreateEncryptor().TransformFinalBlock(_enc.GetBytes(_inputText), 0, _inputText.Length);
+              _out = Convert.ToBase64String(plainText);
+          }
+          if (_mode.Equals(EncryptMode.DECRYPT))
+          {
+              //decrypt
+              byte[] plainText = _rcipher.CreateDecryptor().TransformFinalBlock(Convert.FromBase64String(_inputText), 0, Convert.FromBase64String(_inputText).Length);
+              _out = _enc.GetString(plainText);
+          }
+          _rcipher.Dispose();
+          return _out;// return encrypted/decrypted string
+      }
+      /// <summary>
+      /// use to encrypt data.
+      /// </summary>
+      /// <param name="value">string data need to encrypt</param>
+      /// <param name="key">key</param>
+      /// <param name="IV">init Vector</param>
+      /// <returns></returns>
+      public static string encrypt(string value, string key, string IV)
+      {
+          AESCryptography obj = new AESCryptography();
+          return obj.encryptDecrypt(value, key, EncryptMode.ENCRYPT, IV);
+      }
+      /// <summary>
+      /// use to decrypt data.
+      /// </summary>
+      /// <param name="value">string data need to encrypt</param>
+      /// <param name="key">key</param>
+      /// <param name="IV">init Vector</param>
+      /// <returns></returns>
+      public static string decrypt(string value, string key, string IV)
+      {
+          AESCryptography obj = new AESCryptography();
+          return obj.encryptDecrypt(value, key, EncryptMode.DECRYPT, IV);
+      }
+      /// <summary>
+      /// use to get HSA 256 hash.
+      /// </summary>
+      /// <param name="text"></param>
+      /// <param name="length"></param>
+      /// <returns></returns>
+      public static string getHash(string text, int length)
+      {
+          byte[] bytes = Encoding.UTF8.GetBytes(text);
+          SHA256Managed hashstring = new SHA256Managed();
+          byte[] hash = hashstring.ComputeHash(bytes);
+          StringBuilder hashString = new StringBuilder();
+          foreach (byte x in hash)
+          {
+              hashString.Append(String.Format("{0:x2}", x));
+          }
+          if (length > hashString.Length)
+          {
+              return hashString.ToString();
+          }
+          else
+          {
+              return hashString.ToString().Substring(0, length);
+          }
+      }
+   
+  }
