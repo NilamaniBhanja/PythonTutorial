@@ -123,3 +123,22 @@ namespace WebApi.Controllers
     }
 }
 
+public static string Encrypt<T>(T model, string key, string iv)
+{
+    if (model == null)
+        throw new ArgumentNullException(nameof(model));
+
+    string json = JsonConvert.SerializeObject(model);
+
+    return encrypt(json, key, iv);
+}
+
+public static T Decrypt<T>(string encryptedData, string key, string iv)
+{
+    if (string.IsNullOrWhiteSpace(encryptedData))
+        throw new ArgumentNullException(nameof(encryptedData));
+
+    string json = decrypt(encryptedData, key, iv);
+
+    return JsonConvert.DeserializeObject<T>(json);
+}
