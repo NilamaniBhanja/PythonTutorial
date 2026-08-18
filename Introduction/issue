@@ -1,6 +1,1 @@
-Issue Description:
-As per the expected functionality, when a policy is synced with GC, the same vehicle details—such as the registration number, engine number, or chassis number—should not be used for another vehicle during the same policy period. In such cases, the GC Duplicate Service URL is expected to return an error.
 
-However, in the current scenario, we are not receiving the expected error after creating and syncing the policy with GC.
-
-Please find the details below and the attached schedule copy for reference.
