@@ -1,3 +1,122 @@
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+public class SudarshanaResponse
+{
+    [JsonPropertyName("sudarshana")]
+    public Sudarshana Sudarshana { get; set; }
+
+    [JsonPropertyName("IsDeviaiton")]
+    public string IsDeviaiton { get; set; }
+
+    [JsonPropertyName("ServiceName")]
+    public string ServiceName { get; set; }
+}
+
+public class Sudarshana
+{
+    public List<PolicyDetail> PolicyDetails { get; set; }
+    public List<ClaimDetail> ClaimDetails { get; set; }
+    public List<object> RiskScoreDetails { get; set; }
+
+    public int tpClaimCountInPastYears { get; set; }
+    public int tpClaimAmountInPastYears { get; set; }
+
+    public string claimCountFirstPrecedingYear { get; set; }
+    public string claimAmountFirstPrecedingYear { get; set; }
+
+    public string claimCountSecondPrecedingYear { get; set; }
+    public string claimAmountSecondPrecedingYear { get; set; }
+}
+
+public class PolicyDetail
+{
+    public string TXT_INSURER { get; set; }
+    public string POLICY_NUMBER { get; set; }
+    public string TYPE_OF_POLICY { get; set; }
+    public string CLASS_OF_VEHICLE { get; set; }
+
+    public string POLICY_START_DATE { get; set; }
+    public string POLICY_END_DATE { get; set; }
+
+    public string TP_POLICY_START_DATE { get; set; }
+    public string TP_POLICY_END_DATE { get; set; }
+
+    public string OD_POLICY_START_DATE { get; set; }
+    public string OD_POLICY_END_DATE { get; set; }
+
+    public string TYPE_OF_TRANSACT { get; set; }
+    public string FINANACIAL_YEAR { get; set; }
+
+    public int NCB { get; set; }
+    public string NilDepFlag { get; set; }
+    public string IDV { get; set; }
+
+    public int Policy_DetailID { get; set; }
+}
+
+public class ClaimDetail
+{
+    public string REGISTRATION_NUMBER { get; set; }
+    public string CHASSIS_NUMBER { get; set; }
+    public string ENGINE_NUMBER { get; set; }
+    public string INSURER_NAME { get; set; }
+    public string CLAIM_TYPE { get; set; }
+
+    public string ACCIDENT_LOSS_DATE { get; set; }
+    public string CLAIM_INTIMATION_DATE { get; set; }
+
+    public string OD_CLAIMS_PAID { get; set; }
+    public string BOO_OD_TOTAL_LOSS { get; set; }
+    public string BOO_THEFT { get; set; }
+
+    public string TOTAL_TP_CLAIMS_PAID_AMOUNT { get; set; }
+    public string TP_OPEN_PROVISION { get; set; }
+    public string TP_CLOSE_PROVISION { get; set; }
+
+    public string CLAIM_STATUS { get; set; }
+    public string CLASS_CODE { get; set; }
+    public string CLAIM_NUMBER { get; set; }
+}
+2. Deserialize the JSON into a C# object
+Assuming your JSON is stored in a variable named jsonString:
+csharp
+SudarshanaResponse response =
+    JsonSerializer.Deserialize<SudarshanaResponse>(jsonString);
+
+if (response != null)
+{
+    var policyDetails = response.Sudarshana.PolicyDetails;
+    var claimDetails = response.Sudarshana.ClaimDetails;
+
+    Console.WriteLine(response.ServiceName);
+    Console.WriteLine($"Total Policies: {policyDetails.Count}");
+    Console.WriteLine($"Total Claims: {claimDetails.Count}");
+}
+3. Access individual values
+csharp
+// First policy
+var policy = response.Sudarshana.PolicyDetails[0];
+
+Console.WriteLine(policy.TXT_INSURER);
+Console.WriteLine(policy.POLICY_NUMBER);
+Console.WriteLine(policy.IDV);
+
+// First claim
+var claim = response.Sudarshana.ClaimDetails[0];
+
+Console.WriteLine(claim.REGISTRATION_NUMBER);
+Console.WriteLine(claim.CLAIM_NUMBER);
+Console.WriteLine(claim.OD_CLAIMS_PAID);
+
+// Claim summary
+Console.WriteLine(
+    response.Sudarshana.claimCountFirstPrecedingYear
+);
+
+
+
 convert to c# object {
 
   "sudarshana": {
