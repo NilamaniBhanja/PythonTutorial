@@ -1,38 +1,214 @@
-using System.Net.Http;
-using System.Text;
-using Newtonsoft.Json;
+convert to c# object {
 
-public async Task<string> CallValidateVahanService(
-    DomQuickQuote quote,
-    string insuranceCompany,
-    bool? isVahanEnable)
-{
-    using (var client = new HttpClient())
-    {
-        client.BaseAddress = new Uri("https://yourserver.com/YourApi/");
+  "sudarshana": {
 
-        var request = new
-        {
-            ObjQuickQuoteDetails = quote,
-            InsuranceCompany = insuranceCompany,
-            IsVahanenable = isVahanEnable
-        };
+    "PolicyDetails": [
 
-        string json = JsonConvert.SerializeObject(request);
+      {
 
-        using (var content = new StringContent(
-            json,
-            Encoding.UTF8,
-            "application/json"))
-        {
-            HttpResponseMessage response =
-                await client.PostAsync(
-                    "api/vahan/validate",
-                    content);
+        "TXT_INSURER": "Tata AIG General Insurance Co. Ltd.",
 
-            response.EnsureSuccessStatusCode();
+        "POLICY_NUMBER": "62053108650000",
 
-            return await response.Content.ReadAsStringAsync();
-        }
-    }
+        "TYPE_OF_POLICY": "STAND ALONE OWN DAMAGE POLICY",
+
+        "CLASS_OF_VEHICLE": "PRIVATE CAR",
+
+        "POLICY_START_DATE": "2025-10-05",
+
+        "POLICY_END_DATE": "2026-10-04",
+
+        "TP_POLICY_START_DATE": "",
+
+        "TP_POLICY_END_DATE": "",
+
+        "OD_POLICY_START_DATE": "2025-10-05",
+
+        "OD_POLICY_END_DATE": "2026-10-04",
+
+        "TYPE_OF_TRANSACT": "Active",
+
+        "FINANACIAL_YEAR": "FY2526",
+
+        "NCB": 0,
+
+        "NilDepFlag": "Y",
+
+        "IDV": "913995.0",
+
+        "Policy_DetailID": 3866110
+
+      },
+
+      {
+
+        "TXT_INSURER": "Zurich Kotak General Insurance",
+
+        "POLICY_NUMBER": "MKG/P23895123",
+
+        "TYPE_OF_POLICY": "LONG TERM PRIVATE CAR BUNDLED POLICY",
+
+        "CLASS_OF_VEHICLE": "PRIVATE CAR",
+
+        "POLICY_START_DATE": "2024-10-05",
+
+        "POLICY_END_DATE": "2025-10-04",
+
+        "TP_POLICY_START_DATE": "2024-10-05",
+
+        "TP_POLICY_END_DATE": "2027-10-04",
+
+        "OD_POLICY_START_DATE": "2024-10-05",
+
+        "OD_POLICY_END_DATE": "2025-10-04",
+
+        "TYPE_OF_TRANSACT": "Active",
+
+        "FINANACIAL_YEAR": "FY2425",
+
+        "NCB": 0,
+
+        "NilDepFlag": "Y",
+
+        "IDV": "1015549.0",
+
+        "Policy_DetailID": 3866111
+
+      }
+
+    ],
+
+    "ClaimDetails": [
+
+      {
+
+        "REGISTRATION_NUMBER": "DL09CBG0531",
+
+        "CHASSIS_NUMBER": "MA1NS2NP1R2J68088",
+
+        "ENGINE_NUMBER": "NPRZJ39410",
+
+        "INSURER_NAME": "Tata AIG General Insurance Co. Ltd.",
+
+        "CLAIM_TYPE": "OD",
+
+        "ACCIDENT_LOSS_DATE": "2026-02-13 00:00:00.",
+
+        "CLAIM_INTIMATION_DATE": "2026-02-14 00:00:00.",
+
+        "OD_CLAIMS_PAID": "39699",
+
+        "BOO_OD_TOTAL_LOSS": "N",
+
+        "BOO_THEFT": "N",
+
+        "TOTAL_TP_CLAIMS_PAID_AMOUNT": "0",
+
+        "TP_OPEN_PROVISION": "0",
+
+        "TP_CLOSE_PROVISION": "0",
+
+        "CLAIM_STATUS": "FULLY SETTLED",
+
+        "CLASS_CODE": "PRIVATE CAR",
+
+        "CLAIM_NUMBER": "3000805155"
+
+      },
+
+      {
+
+        "REGISTRATION_NUMBER": "DL09CBG0531",
+
+        "CHASSIS_NUMBER": "MA1NS2NP1R2J68088",
+
+        "ENGINE_NUMBER": "NPRZJ39410",
+
+        "INSURER_NAME": "Kotak Mahindra General Insurance",
+
+        "CLAIM_TYPE": "OD",
+
+        "ACCIDENT_LOSS_DATE": "2025-06-23 00:00:00.",
+
+        "CLAIM_INTIMATION_DATE": "2025-07-01 00:00:00.",
+
+        "OD_CLAIMS_PAID": "11481",
+
+        "BOO_OD_TOTAL_LOSS": "N",
+
+        "BOO_THEFT": "N",
+
+        "TOTAL_TP_CLAIMS_PAID_AMOUNT": "0",
+
+        "TP_OPEN_PROVISION": "0",
+
+        "TP_CLOSE_PROVISION": "0",
+
+        "CLAIM_STATUS": "FULLY SETTLED",
+
+        "CLASS_CODE": "PRIVATE CAR",
+
+        "CLAIM_NUMBER": "10110317131"
+
+      },
+
+      {
+
+        "REGISTRATION_NUMBER": "DL09CBG0531",
+
+        "CHASSIS_NUMBER": "MA1NS2NP1R2J68088",
+
+        "ENGINE_NUMBER": "NPRZJ39410",
+
+        "INSURER_NAME": "Kotak Mahindra General Insurance",
+
+        "CLAIM_TYPE": "OD",
+
+        "ACCIDENT_LOSS_DATE": "2025-05-28 00:00:00.",
+
+        "CLAIM_INTIMATION_DATE": "2025-05-29 00:00:00.",
+
+        "OD_CLAIMS_PAID": "42180",
+
+        "BOO_OD_TOTAL_LOSS": "N",
+
+        "BOO_THEFT": "N",
+
+        "TOTAL_TP_CLAIMS_PAID_AMOUNT": "0",
+
+        "TP_OPEN_PROVISION": "0",
+
+        "TP_CLOSE_PROVISION": "0",
+
+        "CLAIM_STATUS": "FULLY SETTLED",
+
+        "CLASS_CODE": "PRIVATE CAR",
+
+        "CLAIM_NUMBER": "10110308636"
+
+      }
+
+    ],
+
+    "RiskScoreDetails": [],
+
+    "tpClaimCountInPastYears": 0,
+
+    "tpClaimAmountInPastYears": 0,
+
+    "claimCountFirstPrecedingYear": "1",
+
+    "claimAmountFirstPrecedingYear": "39699",
+
+    "claimCountSecondPrecedingYear": "2",
+
+    "claimAmountSecondPrecedingYear": "53661"
+
+  },
+
+  "IsDeviaiton": "0",
+
+  "ServiceName": "SUDARSHANA"
+
 }
+ 
