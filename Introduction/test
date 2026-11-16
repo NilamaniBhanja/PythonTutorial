@@ -1,0 +1,100 @@
+
+ALTER PROCEDURE [dbo].[Update_ChildIMD](@IMDCode nvarchar(max), @POSPCode nvarchar(max))
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+if exists (select * from [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[imddetails] where SPCode=@IMDCode)  
+begin  
+Insert Into [dbo].[tblpospdetails] (
+[ID],
+[SPCode],
+[SalesManagerID],
+[ParentID],
+[ChannelID],
+[UserID],
+[UserExtID],
+[UserName],
+[RMUID],
+[RMRID],
+[Agent_FirstName],
+[Agent_LastName],
+[BranchID],
+[CityName],
+[OfficeType],
+[AddressLine1],
+[AddressLine2],
+[AddressLine3],
+[Locality],
+[PinCode],
+[ISDCode],
+[STDCode],
+[Telephone],
+[City_Name],
+[StateName],
+[BranchCode],
+[IMDFirstName],
+[IMDMiddleName],
+[IMDLastName],
+[DOB],
+[PAN],
+[GstNumber],
+[TieUpCode],
+[LicenseExpiryDate]
+) 
+
+select distinct
+imd.[ID] as ID,
+imd.[SPCode] as SPCode,
+imd.[SalesManagerID] as SalesManagerID,
+imd.[ParentID] as ParentID,
+imd.[ChannelID] as ChannelID,
+ext.[UserID] as UserID,
+ext.[UserExtID] as UserextID,
+ext.[UserName] as UserName,
+ext.[RMUID] as RMUID,
+ext.[RMRID] as RMRID,
+ext.[FirstName] as Agent_FirstName,
+ext.[LastName] as Agent_LastName,
+ext.[BranchID] as BranchID,
+brn.[Name] as City_Name,
+brn.[OfficeType] as OfficeType,
+brn.[AddressLine1] as AddressLine1,
+brn.[AddressLine2] as AddressLine2,
+brn.[AddressLine3] as AddressLine3,
+brn.[Locality] as Locality,
+brn.[PinCode] as Pincode,
+brn.[ISDCode] as ISDCode,
+brn.[STDCode] as STDCode,
+brn.[Telephone] as Telephone,
+brn.[CityName] as Cityname,
+brn.[StateName] as StateName,
+brn.[BranchCode] as BranchCode,
+bsic.[FirstName] as IMDFirstName,
+bsic.[MiddleName] as IMDMiddleName,
+bsic.[LastName] as IMDLastName,
+bsic.[DOB] as DOB,
+bsic.[PAN] as PAN,
+bsic.[GstNumber] as GSTNo,
+imd.[TieUpCode] as TieUpCode,
+imd.[LicenseExpiryDate] as LicenseExpiryDate
+
+from [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[imddetails] imd
+join [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[tbluserext] ext on imd.SalesManagerID=ext.userid
+join [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[masbranches] brn on brn.id=ext.BranchID
+join [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[Basicdetails] bsic on bsic.id=imd.BasicDetailsID
+
+where 
+imd.ParentID in (select ID from [UATDB.CFPYEIGLSBYC.AP-SOUTH-1.RDS.AMAZONAWS.COM,8190].[new1].[dbo].[imddetails] where SPCode=@IMDCode)
+and imd.tieupcode = @POSPCode
+--and not exists(select * from [dbo].[tblpospdetails] where tblpospdetails.SPCode=imd.[SPCode])     
+end  
+  
+else  
+begin  
+select 'IMDCode does not exists in the AVO DB' 
+end 
+
+END
