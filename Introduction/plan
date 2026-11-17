@@ -1,21 +1,230 @@
-Plan	Age Min	Age Max	Fuel Type	Application segment	Not applicable segment
-Depreciation:Passenger Assist	0	9.999	All	"COMPACT","SUV 1","MID SIZE"	
-Depreciation:Passenger Assist:Liberty Complete Assistance	0	9.999	All	"COMPACT","SUV 1","MID SIZE"	
-Depreciation:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	All	"COMPACT","SUV 1","MID SIZE"	
-Depreciation:Consumables:Passenger Assist:Liberty Complete Assistance	0	9.999	All	All	
-Depreciation:Consumables:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	All	All	
-Depreciation:Consumables:Engine Safe:Passenger Assist:Liberty Complete Assistance	0	9.999	Other Than Battery	All	
-Depreciation:Consumables:Engine Safe:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
-Depreciation:Consumables:Engine Safe:Tyre Protection:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
-Depreciation:Consumables:Engine Safe:Tyre Protection:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
-Depreciation:Consumables:Passenger Assist	0	9.999	All	All	
-Depreciation:Consumables:Engine Safe:Key Loss:Passenger Assist:Liberty Complete Assistance	0	9.999	Other Than Battery	All	
-Depreciation:Consumables:Key Loss:Passenger Assist:Liberty Complete Assistance	0	9.999	All	All	
-Key Loss	0	9.999	All	All	
-Passenger Assist	0	14.999	All	All	
-Liberty Complete Assistance	0	14.999	All	All	
-Key Loss:Liberty Complete Assistance:Loss Of Personal Belonging	0	9.999	All	All	
-Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
-Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
-Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Tyre Protection:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
-Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Tyre Protection:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
+declare
+	@NILDEP VARCHAR(10) = 'NO'
+	,@ENGSAF VARCHAR(10) = NULL
+	,@KL VARCHAR(10) = 'YES'
+	,@CONS VARCHAR(10) = NULL
+	,@RSA VARCHAR(10) = 'Yes'
+	,@PA VARCHAR(10) = 'Yes'
+	,@GAP VARCHAR(10) = NULL
+	,@TY VARCHAR(10) = NULL
+	,@EV VARCHAR(10) = NULL
+	,@PB VARCHAR(10) = NULL
+	,@LBC VARCHAR(10) = NULL
+	,@LAC VARCHAR(10) = NULL
+	,@ProductCode VARCHAR(10) = '3151'
+	,@BusinessType VARCHAR(100) = 'RENEWAL'
+	,@VehicleSegment decimal =0
+	 ,@ErrorCode BIT   
+
+
+BEGIN
+ BEGIN TRY  
+ declare @KeySearch VARCHAR(250)
+ DECLARE @SegmentValue VARCHAR(50)
+  DECLARE @ProductID numeric(18, 0)
+    SET @ErrorCode = 0  
+
+	set @KeySearch =''
+	if(@LBC = 'YES')
+	begin
+		set @KeySearch +=' + Liberty Battery Secure' 
+	end
+	if(@GAP = 'YES')
+	begin
+		set @KeySearch +=' + GAP Value 1' 
+	end
+	if(@TY = 'YES')
+	begin
+		set @KeySearch +=' + Tyre Protection' 
+	end
+	if(@EV = 'YES')
+	begin
+		set @KeySearch +=' + EV Secure' 
+	end
+	
+	if(@ENGSAF = 'YES')
+	begin
+		set @KeySearch +=' + Engine Safe' 
+	end	 
+	
+	if(@KL = 'YES' and (@GAP !='YES' or @GAP is null) and (@TY !='YES' or @TY is null) and (@EV !='YES' or @EV is null)  and (@LBC !='YES' or @LBC is null)  and @BusinessType = 'RENEWAL')
+	begin
+		set @KeySearch +=' + KeyLossCover' 
+	end
+	
+	if(@CONS = 'YES')
+	begin
+		set @KeySearch +=' + Consumables' 
+	end
+
+	if(@NILDEP = 'YES')
+	begin
+		set @KeySearch +=' + Depreciation' 
+	end
+	
+	if(@PB = 'YES' and @BusinessType = 'RENEWAL')
+	begin
+		set @KeySearch +=' + Loss of Personal Belongings' 
+	end
+
+	if(@PA = 'YES' and @BusinessType = 'RENEWAL')
+	begin
+		set @KeySearch +=' + PassengerAsstCover' 
+	end
+	if(@RSA = 'YES' and @BusinessType = 'RENEWAL')
+	begin
+		set @KeySearch +=' + RoadSideAsstCover' 
+	end
+
+	
+SET @KeySearch = SUBSTRING(@KeySearch,  CASE WHEN @KeySearch LIKE ' + %'THEN 4 ELSE 0 END, LEN(@KeySearch)+1)
+  --SELECT @KeySearch
+
+SELECT  @SegmentValue = VALUE FROM MASVehicleSegment(NOLOCK) WHERE ID =  @vehicleSEGMENT 
+--SELECT @SegmentValue
+SELECT  @ProductID = id FROM masproduct (NOLOCK) WHERE code =  @ProductCode 
+ 
+ 
+
+ select * from MASAddOnKeyName where KeyName = @KeySearch
+
+-- New Business and RollOver
+if (@BusinessType != 'RENEWAL')
+Begin
+ IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
+ BEGIN
+		   select distinct top 1  msp.* from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
+		left  join MASAddOnKeyName msn on msn.id = msm.keyid
+		left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where mspm.productid = @ProductID and msp.IsActive = 1 and
+		 (KeyName = @KeySearch
+			AND (msp.NotApplicableVehicleSegment NOT LIKE '%'+@SegmentValue+'%' OR msp.NotApplicableVehicleSegment IS NULL)
+			AND msp.ApplicableVehicleSegment ='ALL'
+			)
+			
+		union
+
+			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
+			left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where mspm.productid = @ProductID and  msp.IsActive = 1 and
+		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
+		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
+		case WHEN @KL = 'YES'THEN 'KeyLossCover' END,
+		case WHEN @ENGSAF = 'YES'THEN 'Engine Safe' END,
+		case WHEN @GAP = 'YES'THEN 'GAP Value 1' END,
+		case WHEN @NILDEP = 'YES'THEN 'Depreciation' END,
+		case WHEN @PB = 'YES' THEN 'Loss of Personal Belongings' END,
+		case WHEN @LBC = 'YES'THEN 'Liberty Battery Secure' END,
+		case WHEN @LAC = 'YES'THEN 'Liberty Assure' END
+		) 
+			ORDER BY  PlanType ASC, WeightAge DESC
+END
+ELSE
+ BEGIN
+	 select distinct top 1   msp.* from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
+		left  join MASAddOnKeyName msn on msn.id = msm.keyid
+		left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where 
+		 mspm.productid = @ProductID and  msp.IsActive = 1 and KeyName = @KeySearch		
+			and msp.WeightAge  =(select max(WeightAge) from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
+		left  join MASAddOnKeyName msn on msn.id = msm.keyid
+		left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where 
+		 mspm.productid = @ProductID and KeyName = @KeySearch	)	
+			union
+
+			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
+			left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where 
+		 mspm.productid = @ProductID and  msp.IsActive = 1 and
+		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
+		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
+		case WHEN @KL = 'YES'THEN 'KeyLossCover' END,
+		case WHEN @ENGSAF = 'YES'THEN 'Engine Safe' END,
+		case WHEN @GAP = 'YES'THEN 'GAP Value 1' END,
+		case WHEN @NILDEP = 'YES'THEN 'Depreciation' END,
+		case WHEN @PB = 'YES'  THEN 'Loss of Personal Belongings' END,
+		case WHEN @LBC = 'YES'THEN 'Liberty Battery Secure' END,
+		case WHEN @LAC = 'YES'THEN 'Liberty Assure' END
+		) 
+			ORDER BY  PlanType ASC, WeightAge DESC
+ END
+
+
+End
+
+else 
+--Renewal Business
+Begin
+
+--select @KeySearch
+SELECT @KeySearch= REPLACE(@KeySearch, ' + ', '+');
+select @KeySearch, @SegmentValue
+
+  IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
+ BEGIN
+		   select distinct top 1  msp.* from MASAddOnPlans (NOLOCK) msp 
+		left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where mspm.productid = @ProductID and msp.IsActive = 1 and
+		 (msp.KeySearch = @KeySearch
+			AND (msp.NotApplicableVehicleSegment NOT LIKE '%'+@SegmentValue+'%' OR msp.NotApplicableVehicleSegment IS NULL)
+			AND msp.ApplicableVehicleSegment ='ALL'
+			)
+			
+		union
+
+			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
+			left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where mspm.productid = @ProductID and  msp.IsActive = 1 and
+		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
+		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
+		case WHEN @KL = 'YES'THEN 'KeyLossCover' END
+		) 
+			ORDER BY  PlanType ASC, WeightAge DESC
+END
+ELSE
+ BEGIN
+	 select distinct top 1   msp.* from MASAddOnPlans (NOLOCK) msp 
+		left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where 
+		 mspm.productid = @ProductID and  msp.IsActive = 1 and KeySearch = @KeySearch	
+			union
+
+			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
+			left join MASAddOnproductMap mspm on mspm.planid = msp.id
+		 where 
+		 mspm.productid = @ProductID and  msp.IsActive = 1 and
+		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
+		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
+		case WHEN @KL = 'YES'THEN 'KeyLossCover' END
+		) 
+			ORDER BY  PlanType ASC, WeightAge DESC
+ END
+
+end
+
+
+	SET @ErrorCode = 1
+ 
+ 
+ END TRY  
+  
+ BEGIN CATCH  
+  SET @ErrorCode = 0  
+  
+  INSERT INTO Errorlog (  
+   ControllerName  
+   ,FunctionName  
+   ,UserName  
+   ,ErrorMessage  
+   ,LastUpdatedOn  
+   )  
+  VALUES (  
+   ERROR_PROCEDURE()  
+   ,ERROR_PROCEDURE()  
+   ,'SP_User'  
+   ,'Line Number : ' + CONVERT(NVARCHAR(MAX), ERROR_LINE()) + ' Error Message : ' + ERROR_MESSAGE()  
+   ,getdate()  
+   )  
+ END CATCH  
+END
