@@ -1,230 +1,341 @@
-declare
-	@NILDEP VARCHAR(10) = 'NO'
-	,@ENGSAF VARCHAR(10) = NULL
-	,@KL VARCHAR(10) = 'YES'
-	,@CONS VARCHAR(10) = NULL
-	,@RSA VARCHAR(10) = 'Yes'
-	,@PA VARCHAR(10) = 'Yes'
-	,@GAP VARCHAR(10) = NULL
-	,@TY VARCHAR(10) = NULL
-	,@EV VARCHAR(10) = NULL
-	,@PB VARCHAR(10) = NULL
-	,@LBC VARCHAR(10) = NULL
-	,@LAC VARCHAR(10) = NULL
-	,@ProductCode VARCHAR(10) = '3151'
-	,@BusinessType VARCHAR(100) = 'RENEWAL'
-	,@VehicleSegment decimal =0
-	 ,@ErrorCode BIT   
 
-
+CREATE OR ALTER PROCEDURE dbo.usp_GetAddOnPlans
+(
+    @NILDEP VARCHAR(10) = 'NO',
+    @ENGSAF VARCHAR(10) = NULL,
+    @KL VARCHAR(10) = 'YES',
+    @CONS VARCHAR(10) = NULL,
+    @RSA VARCHAR(10) = 'YES',
+    @PA VARCHAR(10) = 'YES',
+    @GAP VARCHAR(10) = NULL,
+    @TY VARCHAR(10) = NULL,
+    @EV VARCHAR(10) = NULL,
+    @PB VARCHAR(10) = NULL,
+    @LBC VARCHAR(10) = NULL,
+    @LAC VARCHAR(10) = NULL,
+    @ProductCode VARCHAR(10) = '3151',
+    @BusinessType VARCHAR(100) = 'RENEWAL',
+    @VehicleSegment DECIMAL(18,0) = 0,
+    @ErrorCode BIT OUTPUT
+)
+AS
 BEGIN
- BEGIN TRY  
- declare @KeySearch VARCHAR(250)
- DECLARE @SegmentValue VARCHAR(50)
-  DECLARE @ProductID numeric(18, 0)
-    SET @ErrorCode = 0  
+    SET NOCOUNT ON;
 
-	set @KeySearch =''
-	if(@LBC = 'YES')
-	begin
-		set @KeySearch +=' + Liberty Battery Secure' 
-	end
-	if(@GAP = 'YES')
-	begin
-		set @KeySearch +=' + GAP Value 1' 
-	end
-	if(@TY = 'YES')
-	begin
-		set @KeySearch +=' + Tyre Protection' 
-	end
-	if(@EV = 'YES')
-	begin
-		set @KeySearch +=' + EV Secure' 
-	end
-	
-	if(@ENGSAF = 'YES')
-	begin
-		set @KeySearch +=' + Engine Safe' 
-	end	 
-	
-	if(@KL = 'YES' and (@GAP !='YES' or @GAP is null) and (@TY !='YES' or @TY is null) and (@EV !='YES' or @EV is null)  and (@LBC !='YES' or @LBC is null)  and @BusinessType = 'RENEWAL')
-	begin
-		set @KeySearch +=' + KeyLossCover' 
-	end
-	
-	if(@CONS = 'YES')
-	begin
-		set @KeySearch +=' + Consumables' 
-	end
+    BEGIN TRY
 
-	if(@NILDEP = 'YES')
-	begin
-		set @KeySearch +=' + Depreciation' 
-	end
-	
-	if(@PB = 'YES' and @BusinessType = 'RENEWAL')
-	begin
-		set @KeySearch +=' + Loss of Personal Belongings' 
-	end
+        DECLARE @KeySearch VARCHAR(1000) = '';
+        DECLARE @SearchPlanName VARCHAR(1000) = '';
+        DECLARE @SegmentValue VARCHAR(50);
+        DECLARE @ProductID NUMERIC(18,0);
 
-	if(@PA = 'YES' and @BusinessType = 'RENEWAL')
-	begin
-		set @KeySearch +=' + PassengerAsstCover' 
-	end
-	if(@RSA = 'YES' and @BusinessType = 'RENEWAL')
-	begin
-		set @KeySearch +=' + RoadSideAsstCover' 
-	end
+        SET @ErrorCode = 0;
 
-	
-SET @KeySearch = SUBSTRING(@KeySearch,  CASE WHEN @KeySearch LIKE ' + %'THEN 4 ELSE 0 END, LEN(@KeySearch)+1)
-  --SELECT @KeySearch
+        /* =========================================
+           1. BUILD EXISTING KEY SEARCH
+        ========================================= */
 
-SELECT  @SegmentValue = VALUE FROM MASVehicleSegment(NOLOCK) WHERE ID =  @vehicleSEGMENT 
---SELECT @SegmentValue
-SELECT  @ProductID = id FROM masproduct (NOLOCK) WHERE code =  @ProductCode 
- 
- 
+        IF (@LBC = 'YES')
+            SET @KeySearch += ' + Liberty Battery Secure';
 
- select * from MASAddOnKeyName where KeyName = @KeySearch
+        IF (@GAP = 'YES')
+            SET @KeySearch += ' + GAP Value 1';
 
--- New Business and RollOver
-if (@BusinessType != 'RENEWAL')
-Begin
- IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
- BEGIN
-		   select distinct top 1  msp.* from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
-		left  join MASAddOnKeyName msn on msn.id = msm.keyid
-		left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where mspm.productid = @ProductID and msp.IsActive = 1 and
-		 (KeyName = @KeySearch
-			AND (msp.NotApplicableVehicleSegment NOT LIKE '%'+@SegmentValue+'%' OR msp.NotApplicableVehicleSegment IS NULL)
-			AND msp.ApplicableVehicleSegment ='ALL'
-			)
-			
-		union
+        IF (@TY = 'YES')
+            SET @KeySearch += ' + Tyre Protection';
 
-			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
-			left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where mspm.productid = @ProductID and  msp.IsActive = 1 and
-		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
-		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
-		case WHEN @KL = 'YES'THEN 'KeyLossCover' END,
-		case WHEN @ENGSAF = 'YES'THEN 'Engine Safe' END,
-		case WHEN @GAP = 'YES'THEN 'GAP Value 1' END,
-		case WHEN @NILDEP = 'YES'THEN 'Depreciation' END,
-		case WHEN @PB = 'YES' THEN 'Loss of Personal Belongings' END,
-		case WHEN @LBC = 'YES'THEN 'Liberty Battery Secure' END,
-		case WHEN @LAC = 'YES'THEN 'Liberty Assure' END
-		) 
-			ORDER BY  PlanType ASC, WeightAge DESC
-END
-ELSE
- BEGIN
-	 select distinct top 1   msp.* from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
-		left  join MASAddOnKeyName msn on msn.id = msm.keyid
-		left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where 
-		 mspm.productid = @ProductID and  msp.IsActive = 1 and KeyName = @KeySearch		
-			and msp.WeightAge  =(select max(WeightAge) from MASAddOnPlans (NOLOCK) msp left join MASAddOnKeyMap  (NOLOCK) msm on msp.id = msm.planid
-		left  join MASAddOnKeyName msn on msn.id = msm.keyid
-		left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where 
-		 mspm.productid = @ProductID and KeyName = @KeySearch	)	
-			union
+        IF (@EV = 'YES')
+            SET @KeySearch += ' + EV Secure';
 
-			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
-			left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where 
-		 mspm.productid = @ProductID and  msp.IsActive = 1 and
-		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
-		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
-		case WHEN @KL = 'YES'THEN 'KeyLossCover' END,
-		case WHEN @ENGSAF = 'YES'THEN 'Engine Safe' END,
-		case WHEN @GAP = 'YES'THEN 'GAP Value 1' END,
-		case WHEN @NILDEP = 'YES'THEN 'Depreciation' END,
-		case WHEN @PB = 'YES'  THEN 'Loss of Personal Belongings' END,
-		case WHEN @LBC = 'YES'THEN 'Liberty Battery Secure' END,
-		case WHEN @LAC = 'YES'THEN 'Liberty Assure' END
-		) 
-			ORDER BY  PlanType ASC, WeightAge DESC
- END
+        IF (@ENGSAF = 'YES')
+            SET @KeySearch += ' + Engine Safe';
 
+        IF (
+            @KL = 'YES'
+            AND ISNULL(@GAP,'NO') <> 'YES'
+            AND ISNULL(@TY,'NO') <> 'YES'
+            AND ISNULL(@EV,'NO') <> 'YES'
+            AND ISNULL(@LBC,'NO') <> 'YES'
+            AND @BusinessType = 'RENEWAL'
+        )
+            SET @KeySearch += ' + KeyLossCover';
 
-End
+        IF (@CONS = 'YES')
+            SET @KeySearch += ' + Consumables';
 
-else 
---Renewal Business
-Begin
+        IF (@NILDEP = 'YES')
+            SET @KeySearch += ' + Depreciation';
 
---select @KeySearch
-SELECT @KeySearch= REPLACE(@KeySearch, ' + ', '+');
-select @KeySearch, @SegmentValue
+        IF (@PB = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @KeySearch += ' + Loss of Personal Belongings';
 
-  IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
- BEGIN
-		   select distinct top 1  msp.* from MASAddOnPlans (NOLOCK) msp 
-		left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where mspm.productid = @ProductID and msp.IsActive = 1 and
-		 (msp.KeySearch = @KeySearch
-			AND (msp.NotApplicableVehicleSegment NOT LIKE '%'+@SegmentValue+'%' OR msp.NotApplicableVehicleSegment IS NULL)
-			AND msp.ApplicableVehicleSegment ='ALL'
-			)
-			
-		union
+        IF (@PA = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @KeySearch += ' + PassengerAsstCover';
 
-			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
-			left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where mspm.productid = @ProductID and  msp.IsActive = 1 and
-		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
-		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
-		case WHEN @KL = 'YES'THEN 'KeyLossCover' END
-		) 
-			ORDER BY  PlanType ASC, WeightAge DESC
-END
-ELSE
- BEGIN
-	 select distinct top 1   msp.* from MASAddOnPlans (NOLOCK) msp 
-		left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where 
-		 mspm.productid = @ProductID and  msp.IsActive = 1 and KeySearch = @KeySearch	
-			union
+        IF (@RSA = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @KeySearch += ' + RoadSideAsstCover';
 
-			select distinct msp.* from MASAddOnPlans (NOLOCK) msp 
-			left join MASAddOnproductMap mspm on mspm.planid = msp.id
-		 where 
-		 mspm.productid = @ProductID and  msp.IsActive = 1 and
-		 msp.KeySearch in (case WHEN @PA = 'YES'THEN 'PassengerAsstCover' END,
-		case WHEN @RSA = 'YES'THEN 'RoadSideAsstCover' END, 
-		case WHEN @KL = 'YES'THEN 'KeyLossCover' END
-		) 
-			ORDER BY  PlanType ASC, WeightAge DESC
- END
+        SET @KeySearch =
+            LTRIM(RTRIM(
+                CASE
+                    WHEN LEFT(@KeySearch, 3) = ' + '
+                    THEN STUFF(@KeySearch, 1, 3, '')
+                    ELSE @KeySearch
+                END
+            ));
 
-end
+        SET @KeySearch = REPLACE(@KeySearch, ' + ', '+');
 
+        /* =========================================
+           2. BUILD PLAN NAME SEARCH
+        ========================================= */
 
-	SET @ErrorCode = 1
- 
- 
- END TRY  
-  
- BEGIN CATCH  
-  SET @ErrorCode = 0  
-  
-  INSERT INTO Errorlog (  
-   ControllerName  
-   ,FunctionName  
-   ,UserName  
-   ,ErrorMessage  
-   ,LastUpdatedOn  
-   )  
-  VALUES (  
-   ERROR_PROCEDURE()  
-   ,ERROR_PROCEDURE()  
-   ,'SP_User'  
-   ,'Line Number : ' + CONVERT(NVARCHAR(MAX), ERROR_LINE()) + ' Error Message : ' + ERROR_MESSAGE()  
-   ,getdate()  
-   )  
- END CATCH  
-END
+        IF (@NILDEP = 'YES')
+            SET @SearchPlanName += '+Depreciation';
+
+        IF (@CONS = 'YES')
+            SET @SearchPlanName += '+Consumables';
+
+        IF (@ENGSAF = 'YES')
+            SET @SearchPlanName += '+Engine Safe';
+
+        IF (@GAP = 'YES')
+            SET @SearchPlanName += '+Gap Value 1';
+
+        IF (@TY = 'YES')
+            SET @SearchPlanName += '+Tyre Protection';
+
+        IF (@EV = 'YES')
+            SET @SearchPlanName += '+EV Secure';
+
+        IF (@LBC = 'YES')
+            SET @SearchPlanName += '+Liberty Battery Secure';
+
+        IF (@KL = 'YES')
+            SET @SearchPlanName += '+Key Loss';
+
+        IF (@PB = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @SearchPlanName += '+Loss Of Personal Belonging';
+
+        IF (@PA = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @SearchPlanName += '+Passenger Assist';
+
+        IF (@RSA = 'YES' AND @BusinessType = 'RENEWAL')
+            SET @SearchPlanName += '+Road Side Assistance';
+
+        IF (@LAC = 'YES')
+            SET @SearchPlanName += '+Liberty Complete Assistance';
+
+        SET @SearchPlanName =
+            CASE
+                WHEN LEFT(@SearchPlanName, 1) = '+'
+                THEN STUFF(@SearchPlanName, 1, 1, '')
+                ELSE @SearchPlanName
+            END;
+
+        /* =========================================
+           3. GET SEGMENT AND PRODUCT
+        ========================================= */
+
+        SELECT @SegmentValue = VALUE
+        FROM MASVehicleSegment WITH (NOLOCK)
+        WHERE ID = @VehicleSegment;
+
+        SELECT @ProductID = ID
+        FROM MASProduct WITH (NOLOCK)
+        WHERE CODE = @ProductCode;
+
+        /* =========================================
+           4. MATCH PLANS USING PLAN NAME
+        ========================================= */
+
+        IF OBJECT_ID('tempdb..#MatchedPlans') IS NOT NULL
+            DROP TABLE #MatchedPlans;
+
+        SELECT DISTINCT
+            MSP.*
+        INTO #MatchedPlans
+        FROM MASAddOnPlans MSP WITH (NOLOCK)
+        INNER JOIN MASAddOnproductMap MSPM WITH (NOLOCK)
+            ON MSPM.PlanID = MSP.ID
+        WHERE
+            MSPM.ProductID = @ProductID
+            AND MSP.IsActive = 1
+            AND ISNULL(@SearchPlanName, '') <> ''
+            AND NOT EXISTS
+            (
+                SELECT 1
+                FROM STRING_SPLIT(@SearchPlanName, '+') S
+                WHERE LTRIM(RTRIM(S.VALUE)) <> ''
+                  AND CHARINDEX(
+                        ':' + LTRIM(RTRIM(S.VALUE)) + ':',
+                        ':' + MSP.PlanName + ':'
+                      ) = 0
+            );
+
+        /* =========================================
+           5. NEW BUSINESS AND ROLLOVER
+        ========================================= */
+
+        IF (@BusinessType <> 'RENEWAL')
+        BEGIN
+
+            IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
+            BEGIN
+
+                SELECT DISTINCT TOP 1 *
+                FROM #MatchedPlans
+                WHERE
+                    (
+                        NotApplicableVehicleSegment
+                            NOT LIKE '%' + @SegmentValue + '%'
+                        OR NotApplicableVehicleSegment IS NULL
+                    )
+                    AND ApplicableVehicleSegment = 'ALL'
+                ORDER BY PlanType ASC, WeightAge DESC;
+
+            END
+            ELSE
+            BEGIN
+
+                SELECT DISTINCT TOP 1 *
+                FROM #MatchedPlans
+                ORDER BY PlanType ASC, WeightAge DESC;
+
+            END
+
+            /* Individual Add-on Plans */
+
+            SELECT DISTINCT MSP.*
+            FROM MASAddOnPlans MSP WITH (NOLOCK)
+            INNER JOIN MASAddOnproductMap MSPM WITH (NOLOCK)
+                ON MSPM.PlanID = MSP.ID
+            WHERE
+                MSPM.ProductID = @ProductID
+                AND MSP.IsActive = 1
+                AND MSP.KeySearch IN
+                (
+                    CASE WHEN @PA = 'YES'
+                        THEN 'PassengerAsstCover' END,
+
+                    CASE WHEN @RSA = 'YES'
+                        THEN 'RoadSideAsstCover' END,
+
+                    CASE WHEN @KL = 'YES'
+                        THEN 'KeyLossCover' END,
+
+                    CASE WHEN @ENGSAF = 'YES'
+                        THEN 'Engine Safe' END,
+
+                    CASE WHEN @GAP = 'YES'
+                        THEN 'GAP Value 1' END,
+
+                    CASE WHEN @NILDEP = 'YES'
+                        THEN 'Depreciation' END,
+
+                    CASE WHEN @PB = 'YES'
+                        THEN 'Loss of Personal Belongings' END,
+
+                    CASE WHEN @LBC = 'YES'
+                        THEN 'Liberty Battery Secure' END,
+
+                    CASE WHEN @LAC = 'YES'
+                        THEN 'Liberty Assure' END
+                )
+            ORDER BY PlanType ASC, WeightAge DESC;
+
+        END
+
+        /* =========================================
+           6. RENEWAL BUSINESS
+        ========================================= */
+
+        ELSE
+        BEGIN
+
+            IF (@SegmentValue IN ('HIGH END', 'EXECUTIVE', 'SUV 2'))
+            BEGIN
+
+                SELECT DISTINCT TOP 1 *
+                FROM #MatchedPlans
+                WHERE
+                    (
+                        NotApplicableVehicleSegment
+                            NOT LIKE '%' + @SegmentValue + '%'
+                        OR NotApplicableVehicleSegment IS NULL
+                    )
+                    AND ApplicableVehicleSegment = 'ALL'
+                ORDER BY WeightAge DESC;
+
+            END
+            ELSE
+            BEGIN
+
+                SELECT DISTINCT TOP 1 *
+                FROM #MatchedPlans
+                ORDER BY WeightAge DESC;
+
+            END
+
+            /* Individual Renewal Add-on Plans */
+
+            SELECT DISTINCT MSP.*
+            FROM MASAddOnPlans MSP WITH (NOLOCK)
+            INNER JOIN MASAddOnproductMap MSPM WITH (NOLOCK)
+                ON MSPM.PlanID = MSP.ID
+            WHERE
+                MSPM.ProductID = @ProductID
+                AND MSP.IsActive = 1
+                AND MSP.KeySearch IN
+                (
+                    CASE WHEN @PA = 'YES'
+                        THEN 'PassengerAsstCover' END,
+
+                    CASE WHEN @RSA = 'YES'
+                        THEN 'RoadSideAsstCover' END,
+
+                    CASE WHEN @KL = 'YES'
+                        THEN 'KeyLossCover' END
+                )
+            ORDER BY PlanType ASC, WeightAge DESC;
+
+        END
+
+        SET @ErrorCode = 1;
+
+        IF OBJECT_ID('tempdb..#MatchedPlans') IS NOT NULL
+            DROP TABLE #MatchedPlans;
+
+    END TRY
+
+    BEGIN CATCH
+
+        SET @ErrorCode = 0;
+
+        IF OBJECT_ID('tempdb..#MatchedPlans') IS NOT NULL
+            DROP TABLE #MatchedPlans;
+
+        INSERT INTO Errorlog
+        (
+            ControllerName,
+            FunctionName,
+            UserName,
+            ErrorMessage,
+            LastUpdatedOn
+        )
+        VALUES
+        (
+            ERROR_PROCEDURE(),
+            ERROR_PROCEDURE(),
+            'SP_User',
+            'Line Number : '
+            + CONVERT(NVARCHAR(MAX), ERROR_LINE())
+            + ' Error Message : '
+            + ERROR_MESSAGE(),
+            GETDATE()
+        );
+
+    END CATCH
+
+END;
+GO
