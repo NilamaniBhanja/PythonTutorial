@@ -1,0 +1,21 @@
+Plan	Age Min	Age Max	Fuel Type	Application segment	Not applicable segment
+Depreciation:Passenger Assist	0	9.999	All	"COMPACT","SUV 1","MID SIZE"	
+Depreciation:Passenger Assist:Liberty Complete Assistance	0	9.999	All	"COMPACT","SUV 1","MID SIZE"	
+Depreciation:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	All	"COMPACT","SUV 1","MID SIZE"	
+Depreciation:Consumables:Passenger Assist:Liberty Complete Assistance	0	9.999	All	All	
+Depreciation:Consumables:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	All	All	
+Depreciation:Consumables:Engine Safe:Passenger Assist:Liberty Complete Assistance	0	9.999	Other Than Battery	All	
+Depreciation:Consumables:Engine Safe:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
+Depreciation:Consumables:Engine Safe:Tyre Protection:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
+Depreciation:Consumables:Engine Safe:Tyre Protection:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	4.999	Other Than Battery	All	
+Depreciation:Consumables:Passenger Assist	0	9.999	All	All	
+Depreciation:Consumables:Engine Safe:Key Loss:Passenger Assist:Liberty Complete Assistance	0	9.999	Other Than Battery	All	
+Depreciation:Consumables:Key Loss:Passenger Assist:Liberty Complete Assistance	0	9.999	All	All	
+Key Loss	0	9.999	All	All	
+Passenger Assist	0	14.999	All	All	
+Liberty Complete Assistance	0	14.999	All	All	
+Key Loss:Liberty Complete Assistance:Loss Of Personal Belonging	0	9.999	All	All	
+Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
+Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
+Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Tyre Protection:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
+Depreciation:Consumables:Damage To Charger:Reinstallation Of Wall Mounted Charger:Damage To Property:Charger Liability Protection Cover:Liberty Battery Secure:Tyre Protection:Gap Value 1:Passenger Assist:Liberty Complete Assistance	0	2.999	Battery	All	
