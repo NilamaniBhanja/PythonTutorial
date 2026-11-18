@@ -1,97 +1,187 @@
- 
 using System;
-using System.Data;
-using System.Data.SqlClient;
+using System.Configuration;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
 
-// SQL Server INSERT query
-private const string SqlInsertQuery = @"
-    INSERT INTO TBLPOSPDETAILS
-    (
-        ID, SPCODE, SALESMANAGERID, PARENTID, CHANNELID,
-        USERID, USEREXTID, USERNAME, RMUID, RMRID,
-        AGENT_FIRSTNAME, AGENT_LASTNAME, BRANCHID,
-        CITYNAME, OFFICETYPE, ADDRESSLINE1, ADDRESSLINE2,
-        ADDRESSLINE3, LOCALITY, PINCODE, ISDCODE, STDCODE,
-        TELEPHONE, CITY_NAME, STATENAME, BRANCHCODE,
-        IMDFIRSTNAME, IMDMIDDLENAME, IMDLASTNAME, DOB,
-        PAN, GSTNUMBER, TIEUPCODE, LICENSEEXPIRYDATE
-    )
-    VALUES
-    (
-        @ID, @SPCODE, @SALESMANAGERID, @PARENTID, @CHANNELID,
-        @USERID, @USEREXTID, @USERNAME, @RMUID, @RMRID,
-        @AGENT_FIRSTNAME, @AGENT_LASTNAME, @BRANCHID,
-        @CITYNAME, @OFFICETYPE, @ADDRESSLINE1, @ADDRESSLINE2,
-        @ADDRESSLINE3, @LOCALITY, @PINCODE, @ISDCODE, @STDCODE,
-        @TELEPHONE, @CITY_NAME, @STATENAME, @BRANCHCODE,
-        @IMDFIRSTNAME, @IMDMIDDLENAME, @IMDLASTNAME, @DOB,
-        @PAN, @GSTNUMBER, @TIEUPCODE, @LICENSEEXPIRYDATE
-    )";
-
-using (SqlConnection con = new SqlConnection(sqlConnectionString))
+namespace test.Common
 {
-    con.Open();
-
-    using (SqlTransaction transaction = con.BeginTransaction())
+    public class AESCryptography
     {
-        try
+        readonly UTF8Encoding _enc;
+        readonly RijndaelManaged _rcipher;
+        readonly byte[] _key, _iv;       
+        /***
+         * Encryption mode enumeration
+         */
+        private enum EncryptMode { ENCRYPT, DECRYPT };
+
+        static readonly char[] CharacterMatrixForRandomIVStringGeneration = {
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
+        };
+       
+        public AESCryptography()
         {
-            int insertedCount = 0;
+            _enc = new UTF8Encoding();
+            _rcipher = new RijndaelManaged();
+            _rcipher.Mode = CipherMode.CBC;
+            _rcipher.Padding = PaddingMode.PKCS7;
+            _rcipher.KeySize = 256;
+            _rcipher.BlockSize = 128;
+            _key = new byte[32];
+            _iv = new byte[_rcipher.BlockSize / 8]; 
+        }
 
-            string[] columns =
+        /**
+         * 
+         * @param _inputText
+         *            Text to be encrypted or decrypted
+         * @param _encryptionKey
+         *            Encryption key to used for encryption / decryption
+         * @param _mode
+         *            specify the mode encryption / decryption
+         * @param _initVector
+         *            initialization vector
+         * @return encrypted or decrypted string based on the mode
+        */
+        private String encryptDecrypt(string _inputText, string _encryptionKey, EncryptMode _mode, string _initVector)
+        {
+            byte[] _ivBytes = new byte[16];
+            string _out = "";// output string
+            byte[]  _pwd = Encoding.UTF8.GetBytes(_encryptionKey);
+            _ivBytes = Encoding.UTF8.GetBytes(_initVector);
+
+            int len = _pwd.Length;
+            if (len > _key.Length)
             {
-                "ID", "SPCODE", "SALESMANAGERID",
-                "PARENTID", "CHANNELID", "USERID",
-                "USEREXTID", "USERNAME", "RMUID",
-                "RMRID", "AGENT_FIRSTNAME",
-                "AGENT_LASTNAME", "BRANCHID",
-                "CITYNAME", "OFFICETYPE",
-                "ADDRESSLINE1", "ADDRESSLINE2",
-                "ADDRESSLINE3", "LOCALITY",
-                "PINCODE", "ISDCODE", "STDCODE",
-                "TELEPHONE", "CITY_NAME", "STATENAME",
-                "BRANCHCODE", "IMDFIRSTNAME",
-                "IMDMIDDLENAME", "IMDLASTNAME",
-                "DOB", "PAN", "GSTNUMBER",
-                "TIEUPCODE", "LICENSEEXPIRYDATE"
-            };
-
-            using (SqlCommand cmd = new SqlCommand(
-                SqlInsertQuery, con, transaction))
+                len = _key.Length;
+            }
+            int ivLenth = _ivBytes.Length;
+            if (ivLenth > _iv.Length)
             {
-                // Create parameters once and reuse them
-                foreach (string column in columns)
-                {
-                    cmd.Parameters.AddWithValue(
-                        "@" + column, DBNull.Value);
-                }
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    foreach (string column in columns)
-                    {
-                        object value = row[column];
-
-                        cmd.Parameters["@" + column].Value =
-                            value == DBNull.Value
-                                ? DBNull.Value
-                                : value;
-                    }
-
-                    cmd.ExecuteNonQuery();
-                    insertedCount++;
-                }
+                ivLenth = _iv.Length;
             }
 
-            transaction.Commit();
+            Array.Copy(_pwd, _key, len);
+            Array.Copy(_ivBytes, _iv, ivLenth);
+            _rcipher.Key = _key;
+            _rcipher.IV = _iv;
 
-            return insertedCount +
-                   " records inserted successfully.";
+            if (_mode.Equals(EncryptMode.ENCRYPT))
+            {
+                //encrypt
+                byte[] plainText = _rcipher.CreateEncryptor().TransformFinalBlock(_enc.GetBytes(_inputText), 0, _inputText.Length);
+                _out = Convert.ToBase64String(plainText);
+            }
+            if (_mode.Equals(EncryptMode.DECRYPT))
+            {
+                //decrypt
+                byte[] plainText = _rcipher.CreateDecryptor().TransformFinalBlock(Convert.FromBase64String(_inputText), 0, Convert.FromBase64String(_inputText).Length);
+                _out = _enc.GetString(plainText);
+            }
+            _rcipher.Dispose();
+            return _out;// return encrypted/decrypted string
         }
-        catch
+        /// <summary>
+        /// use to encrypt data.
+        /// </summary>
+        /// <param name="value">string data need to encrypt</param>
+        /// <param name="key">key</param>
+        /// <param name="IV">init Vector</param>
+        /// <returns></returns>
+        public static string encrypt(string value, string key, string IV)
         {
-            transaction.Rollback();
-            throw;
+            AESCryptography obj = new AESCryptography();
+            return obj.encryptDecrypt(value, key, EncryptMode.ENCRYPT, IV);
         }
+        /// <summary>
+        /// use to decrypt data.
+        /// </summary>
+        /// <param name="value">string data need to encrypt</param>
+        /// <param name="key">key</param>
+        /// <param name="IV">init Vector</param>
+        /// <returns></returns>
+        public static string decrypt(string value, string key, string IV)
+        {
+            AESCryptography obj = new AESCryptography();
+            return obj.encryptDecrypt(value, key, EncryptMode.DECRYPT, IV);
+        }
+        /// <summary>
+        /// use to get HSA 256 hash.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static string getHash(string text, int length)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            SHA256Managed hashstring = new SHA256Managed();
+            byte[] hash = hashstring.ComputeHash(bytes);
+            StringBuilder hashString = new StringBuilder();
+            foreach (byte x in hash)
+            {
+                hashString.Append(String.Format("{0:x2}", x));
+            }
+            if (length > hashString.Length)
+            {
+                return hashString.ToString();
+            }
+            else
+            {
+                return hashString.ToString().Substring(0, length);
+            }
+        }
+
+        public static string EncryptRequest<T>(T model)
+        {
+            string json = JsonConvert.SerializeObject(model);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["RequestKey"].ToString());
+                aes.IV = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["RequestSecret"].ToString());
+
+                ICryptoTransform encryptor = aes.CreateEncryptor();
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    using (StreamWriter sw = new StreamWriter(cs))
+                    {
+                        sw.Write(json);
+                    }
+
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            }
+        }
+
+        public static T DecryptRequest<T>(string encryptedText)
+        {
+            byte[] cipherBytes = Convert.FromBase64String(encryptedText);
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["RequestKey"].ToString());
+                aes.IV = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["RequestSecret"].ToString());
+
+                ICryptoTransform decryptor = aes.CreateDecryptor();
+
+                using (MemoryStream ms = new MemoryStream(cipherBytes))
+                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                using (StreamReader sr = new StreamReader(cs))
+                {
+                    string json = sr.ReadToEnd();
+
+                    return JsonConvert.DeserializeObject<T>(json);
+                }
+            }
+        }
+
     }
 }
