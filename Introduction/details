@@ -1,0 +1,92 @@
+ // SQL insert query
+ private const string SqlInsertQuery = @"
+     INSERT INTO TBLPOSPDETAILS
+     (
+         ID, SPCODE, SALESMANAGERID, PARENTID, CHANNELID,
+         USERID, USEREXTID, USERNAME, RMUID, RMRID,
+         AGENT_FIRSTNAME, AGENT_LASTNAME, BRANCHID,
+         CITYNAME, OFFICETYPE, ADDRESSLINE1, ADDRESSLINE2,
+         ADDRESSLINE3, LOCALITY, PINCODE, ISDCODE, STDCODE,
+         TELEPHONE, CITY_NAME, STATENAME, BRANCHCODE,
+         IMDFIRSTNAME, IMDMIDDLENAME, IMDLASTNAME, DOB,
+         PAN, GSTNUMBER, TIEUPCODE, LICENSEEXPIRYDATE
+     )
+     VALUES
+     (
+         :ID, :SPCODE, :SALESMANAGERID, :PARENTID, :CHANNELID,
+         :USERID, :USEREXTID, :USERNAME, :RMUID, :RMRID,
+         :AGENT_FIRSTNAME, :AGENT_LASTNAME, :BRANCHID,
+         :CITYNAME, :OFFICETYPE, :ADDRESSLINE1, :ADDRESSLINE2,
+         :ADDRESSLINE3, :LOCALITY, :PINCODE, :ISDCODE, :STDCODE,
+         :TELEPHONE, :CITY_NAME, :STATENAME, :BRANCHCODE,
+         :IMDFIRSTNAME, :IMDMIDDLENAME, :IMDLASTNAME, :DOB,
+         :PAN, :GSTNUMBER, :TIEUPCODE, :LICENSEEXPIRYDATE
+     )";
+
+ using (OracleConnection con =
+        new OracleConnection(oracleConnectionString))
+ {
+     con.Open();
+
+     using (OracleTransaction transaction =
+            con.BeginTransaction())
+     {
+         try
+         {
+             int insertedCount = 0;
+
+             foreach (DataRow row in dt.Rows)
+             {
+                 using (OracleCommand cmd =
+                        new OracleCommand(
+                            SqlInsertQuery, con))
+                 {
+                     cmd.Transaction = transaction;
+                     cmd.BindByName = true;
+
+                     string[] columns =
+                     {
+                         "ID", "SPCODE", "SALESMANAGERID",
+                         "PARENTID", "CHANNELID", "USERID",
+                         "USEREXTID", "USERNAME", "RMUID",
+                         "RMRID", "AGENT_FIRSTNAME",
+                         "AGENT_LASTNAME", "BRANCHID",
+                         "CITYNAME", "OFFICETYPE",
+                         "ADDRESSLINE1", "ADDRESSLINE2",
+                         "ADDRESSLINE3", "LOCALITY",
+                         "PINCODE", "ISDCODE", "STDCODE",
+                         "TELEPHONE", "CITY_NAME", "STATENAME",
+                         "BRANCHCODE", "IMDFIRSTNAME",
+                         "IMDMIDDLENAME", "IMDLASTNAME",
+                         "DOB", "PAN", "GSTNUMBER",
+                         "TIEUPCODE", "LICENSEEXPIRYDATE"
+                     };
+
+                     foreach (string column in columns)
+                     {
+                         object value = row[column];
+
+                         cmd.Parameters.Add(
+                             column,
+                             value == DBNull.Value
+                                 ? DBNull.Value
+                                 : value);
+                     }
+
+                     cmd.ExecuteNonQuery();
+                     insertedCount++;
+                 }
+             }
+
+             transaction.Commit();
+
+             return insertedCount +
+                    " records inserted successfully.";
+         }
+         catch
+         {
+             transaction.Rollback();
+             throw;
+         }
+     }
+ }
