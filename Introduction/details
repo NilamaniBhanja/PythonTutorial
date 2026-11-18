@@ -1,92 +1,97 @@
- // SQL insert query
- private const string SqlInsertQuery = @"
-     INSERT INTO TBLPOSPDETAILS
-     (
-         ID, SPCODE, SALESMANAGERID, PARENTID, CHANNELID,
-         USERID, USEREXTID, USERNAME, RMUID, RMRID,
-         AGENT_FIRSTNAME, AGENT_LASTNAME, BRANCHID,
-         CITYNAME, OFFICETYPE, ADDRESSLINE1, ADDRESSLINE2,
-         ADDRESSLINE3, LOCALITY, PINCODE, ISDCODE, STDCODE,
-         TELEPHONE, CITY_NAME, STATENAME, BRANCHCODE,
-         IMDFIRSTNAME, IMDMIDDLENAME, IMDLASTNAME, DOB,
-         PAN, GSTNUMBER, TIEUPCODE, LICENSEEXPIRYDATE
-     )
-     VALUES
-     (
-         :ID, :SPCODE, :SALESMANAGERID, :PARENTID, :CHANNELID,
-         :USERID, :USEREXTID, :USERNAME, :RMUID, :RMRID,
-         :AGENT_FIRSTNAME, :AGENT_LASTNAME, :BRANCHID,
-         :CITYNAME, :OFFICETYPE, :ADDRESSLINE1, :ADDRESSLINE2,
-         :ADDRESSLINE3, :LOCALITY, :PINCODE, :ISDCODE, :STDCODE,
-         :TELEPHONE, :CITY_NAME, :STATENAME, :BRANCHCODE,
-         :IMDFIRSTNAME, :IMDMIDDLENAME, :IMDLASTNAME, :DOB,
-         :PAN, :GSTNUMBER, :TIEUPCODE, :LICENSEEXPIRYDATE
-     )";
+ 
+using System;
+using System.Data;
+using System.Data.SqlClient;
 
- using (OracleConnection con =
-        new OracleConnection(oracleConnectionString))
- {
-     con.Open();
+// SQL Server INSERT query
+private const string SqlInsertQuery = @"
+    INSERT INTO TBLPOSPDETAILS
+    (
+        ID, SPCODE, SALESMANAGERID, PARENTID, CHANNELID,
+        USERID, USEREXTID, USERNAME, RMUID, RMRID,
+        AGENT_FIRSTNAME, AGENT_LASTNAME, BRANCHID,
+        CITYNAME, OFFICETYPE, ADDRESSLINE1, ADDRESSLINE2,
+        ADDRESSLINE3, LOCALITY, PINCODE, ISDCODE, STDCODE,
+        TELEPHONE, CITY_NAME, STATENAME, BRANCHCODE,
+        IMDFIRSTNAME, IMDMIDDLENAME, IMDLASTNAME, DOB,
+        PAN, GSTNUMBER, TIEUPCODE, LICENSEEXPIRYDATE
+    )
+    VALUES
+    (
+        @ID, @SPCODE, @SALESMANAGERID, @PARENTID, @CHANNELID,
+        @USERID, @USEREXTID, @USERNAME, @RMUID, @RMRID,
+        @AGENT_FIRSTNAME, @AGENT_LASTNAME, @BRANCHID,
+        @CITYNAME, @OFFICETYPE, @ADDRESSLINE1, @ADDRESSLINE2,
+        @ADDRESSLINE3, @LOCALITY, @PINCODE, @ISDCODE, @STDCODE,
+        @TELEPHONE, @CITY_NAME, @STATENAME, @BRANCHCODE,
+        @IMDFIRSTNAME, @IMDMIDDLENAME, @IMDLASTNAME, @DOB,
+        @PAN, @GSTNUMBER, @TIEUPCODE, @LICENSEEXPIRYDATE
+    )";
 
-     using (OracleTransaction transaction =
-            con.BeginTransaction())
-     {
-         try
-         {
-             int insertedCount = 0;
+using (SqlConnection con = new SqlConnection(sqlConnectionString))
+{
+    con.Open();
 
-             foreach (DataRow row in dt.Rows)
-             {
-                 using (OracleCommand cmd =
-                        new OracleCommand(
-                            SqlInsertQuery, con))
-                 {
-                     cmd.Transaction = transaction;
-                     cmd.BindByName = true;
+    using (SqlTransaction transaction = con.BeginTransaction())
+    {
+        try
+        {
+            int insertedCount = 0;
 
-                     string[] columns =
-                     {
-                         "ID", "SPCODE", "SALESMANAGERID",
-                         "PARENTID", "CHANNELID", "USERID",
-                         "USEREXTID", "USERNAME", "RMUID",
-                         "RMRID", "AGENT_FIRSTNAME",
-                         "AGENT_LASTNAME", "BRANCHID",
-                         "CITYNAME", "OFFICETYPE",
-                         "ADDRESSLINE1", "ADDRESSLINE2",
-                         "ADDRESSLINE3", "LOCALITY",
-                         "PINCODE", "ISDCODE", "STDCODE",
-                         "TELEPHONE", "CITY_NAME", "STATENAME",
-                         "BRANCHCODE", "IMDFIRSTNAME",
-                         "IMDMIDDLENAME", "IMDLASTNAME",
-                         "DOB", "PAN", "GSTNUMBER",
-                         "TIEUPCODE", "LICENSEEXPIRYDATE"
-                     };
+            string[] columns =
+            {
+                "ID", "SPCODE", "SALESMANAGERID",
+                "PARENTID", "CHANNELID", "USERID",
+                "USEREXTID", "USERNAME", "RMUID",
+                "RMRID", "AGENT_FIRSTNAME",
+                "AGENT_LASTNAME", "BRANCHID",
+                "CITYNAME", "OFFICETYPE",
+                "ADDRESSLINE1", "ADDRESSLINE2",
+                "ADDRESSLINE3", "LOCALITY",
+                "PINCODE", "ISDCODE", "STDCODE",
+                "TELEPHONE", "CITY_NAME", "STATENAME",
+                "BRANCHCODE", "IMDFIRSTNAME",
+                "IMDMIDDLENAME", "IMDLASTNAME",
+                "DOB", "PAN", "GSTNUMBER",
+                "TIEUPCODE", "LICENSEEXPIRYDATE"
+            };
 
-                     foreach (string column in columns)
-                     {
-                         object value = row[column];
+            using (SqlCommand cmd = new SqlCommand(
+                SqlInsertQuery, con, transaction))
+            {
+                // Create parameters once and reuse them
+                foreach (string column in columns)
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@" + column, DBNull.Value);
+                }
 
-                         cmd.Parameters.Add(
-                             column,
-                             value == DBNull.Value
-                                 ? DBNull.Value
-                                 : value);
-                     }
+                foreach (DataRow row in dt.Rows)
+                {
+                    foreach (string column in columns)
+                    {
+                        object value = row[column];
 
-                     cmd.ExecuteNonQuery();
-                     insertedCount++;
-                 }
-             }
+                        cmd.Parameters["@" + column].Value =
+                            value == DBNull.Value
+                                ? DBNull.Value
+                                : value;
+                    }
 
-             transaction.Commit();
+                    cmd.ExecuteNonQuery();
+                    insertedCount++;
+                }
+            }
 
-             return insertedCount +
-                    " records inserted successfully.";
-         }
-         catch
-         {
-             transaction.Rollback();
-             throw;
-         }
-     }
- }
+            transaction.Commit();
+
+            return insertedCount +
+                   " records inserted successfully.";
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+}
