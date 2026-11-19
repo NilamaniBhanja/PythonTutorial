@@ -1,8 +1,7 @@
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Newtonsoft.Json;
@@ -11,39 +10,46 @@ using Newtonsoft.Json.Linq;
 public class UserController : ApiController
 {
     [HttpPost]
-    [Route("api/User/decryptInput")]
-    public async Task<HttpResponseMessage> UserDecrypt()
+    [Route("api/User/encrypt")]
+    public async Task<HttpResponseMessage> UserEncrypt()
     {
         string body = await Request.Content.ReadAsStringAsync();
 
+        JToken token;
+
         try
         {
-            // Remove quotes if encrypted value is sent as a JSON string
-            string encryptedText = body.Trim().Trim('"');
+            // Parse request body into JSON object
+            token = JToken.Parse(body);
+        }
+        catch (JsonReaderException)
+        {
+            return Request.CreateErrorResponse(
+                HttpStatusCode.BadRequest,
+                "Body must be valid JSON.");
+        }
 
-            // Decrypt the encrypted value into a JSON object
-            JToken decrypted =
-                AESCryptography.DecryptRequest<JToken>(encryptedText);
+        try
+        {
+            // Encrypt as an OBJECT (not as a string)
+            string encrypted =
+                AESCryptography.EncryptRequest<JToken>(token);
 
-            return Request.CreateResponse(HttpStatusCode.OK, decrypted);
+            // Return encrypted value as plain text
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    encrypted,
+                    Encoding.UTF8,
+                    "text/plain"
+                )
+            };
         }
-        catch (FormatException)
+        catch (Exception ex)
         {
             return Request.CreateErrorResponse(
-                HttpStatusCode.BadRequest,
-                "Invalid encrypted Base64 value.");
-        }
-        catch (CryptographicException)
-        {
-            return Request.CreateErrorResponse(
-                HttpStatusCode.BadRequest,
-                "Decryption failed. Invalid encrypted value or encryption key.");
-        }
-        catch (JsonException)
-        {
-            return Request.CreateErrorResponse(
-                HttpStatusCode.BadRequest,
-                "Decrypted data is not valid JSON.");
+                HttpStatusCode.InternalServerError,
+                "Encryption failed.");
         }
     }
 }
